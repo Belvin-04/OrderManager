@@ -1,0 +1,238 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/services.dart';
+import 'package:order_manager/modal/Item.dart';
+import 'package:order_manager/screens/HomePage.dart';
+import 'package:order_manager/utils/NavigationDrawer.dart';
+
+
+class Items extends StatefulWidget {
+
+  const Items({Key key}) : super(key: key);
+
+  @override
+  _ItemsState createState() => _ItemsState();
+}
+
+class _ItemsState extends State<Items> {
+
+
+  DatabaseReference itemReference;
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController itemPriceController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+
+  @override
+  Widget build(BuildContext context) {
+
+
+    List<Item> itemList = [];
+
+    itemReference = FirebaseDatabase.instance.reference().child("items");
+
+      return Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text("Items"),
+        ),
+        floatingActionButton: FloatingActionButton(
+          child: Icon(Icons.add),
+          onPressed: (){
+            showDialog(context: context, builder: (BuildContext context) => showAddItemDialog(Item("",0,""), context));
+          },
+        ),
+        body: WillPopScope(
+          onWillPop: (){
+            Navigator.pop(context);
+          },
+          child: FutureBuilder(
+            future: itemReference.orderByChild("price").once(),
+            builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
+              if (snapshot.hasData) {
+                itemList.clear();
+                Map values = snapshot.data.value;
+                if(values != null){
+                  values.forEach((key, values) {
+                    itemList.add(Item.toItem(values));
+                  });
+                }
+
+                return new ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: itemList.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Card(
+                        child: ListTile(
+                          title:Text("Name: " + itemList[index].getName()),
+                          subtitle:Text("Price: "+ itemList[index].getPrice().toString()),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                child: Icon(Icons.edit,color: Colors.blue,),
+                                onTap: (){
+                                  showDialog(context: context, builder: (BuildContext context) => showAddItemDialog(itemList[index], context));
+                                },
+                              ),
+
+                              Container(margin: EdgeInsets.only(right:10.0),),
+                              GestureDetector(
+                                child: Icon(Icons.delete,color: Colors.red,),
+                                onTap: (){
+                                  showDialog(
+                                      context: context,
+                                      builder:(BuildContext context){
+                                        return AlertDialog(
+                                        title: Text("Delete Item ?"),
+                                        content: Text("This action cannot be undone..."),
+                                        actions: [
+                                          TextButton(
+                                              child:Text("OK"),
+                                              onPressed: (){
+                                                Navigator.pop(context);
+                                                _delete(context, itemList[index]);
+                                              })
+                                        ],
+                                      );
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    });
+              }
+              return Center(child: CircularProgressIndicator());
+            }),
+        ),
+
+      );
+    }
+
+    void _delete(BuildContext context,Item item){
+      String id = item.getId();
+      DatabaseReference itemReference = FirebaseDatabase.instance.reference().child("items").child(id);
+      itemReference.remove();
+      updateItemList();
+      showSnackBar("Item Deleted Successfully", context);
+    }
+
+    void updateItemList(){
+      setState(() {
+
+      });
+    }
+
+  void showSnackBar(String message,BuildContext context){
+    SnackBar snackBar = SnackBar(content: Text(message));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+
+  }
+
+  AlertDialog showAddItemDialog(Item item,BuildContext context){
+    itemNameController.text = item.getName();
+    if(item.getPrice() != 0){
+      itemPriceController.text = item.getPrice().toString();
+    }
+    return AlertDialog(
+      title: Text("Item Detail"),
+      content: Form(key: _formKey,
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              TextFormField(
+                onChanged: (name){
+                  item.setName(name);
+                },
+                validator: (value) {
+                  if(value.isEmpty){
+                    return "Please Enter Product Name";
+                  }
+
+                  return null;
+                },
+                controller: itemNameController,
+                decoration: InputDecoration(
+                    labelText: "Item Name",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)
+                    )
+                ),
+              ),
+              Container(
+                width: 0.0,
+                height: 0.0,
+                margin: EdgeInsets.only(bottom: 10.0),
+              ),
+              TextFormField(
+                onChanged: (price){
+                  if(price.isNotEmpty){
+                    item.setPrice(int.parse(price));
+                  }
+                },
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if(value.isEmpty){
+                    return "Please Enter Product Price";
+                  }
+                  return null;
+                },
+                controller: itemPriceController,
+                decoration: InputDecoration(
+                    labelText: "Item Price",
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0)
+                    )
+                ),
+              ),
+            ],
+          )),
+      actions: [
+        TextButton(
+            onPressed: (){
+              if(_formKey.currentState.validate()){
+                saveItem(item);
+                itemPriceController.text = "";
+                itemNameController.text = "";
+                Navigator.pop(context);
+                showSnackBar("Item Saved Successfully...", context);
+              }
+            },
+            child: Text("Save Item")
+        )
+      ],
+    );
+  }
+
+  void saveItem(Item item){
+    itemReference.orderByChild("name").equalTo(item.getName()).once().then((value) {
+      String id = item.getId();
+      if(id.isEmpty){
+        id = itemReference.push().key;
+      }
+      else{
+        id = item.getId();
+      }
+      Map itemMap = item.toMap();
+      itemMap['id'] = id;
+
+      if(value != null){
+        Map values = value.value;
+        if(values != null){
+          values.forEach((key, value) {
+            itemMap['id'] = value['id'];
+          });
+        }
+        itemReference.child(itemMap['id']).set(itemMap);
+        updateItemList();
+      }
+
+    });
+  }
+
+}
+
