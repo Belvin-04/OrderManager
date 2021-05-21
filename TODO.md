@@ -5,8 +5,8 @@
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
-- [ ] Add empty field for type  
-- [ ] Empty fields should not be displayed in orders list  
+- [ ] Solve the hero dart warning  
+
 
 ### Done ✓
 
@@ -19,4 +19,7 @@
 - [x] Cancel Order/Restore Order  
 - [x] Complete Order  
 - [x] Repeat single Order  
+- [x] Solve the firebase .onIndex thing  
+- [x] Add empty field for type  
+- [x] Empty fields should not be displayed in orders list  
 

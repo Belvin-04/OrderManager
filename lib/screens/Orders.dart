@@ -362,8 +362,8 @@ class _OrdersState extends State<Orders> {
                               Expanded(child: Text("Item Type: ")),
                               Expanded(
                                 child: DropdownButton(
-                                  items:
-                                      ["Oil", "Butter", "Cheese"].map((value) {
+                                  items: ["Oil", "Butter", "Cheese", "None"]
+                                      .map((value) {
                                     return DropdownMenuItem(
                                         value: value, child: Text(value));
                                   }).toList(),

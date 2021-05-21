@@ -88,8 +88,14 @@ class Order {
   }
 
   String getData() {
-    String orderDetails =
-        "Item Name: ${this.itemName}\nType: ${this.type}\nQuantity: ${this.quantity}\nNote: ${this.note}";
+    String orderDetails = "Item Name: ${this.itemName}\n";
+    if (this.type != "None") {
+      orderDetails += "Type: ${this.type}\n";
+    }
+    orderDetails += "Quantity: ${this.quantity}\n";
+    if (this.note != "") {
+      orderDetails += "Note: ${this.note}";
+    }
     return orderDetails;
   }
 }
