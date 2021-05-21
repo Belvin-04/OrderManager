@@ -25,6 +25,7 @@ class _TablesState extends State<Tables> {
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
+            heroTag: "Delete Button",
             child: Icon(
               Icons.delete,
               color: Colors.white,
@@ -40,6 +41,7 @@ class _TablesState extends State<Tables> {
             margin: EdgeInsets.only(right: 10.0),
           ),
           FloatingActionButton(
+            heroTag: "Add Button",
             child: Icon(
               Icons.add,
               color: Colors.white,

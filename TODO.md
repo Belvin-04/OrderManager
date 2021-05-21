@@ -5,7 +5,8 @@
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
-- [ ] Solve the hero dart warning  
+- [ ] Pressing back button is not closing the navigation drawer  
+- [ ] Add Proper tooltips wherever possible  
 
 
 ### Done ✓
@@ -22,4 +23,5 @@
 - [x] Solve the firebase .onIndex thing  
 - [x] Add empty field for type  
 - [x] Empty fields should not be displayed in orders list  
+- [x] Solve the hero dart warning  
 
