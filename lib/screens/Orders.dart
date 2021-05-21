@@ -101,27 +101,42 @@ class _OrdersState extends State<Orders> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.check,
-                          color: Colors.green,
+                        GestureDetector(
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.green,
+                          ),
+                          onTap: () {
+                            completeOrder(orderList[index]);
+                          },
                         ),
                         Container(
                           height: 0,
                           width: 0,
                           margin: EdgeInsets.only(right: 10.0),
                         ),
-                        Icon(
-                          Icons.edit,
-                          color: Colors.blue,
+                        GestureDetector(
+                          child: Icon(
+                            Icons.edit,
+                            color: Colors.blue,
+                          ),
+                          onTap: () {
+                            showSaveOrderDialog(orderList[index]);
+                          },
                         ),
                         Container(
                           height: 0,
                           width: 0,
                           margin: EdgeInsets.only(right: 10.0),
                         ),
-                        Icon(
-                          Icons.cancel,
-                          color: Colors.red,
+                        GestureDetector(
+                          child: Icon(
+                            Icons.cancel,
+                            color: Colors.red,
+                          ),
+                          onTap: () {
+                            cancelOrder(orderList[index]);
+                          },
                         ),
                       ],
                     ),
@@ -156,6 +171,20 @@ class _OrdersState extends State<Orders> {
                 return Card(
                   child: ListTile(
                     title: Text(orderList[index].getData()),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          child: Icon(
+                            Icons.replay_rounded,
+                            color: Colors.green,
+                          ),
+                          onTap: () {
+                            repeatOrder(orderList[index]);
+                          },
+                        )
+                      ],
+                    ),
                   ),
                 );
               },
@@ -190,9 +219,14 @@ class _OrdersState extends State<Orders> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.restore,
-                          color: Colors.green,
+                        GestureDetector(
+                          child: Icon(
+                            Icons.restore,
+                            color: Colors.green,
+                          ),
+                          onTap: () {
+                            restoreOrder(orderList[index]);
+                          },
                         )
                       ],
                     ),
@@ -206,30 +240,6 @@ class _OrdersState extends State<Orders> {
   }
 
   void saveOrder(Order order) {
-    /*orderReference.orderByChild("itemName").equalTo(order.getItemName()).once().then((value) {
-      String id = order.getId();
-      if(id.isEmpty){
-        id = orderReference.push().key;
-      }
-      else{
-        id = order.getId();
-      }
-      Map orderMap = order.toMap();
-      orderMap['id'] = id;
-
-      if(value != null){
-        Map values = value.value;
-        if(values != null){
-          values.forEach((key, value) {
-            orderMap['id'] = value['id'];
-            orderMap['quantity'] = orderMap['quantity']+value['quantity'];
-          });
-        }
-        orderReference.child(orderMap['id']).set(orderMap);
-        updateList();
-      }
-
-    });*/
     String id = order.getId();
     if (id.isEmpty) {
       id = orderReference.push().key;
@@ -242,8 +252,38 @@ class _OrdersState extends State<Orders> {
     updateList();
   }
 
+  void completeOrder(Order order) {
+    order.setStatus("completed");
+    saveOrder(order);
+    updateList();
+    showSnackBar("Order Completed Successfully...", context);
+  }
+
+  void cancelOrder(Order order) {
+    order.setStatus("canceled");
+    saveOrder(order);
+    updateList();
+    showSnackBar("Order Canceled Successfully...", context);
+  }
+
+  void restoreOrder(Order order) {
+    order.setStatus("pending");
+    saveOrder(order);
+    updateList();
+    showSnackBar("Order Restored Successfully...", context);
+  }
+
+  void repeatOrder(Order order) {
+    order.setId("");
+    order.setStatus("pending");
+    saveOrder(order);
+    updateList();
+    showSnackBar("Order Repeated Successfully...", context);
+  }
+
   showSaveOrderDialog(Order order) {
     String itemNameDropDownValue1;
+    String itemTypeDropDownValue1;
     List itemNameDropDownList1 = List();
     TextEditingController itemQuantityController1 = TextEditingController();
     TextEditingController itemNoteController1 = TextEditingController();
@@ -259,11 +299,19 @@ class _OrdersState extends State<Orders> {
             itemNameDropDownList1.add(value['name']);
           });
           itemNameDropDownValue1 = itemNameDropDownList1[0];
+          if (order.itemName != "") {
+            itemNameDropDownValue1 = order.itemName;
+          }
+          if (order.type != "") {
+            itemTypeDropDownValue1 = order.type;
+          } else {
+            itemTypeDropDownValue1 = "Oil";
+          }
           showDialog(
               context: context,
               builder: (context) {
                 String itemNameDropDownValue = itemNameDropDownValue1;
-                String itemTypeDropDownValue = "Oil";
+                String itemTypeDropDownValue = itemTypeDropDownValue1;
                 TextEditingController itemQuantityController =
                     itemQuantityController1;
                 TextEditingController itemNoteController = itemNoteController1;
