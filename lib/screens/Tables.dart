@@ -13,8 +13,8 @@ class Tables extends StatefulWidget {
 }
 
 class _TablesState extends State<Tables> {
-
-  DatabaseReference tableReference = FirebaseDatabase.instance.reference().child("tables");
+  DatabaseReference tableReference =
+      FirebaseDatabase.instance.reference().child("tables");
   List<Table_1> tableList = [];
   List tempList = [];
 
@@ -24,58 +24,73 @@ class _TablesState extends State<Tables> {
       floatingActionButton: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-            FloatingActionButton(child: Icon(Icons.delete,color: Colors.white,),onPressed: (){
+          FloatingActionButton(
+            child: Icon(
+              Icons.delete,
+              color: Colors.white,
+            ),
+            onPressed: () {
               removeTable();
             },
-              backgroundColor: Colors.red,
+            backgroundColor: Colors.red,
+          ),
+          Container(
+            width: 0,
+            height: 0,
+            margin: EdgeInsets.only(right: 10.0),
+          ),
+          FloatingActionButton(
+            child: Icon(
+              Icons.add,
+              color: Colors.white,
             ),
-            Container(width: 0,height: 0,margin: EdgeInsets.only(right: 10.0),),
-            FloatingActionButton(child: Icon(Icons.add,color: Colors.white,),onPressed: (){
+            onPressed: () {
               addTable();
             },
-              backgroundColor: Colors.red,
-            ),
+            backgroundColor: Colors.red,
+          ),
         ],
       ),
       appBar: AppBar(
         title: Text("Manage Tables"),
       ),
       body: WillPopScope(
-        onWillPop: (){
-          Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+        onWillPop: () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => HomePage()));
         },
         child: FutureBuilder(
           future: tableReference.once(),
-          builder: (context, AsyncSnapshot<DataSnapshot> snapshot){
-            if(snapshot.hasData){
+          builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
+            if (snapshot.hasData) {
               tableList.clear();
               tempList.clear();
               Map values = snapshot.data.value;
-              if(values != null){
+              if (values != null) {
                 values.forEach((key, value) {
                   tempList.add(Table_1.toTable(value));
                 });
 
-                for(int i=0 ;i<tempList.length;i++){
-                  tableList.add(Table_1(0,""));
+                for (int i = 0; i < tempList.length; i++) {
+                  tableList.add(Table_1(0, ""));
                 }
 
                 values.forEach((key, value) {
-                  tableList[value['tableNo']-1] = Table_1.toTable(value);
+                  tableList[value['tableNo'] - 1] = Table_1.toTable(value);
                   //tableList.add(Table_1.toTable(value));
                 });
               }
 
               return ListView.builder(
                   itemCount: tableList.length,
-                  itemBuilder: (BuildContext context,int index){
-                return Card(
-                  child: ListTile(
-                    title: Text("Table No. : ${tableList[index].geTableNo()}"),
-                  ),
-                );
-              });
-
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      child: ListTile(
+                        title:
+                            Text("Table No. : ${tableList[index].geTableNo()}"),
+                      ),
+                    );
+                  });
             }
             return Center(child: CircularProgressIndicator());
           },
@@ -84,56 +99,105 @@ class _TablesState extends State<Tables> {
     );
   }
 
-  void addTable(){
+  void addTable() {
     int tableNo = 0;
     Query tableNoQuery = tableReference.orderByChild('tableNo').limitToLast(1);
     tableNoQuery.once().then((value) {
       Map values = value.value;
-      if(values == null){
+      if (values == null) {
         tableNo++;
-      }
-      else{
+      } else {
         values.forEach((key, value) {
           tableNo = value['tableNo'];
           tableNo++;
         });
       }
       String id = tableReference.push().key;
-      Map tableMap = Table_1(tableNo,id).toMap();
+      Map tableMap = Table_1(tableNo, id).toMap();
       tableReference.child(id).set(tableMap);
       updateListView();
       showSnackBar("Table added successfully...", context);
     });
   }
 
-  void removeTable(){
+  void removeTable() {
     String tableId;
+    int tableNo;
     Query tableNoQuery = tableReference.orderByChild('tableNo').limitToLast(1);
     tableNoQuery.once().then((value) {
       Map values = value.value;
-      if(values == null){
+      if (values == null) {
         showSnackBar("No Tables found...", context);
-      }
-      else{
-
+      } else {
         values.forEach((key, value) {
           tableId = key;
+          tableNo = value['tableNo'];
         });
-        DatabaseReference tableReference = FirebaseDatabase.instance.reference().child("tables").child(tableId);
-        tableReference.remove();
-        updateListView();
-        showSnackBar("Table removed successfully...", context);
+
+        isOrderExists(tableNo).then((value) {
+          if (!value) {
+            DatabaseReference tableReference = FirebaseDatabase.instance
+                .reference()
+                .child("tables")
+                .child(tableId);
+            tableReference.remove();
+            updateListView();
+            showSnackBar("Table removed successfully...", context);
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    content: Text(
+                        "Table can't be deleted if there is a pending order"),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("OK"))
+                    ],
+                  );
+                });
+          }
+        });
       }
     });
   }
 
-  updateListView(){
-    setState(() {
-
+  Future<bool> isOrderExists(int tableNo) async {
+    DatabaseReference orderReference =
+        FirebaseDatabase.instance.reference().child("orders");
+    List temp = [];
+    bool isThereOrder = await orderReference
+        .orderByChild("status")
+        .equalTo("pending")
+        .once()
+        .then((value) {
+      if (value != null) {
+        Map values = value.value;
+        if (values != null) {
+          values.forEach((key, value) {
+            if (value['tableNo'] == tableNo) {
+              temp.add(1);
+            }
+          });
+        }
+        if (temp.length != 0) {
+          return true;
+        }
+        return false;
+      }
     });
+
+    return isThereOrder;
   }
 
-  void showSnackBar(String message,BuildContext context){
+  updateListView() {
+    setState(() {});
+  }
+
+  void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
     //Scaffold.of(context).showSnackBar(snackBar);
     ScaffoldMessenger.of(context).showSnackBar(snackBar);

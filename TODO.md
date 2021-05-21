@@ -1,13 +1,12 @@
 ### Todo
 
-- [ ] Fix the issues  
+- [ ] Fix issue 1  
 - [ ] Edit Order  
-- [ ] Cancel Order  
+- [ ] Cancel Order/Restore Order  
 - [ ] Complete Order  
 - [ ] Bill Page  
-
-### In Progress
-
+- [ ] Cancel entire table and complete order  
+- [ ] Change table order if customer changes table  
 
 ### Done ✓
 
@@ -15,4 +14,5 @@
 - [x] Add/Delete Table  
 - [x] Take Order  
 - [x] Pending and Completed Orders are being displayed in their respective section  
+- [x] Fix issue 2  
 

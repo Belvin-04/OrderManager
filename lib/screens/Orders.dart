@@ -28,7 +28,7 @@ class _OrdersState extends State<Orders> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton(
@@ -46,7 +46,10 @@ class _OrdersState extends State<Orders> {
               ),
               Tab(
                 child: Text("Completed Orders"),
-              )
+              ),
+              Tab(
+                child: Text("Canceled Orders"),
+              ),
             ],
           ),
           title: Text("Table ${table.geTableNo()}: Orders"),
@@ -59,6 +62,7 @@ class _OrdersState extends State<Orders> {
             children: [
               pendingOrdersList(),
               completedOrdersList(),
+              canceledOrdersList(),
             ],
           ),
         ),
@@ -152,6 +156,46 @@ class _OrdersState extends State<Orders> {
                 return Card(
                   child: ListTile(
                     title: Text(orderList[index].getData()),
+                  ),
+                );
+              },
+            );
+          }
+          return Center(child: CircularProgressIndicator());
+        });
+  }
+
+  Widget canceledOrdersList() {
+    List orderList = [];
+    return FutureBuilder(
+        future:
+            orderReference.orderByChild("status").equalTo("canceled").once(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            orderList.clear();
+            Map values = snapshot.data.value;
+            if (values != null) {
+              values.forEach((key, value) {
+                if (value['tableNo'] == table.geTableNo()) {
+                  orderList.add(Order.toOrder(value));
+                }
+              });
+            }
+            return ListView.builder(
+              itemCount: orderList.length,
+              itemBuilder: (context, index) {
+                return Card(
+                  child: ListTile(
+                    title: Text(orderList[index].getData()),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.restore,
+                          color: Colors.green,
+                        )
+                      ],
+                    ),
                   ),
                 );
               },
