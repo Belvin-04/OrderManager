@@ -16,7 +16,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   bool _initialized = false;
   bool _error = false;
 
@@ -28,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() {
         _initialized = true;
       });
-    } catch(e) {
+    } catch (e) {
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
@@ -45,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     // Show error message if initialization failed
-    if(_error) {
+    if (_error) {
       //return SomethingWentWrong();
     }
 
@@ -58,7 +57,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 }
 
-
 class SplashScreen1 extends StatelessWidget {
   const SplashScreen1({Key key}) : super(key: key);
 
@@ -70,23 +68,20 @@ class SplashScreen1 extends StatelessWidget {
         primarySwatch: Colors.red,
         primaryColor: Colors.black,
         backgroundColor: Colors.black,
-
         indicatorColor: Color(0xff0E1D36),
         buttonColor: Color(0xff3B3B3B),
-
         hintColor: Color(0xffffffff),
-
         highlightColor: Color(0xff372901),
         hoverColor: Color(0xff3A3A3B),
-
         focusColor: Color(0xffffffff),
         disabledColor: Colors.grey,
         textSelectionColor: Colors.white,
         cardColor: Color(0xFF151515),
         canvasColor: Colors.black,
         brightness: Brightness.dark,
-        buttonTheme: Theme.of(context).buttonTheme.copyWith(
-            colorScheme: ColorScheme.dark()),
+        buttonTheme: Theme.of(context)
+            .buttonTheme
+            .copyWith(colorScheme: ColorScheme.dark()),
         appBarTheme: AppBarTheme(
           elevation: 0.0,
         ),
@@ -98,5 +93,3 @@ class SplashScreen1 extends StatelessWidget {
     );
   }
 }
-
-
