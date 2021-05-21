@@ -5,6 +5,8 @@
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
+- [ ] Add empty field for type  
+- [ ] Empty fields should not be displayed in orders list  
 
 ### Done ✓
 
