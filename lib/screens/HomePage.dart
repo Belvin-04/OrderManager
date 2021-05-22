@@ -64,8 +64,11 @@ class HomePage extends StatelessWidget {
                         title:
                             Text("Table No. : ${tableList[index].geTableNo()}"),
                         trailing: GestureDetector(
-                          child: Icon(Icons.event_note_outlined,
-                              color: Colors.green),
+                          child: Tooltip(
+                            message: "Take Order",
+                            child: Icon(Icons.event_note_outlined,
+                                color: Colors.green),
+                          ),
                           onTap: () {
                             Navigator.push(
                                 context,

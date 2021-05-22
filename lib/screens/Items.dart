@@ -19,7 +19,6 @@ class _ItemsState extends State<Items> {
   TextEditingController itemNameController = TextEditingController();
   TextEditingController itemPriceController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   FirebaseDatabase database;
   @override
   void initState() {
@@ -36,11 +35,11 @@ class _ItemsState extends State<Items> {
     List<Item> itemList = [];
 
     return Scaffold(
-      key: _scaffoldKey,
       appBar: AppBar(
         title: Text("Items"),
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: "Add Item",
         child: Icon(Icons.add),
         onPressed: () {
           showDialog(
@@ -79,9 +78,12 @@ class _ItemsState extends State<Items> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
-                                child: Icon(
-                                  Icons.edit,
-                                  color: Colors.blue,
+                                child: Tooltip(
+                                  message: "Edit Item",
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: Colors.blue,
+                                  ),
                                 ),
                                 onTap: () {
                                   showDialog(
@@ -95,9 +97,12 @@ class _ItemsState extends State<Items> {
                                 margin: EdgeInsets.only(right: 10.0),
                               ),
                               GestureDetector(
-                                child: Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+                                child: Tooltip(
+                                  message: "Delete Item",
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
                                 ),
                                 onTap: () {
                                   showDialog(
@@ -147,9 +152,7 @@ class _ItemsState extends State<Items> {
 
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
-    if (_scaffoldKey.currentState != null) {
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   AlertDialog showAddItemDialog(Item item, BuildContext context) {

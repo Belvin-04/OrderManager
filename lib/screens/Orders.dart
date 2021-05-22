@@ -23,7 +23,6 @@ class _OrdersState extends State<Orders> {
   FirebaseDatabase database;
   DatabaseReference orderReference;
   DatabaseReference itemReference;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -42,8 +41,8 @@ class _OrdersState extends State<Orders> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        key: _scaffoldKey,
         floatingActionButton: FloatingActionButton(
+          tooltip: "Take New Order",
           child: Icon(Icons.add),
           onPressed: () {
             showSaveOrderDialog(
@@ -115,9 +114,12 @@ class _OrdersState extends State<Orders> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         GestureDetector(
-                          child: Icon(
-                            Icons.check,
-                            color: Colors.green,
+                          child: Tooltip(
+                            message: "Complete Order",
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.green,
+                            ),
                           ),
                           onTap: () {
                             completeOrder(orderList[index]);
@@ -129,9 +131,12 @@ class _OrdersState extends State<Orders> {
                           margin: EdgeInsets.only(right: 10.0),
                         ),
                         GestureDetector(
-                          child: Icon(
-                            Icons.edit,
-                            color: Colors.blue,
+                          child: Tooltip(
+                            message: "Edit Order",
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.blue,
+                            ),
                           ),
                           onTap: () {
                             showSaveOrderDialog(orderList[index]);
@@ -143,9 +148,12 @@ class _OrdersState extends State<Orders> {
                           margin: EdgeInsets.only(right: 10.0),
                         ),
                         GestureDetector(
-                          child: Icon(
-                            Icons.cancel,
-                            color: Colors.red,
+                          child: Tooltip(
+                            message: "Cancel Order",
+                            child: Icon(
+                              Icons.cancel,
+                              color: Colors.red,
+                            ),
                           ),
                           onTap: () {
                             cancelOrder(orderList[index]);
@@ -188,9 +196,12 @@ class _OrdersState extends State<Orders> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         GestureDetector(
-                          child: Icon(
-                            Icons.replay_rounded,
-                            color: Colors.green,
+                          child: Tooltip(
+                            message: "Repeat Order",
+                            child: Icon(
+                              Icons.replay_rounded,
+                              color: Colors.green,
+                            ),
                           ),
                           onTap: () {
                             repeatOrder(orderList[index]);
@@ -233,9 +244,12 @@ class _OrdersState extends State<Orders> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         GestureDetector(
-                          child: Icon(
-                            Icons.restore,
-                            color: Colors.green,
+                          child: Tooltip(
+                            message: "Restore Order",
+                            child: Icon(
+                              Icons.restore,
+                              color: Colors.green,
+                            ),
                           ),
                           onTap: () {
                             restoreOrder(orderList[index]);
@@ -463,8 +477,6 @@ class _OrdersState extends State<Orders> {
 
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
-    if (_scaffoldKey.currentState != null) {
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

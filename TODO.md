@@ -4,7 +4,6 @@
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
-- [ ] Add Proper tooltips wherever possible  
 - [ ] Keep checking the offline support  
 - [ ] Toggle between light/dark/system theme  
 
@@ -28,4 +27,5 @@
 - [x] Pressing back button is not closing the navigation drawer(Fixed)  
 - [x] Added support for offline  
 - [x] Solve the problems displayed during runtime  
+- [x] Add Proper tooltips wherever possible  
 

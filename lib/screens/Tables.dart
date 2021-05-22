@@ -38,6 +38,7 @@ class _TablesState extends State<Tables> {
         mainAxisSize: MainAxisSize.min,
         children: [
           FloatingActionButton(
+            tooltip: "Delete Table",
             heroTag: "Delete Button",
             child: Icon(
               Icons.delete,
@@ -54,6 +55,7 @@ class _TablesState extends State<Tables> {
             margin: EdgeInsets.only(right: 10.0),
           ),
           FloatingActionButton(
+            tooltip: "Add Table",
             heroTag: "Add Button",
             child: Icon(
               Icons.add,
