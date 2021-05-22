@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,21 +8,34 @@ import 'package:order_manager/modal/Table.dart';
 
 class Orders extends StatefulWidget {
   final Table_1 table;
-  Orders(this.table);
+  final FirebaseApp app;
+  Orders(this.table, this.app);
 
   @override
-  _OrdersState createState() => _OrdersState(table);
+  _OrdersState createState() => _OrdersState(table, app);
 }
 
 class _OrdersState extends State<Orders> {
   final _formStateKey = GlobalKey<FormState>();
   Table_1 table;
-  _OrdersState(this.table);
-  DatabaseReference orderReference =
-      FirebaseDatabase.instance.reference().child("orders");
-  DatabaseReference itemReference =
-      FirebaseDatabase.instance.reference().child("items");
+  FirebaseApp app;
+  _OrdersState(this.table, this.app);
+  FirebaseDatabase database;
+  DatabaseReference orderReference;
+  DatabaseReference itemReference;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    database = FirebaseDatabase(app: app);
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+    itemReference = database.reference().child("items");
+    orderReference = database.reference().child("orders");
+    itemReference.keepSynced(true);
+    orderReference.keepSynced(true);
+  }
 
   @override
   Widget build(BuildContext context) {

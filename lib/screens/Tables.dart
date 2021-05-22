@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:order_manager/modal/Table.dart';
@@ -5,17 +6,30 @@ import 'package:order_manager/modal/Table.dart';
 import 'HomePage.dart';
 
 class Tables extends StatefulWidget {
-  const Tables({Key key}) : super(key: key);
+  FirebaseApp app;
+  Tables(this.app);
 
   @override
-  _TablesState createState() => _TablesState();
+  _TablesState createState() => _TablesState(app);
 }
 
 class _TablesState extends State<Tables> {
-  DatabaseReference tableReference =
-      FirebaseDatabase.instance.reference().child("tables");
+  FirebaseApp app;
+  _TablesState(this.app);
+  FirebaseDatabase database;
+  DatabaseReference tableReference;
   List<Table_1> tableList = [];
   List tempList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    database = FirebaseDatabase(app: app);
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+    tableReference = database.reference().child("tables");
+    tableReference.keepSynced(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +70,8 @@ class _TablesState extends State<Tables> {
         leading: GestureDetector(
           child: Icon(Icons.arrow_back),
           onTap: () {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => HomePage()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => HomePage(app)));
           },
         ),
         title: Text("Manage Tables"),
@@ -65,7 +79,7 @@ class _TablesState extends State<Tables> {
       body: WillPopScope(
         onWillPop: () {
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
+              context, MaterialPageRoute(builder: (context) => HomePage(app)));
         },
         child: FutureBuilder(
           future: tableReference.once(),
@@ -144,11 +158,8 @@ class _TablesState extends State<Tables> {
 
         isOrderExists(tableNo).then((value) {
           if (!value) {
-            DatabaseReference tableReference = FirebaseDatabase.instance
-                .reference()
-                .child("tables")
-                .child(tableId);
-            tableReference.remove();
+            DatabaseReference tableReference1 = tableReference.child(tableId);
+            tableReference1.remove();
             updateListView();
             showSnackBar("Table removed successfully...", context);
           } else {
@@ -174,8 +185,7 @@ class _TablesState extends State<Tables> {
   }
 
   Future<bool> isOrderExists(int tableNo) async {
-    DatabaseReference orderReference =
-        FirebaseDatabase.instance.reference().child("orders");
+    DatabaseReference orderReference = database.reference().child("orders");
     List temp = [];
     bool isThereOrder = await orderReference
         .orderByChild("status")

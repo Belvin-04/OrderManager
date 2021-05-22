@@ -5,6 +5,8 @@
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
 - [ ] Add Proper tooltips wherever possible  
+- [ ] Solve the problems displayed during runtime  
+- [ ] Keep checking the offline support  
 
 
 ### Done ✓
@@ -24,4 +26,5 @@
 - [x] Solve the hero dart warning  
 - [x] Fix issue 1  
 - [x] Pressing back button is not closing the navigation drawer(Fixed)  
+- [x] Added support for offline  
 

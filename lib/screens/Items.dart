@@ -1,27 +1,39 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 import 'package:order_manager/modal/Item.dart';
 
 class Items extends StatefulWidget {
-  const Items({Key key}) : super(key: key);
+  FirebaseApp app;
+  Items(this.app);
 
   @override
-  _ItemsState createState() => _ItemsState();
+  _ItemsState createState() => _ItemsState(app);
 }
 
 class _ItemsState extends State<Items> {
+  FirebaseApp app;
+  _ItemsState(this.app);
   DatabaseReference itemReference;
   TextEditingController itemNameController = TextEditingController();
   TextEditingController itemPriceController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  FirebaseDatabase database;
+  @override
+  void initState() {
+    super.initState();
+    database = FirebaseDatabase(app: app);
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+    itemReference = database.reference().child("items");
+    itemReference.keepSynced(true);
+  }
 
   @override
   Widget build(BuildContext context) {
     List<Item> itemList = [];
-
-    itemReference = FirebaseDatabase.instance.reference().child("items");
 
     return Scaffold(
       key: _scaffoldKey,
@@ -121,9 +133,9 @@ class _ItemsState extends State<Items> {
 
   void _delete(BuildContext context, Item item) {
     String id = item.getId();
-    DatabaseReference itemReference =
-        FirebaseDatabase.instance.reference().child("items").child(id);
-    itemReference.remove();
+
+    DatabaseReference itemReference1 = itemReference.child(id);
+    itemReference1.remove();
     updateItemList();
     showSnackBar("Item Deleted Successfully", context);
   }

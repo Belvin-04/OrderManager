@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:order_manager/screens/Tables.dart';
 import 'package:order_manager/screens/Items.dart';
 
 class NavigationDrawer extends StatelessWidget {
-  const NavigationDrawer({Key key}) : super(key: key);
+  FirebaseApp app;
+  NavigationDrawer(this.app);
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +19,8 @@ class NavigationDrawer extends StatelessWidget {
               title: Text("Items"),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => Items()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Items(app)));
                 //Navigator.push(context, MaterialPageRoute(builder:(context) => ViewAllItems() ));
               },
             ),
@@ -28,8 +30,8 @@ class NavigationDrawer extends StatelessWidget {
             ListTile(
               tileColor: Colors.white24,
               onTap: () {
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (context) => Tables()));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => Tables(app)));
               },
               title: Text("Tables"),
             ),

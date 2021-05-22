@@ -18,14 +18,15 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool _initialized = false;
   bool _error = false;
-
+  FirebaseApp app;
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
     try {
       // Wait for Firebase to initialize and set `_initialized` state to true
-      await Firebase.initializeApp();
+      FirebaseApp app1 = await Firebase.initializeApp();
       setState(() {
         _initialized = true;
+        app = app1;
       });
     } catch (e) {
       // Set `_error` state to true if Firebase initialization fails
@@ -50,15 +51,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Show a loader until FlutterFire is initialized
     if (!_initialized) {
-      //return Loading();
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
-    return SplashScreen1();
+    return SplashScreen1(app);
   }
 }
 
 class SplashScreen1 extends StatelessWidget {
-  const SplashScreen1({Key key}) : super(key: key);
+  FirebaseApp app;
+  SplashScreen1(this.app);
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +92,7 @@ class SplashScreen1 extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: Material(
-        child: HomePage(),
+        child: HomePage(this.app),
       ),
     );
   }

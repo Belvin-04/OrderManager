@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:order_manager/modal/Table.dart';
@@ -5,17 +6,24 @@ import 'package:order_manager/screens/Orders.dart';
 import 'package:order_manager/utils/NavigationDrawer.dart';
 
 class HomePage extends StatelessWidget {
-  final DatabaseReference tableReference =
-      FirebaseDatabase.instance.reference().child("tables");
+  final FirebaseApp app;
   final List<Table_1> tableList = [];
   final List tempList = [];
   final _scaffoldStateKey = GlobalKey<ScaffoldState>();
-
+  HomePage(this.app);
   @override
   Widget build(BuildContext context) {
+    FirebaseDatabase database;
+    database = FirebaseDatabase(app: app);
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+    final DatabaseReference tableReference =
+        database.reference().child("tables");
+    tableReference.keepSynced(true);
+
     return Scaffold(
       key: _scaffoldStateKey,
-      drawer: NavigationDrawer(),
+      drawer: NavigationDrawer(app),
       appBar: AppBar(
         title: Text("Home"),
       ),
@@ -62,7 +70,7 @@ class HomePage extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        Orders(tableList[index])));
+                                        Orders(tableList[index], app)));
                           },
                         ),
                       ),
