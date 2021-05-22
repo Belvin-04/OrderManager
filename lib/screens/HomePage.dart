@@ -9,16 +9,22 @@ class HomePage extends StatelessWidget {
       FirebaseDatabase.instance.reference().child("tables");
   final List<Table_1> tableList = [];
   final List tempList = [];
+  final _scaffoldStateKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldStateKey,
       drawer: NavigationDrawer(),
       appBar: AppBar(
         title: Text("Home"),
       ),
       body: WillPopScope(
-        onWillPop: () {},
+        onWillPop: () {
+          if (_scaffoldStateKey.currentState.isDrawerOpen) {
+            Navigator.pop(context);
+          }
+        },
         child: FutureBuilder(
           future: tableReference.once(),
           builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {

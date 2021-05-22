@@ -4,7 +4,6 @@
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
-- [ ] Pressing back button is not closing the navigation drawer  
 - [ ] Add Proper tooltips wherever possible  
 
 
@@ -24,4 +23,5 @@
 - [x] Empty fields should not be displayed in orders list  
 - [x] Solve the hero dart warning  
 - [x] Fix issue 1  
+- [x] Pressing back button is not closing the navigation drawer(Fixed)  
 
