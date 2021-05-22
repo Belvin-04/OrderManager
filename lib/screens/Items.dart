@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:order_manager/modal/Item.dart';
 
 class Items extends StatefulWidget {
-  FirebaseApp app;
+  final FirebaseApp app;
   Items(this.app);
 
   @override
@@ -52,6 +52,7 @@ class _ItemsState extends State<Items> {
       body: WillPopScope(
         onWillPop: () {
           Navigator.pop(context);
+          return Future.value(true);
         },
         child: FutureBuilder(
             future: itemReference.once(),
@@ -146,13 +147,17 @@ class _ItemsState extends State<Items> {
 
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
-    _scaffoldKey.currentState.showSnackBar(snackBar);
+    if (_scaffoldKey.currentState != null) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   AlertDialog showAddItemDialog(Item item, BuildContext context) {
     itemNameController.text = item.getName();
     if (item.getPrice() != 0) {
       itemPriceController.text = item.getPrice().toString();
+    } else {
+      itemPriceController.text = "";
     }
     return AlertDialog(
       title: Text("Item Detail"),

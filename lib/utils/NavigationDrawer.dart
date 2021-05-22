@@ -4,7 +4,7 @@ import 'package:order_manager/screens/Tables.dart';
 import 'package:order_manager/screens/Items.dart';
 
 class NavigationDrawer extends StatelessWidget {
-  FirebaseApp app;
+  final FirebaseApp app;
   NavigationDrawer(this.app);
 
   @override

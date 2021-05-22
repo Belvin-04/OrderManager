@@ -5,8 +5,8 @@
 - [ ] Cancel entire table and complete order  
 - [ ] Change table order if customer changes table  
 - [ ] Add Proper tooltips wherever possible  
-- [ ] Solve the problems displayed during runtime  
 - [ ] Keep checking the offline support  
+- [ ] Toggle between light/dark/system theme  
 
 
 ### Done ✓
@@ -27,4 +27,5 @@
 - [x] Fix issue 1  
 - [x] Pressing back button is not closing the navigation drawer(Fixed)  
 - [x] Added support for offline  
+- [x] Solve the problems displayed during runtime  
 

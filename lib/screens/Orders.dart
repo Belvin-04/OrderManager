@@ -7,7 +7,7 @@ import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 
 class Orders extends StatefulWidget {
-  final Table_1 table;
+  final Table1 table;
   final FirebaseApp app;
   Orders(this.table, this.app);
 
@@ -17,7 +17,7 @@ class Orders extends StatefulWidget {
 
 class _OrdersState extends State<Orders> {
   final _formStateKey = GlobalKey<FormState>();
-  Table_1 table;
+  Table1 table;
   FirebaseApp app;
   _OrdersState(this.table, this.app);
   FirebaseDatabase database;
@@ -69,6 +69,7 @@ class _OrdersState extends State<Orders> {
         body: WillPopScope(
           onWillPop: () {
             Navigator.pop(context);
+            return Future.value(true);
           },
           child: TabBarView(
             children: [
@@ -296,7 +297,7 @@ class _OrdersState extends State<Orders> {
   showSaveOrderDialog(Order order) {
     String itemNameDropDownValue1;
     String itemTypeDropDownValue1;
-    List itemNameDropDownList1 = List();
+    List itemNameDropDownList1 = [];
     TextEditingController itemQuantityController1 = TextEditingController();
     TextEditingController itemNoteController1 = TextEditingController();
     if (order.getQuantity() != 0) {
@@ -445,11 +446,6 @@ class _OrdersState extends State<Orders> {
                           onPressed: () {
                             if (_formStateKey.currentState.validate()) {
                               saveOrder(order);
-                              setState() {
-                                itemQuantityController.text = "";
-                                itemNoteController.text = "";
-                              }
-
                               Navigator.pop(context);
                               showSnackBar(
                                   "Order Saved Successfully...!", context);
@@ -467,6 +463,8 @@ class _OrdersState extends State<Orders> {
 
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
-    _scaffoldKey.currentState.showSnackBar(snackBar);
+    if (_scaffoldKey.currentState != null) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 }

@@ -7,7 +7,7 @@ import 'package:order_manager/utils/NavigationDrawer.dart';
 
 class HomePage extends StatelessWidget {
   final FirebaseApp app;
-  final List<Table_1> tableList = [];
+  final List<Table1> tableList = [];
   final List tempList = [];
   final _scaffoldStateKey = GlobalKey<ScaffoldState>();
   HomePage(this.app);
@@ -32,6 +32,7 @@ class HomePage extends StatelessWidget {
           if (_scaffoldStateKey.currentState.isDrawerOpen) {
             Navigator.pop(context);
           }
+          return Future.value(false);
         },
         child: FutureBuilder(
           future: tableReference.once(),
@@ -42,15 +43,15 @@ class HomePage extends StatelessWidget {
               Map values = snapshot.data.value;
               if (values != null) {
                 values.forEach((key, value) {
-                  tempList.add(Table_1.toTable(value));
+                  tempList.add(Table1.toTable(value));
                 });
 
                 for (int i = 0; i < tempList.length; i++) {
-                  tableList.add(Table_1(0, ""));
+                  tableList.add(Table1(0, ""));
                 }
 
                 values.forEach((key, value) {
-                  tableList[value['tableNo'] - 1] = Table_1.toTable(value);
+                  tableList[value['tableNo'] - 1] = Table1.toTable(value);
                   //tableList.add(Table_1.toTable(value));
                 });
               }

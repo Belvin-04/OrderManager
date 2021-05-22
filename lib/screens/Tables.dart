@@ -6,7 +6,7 @@ import 'package:order_manager/modal/Table.dart';
 import 'HomePage.dart';
 
 class Tables extends StatefulWidget {
-  FirebaseApp app;
+  final FirebaseApp app;
   Tables(this.app);
 
   @override
@@ -18,7 +18,7 @@ class _TablesState extends State<Tables> {
   _TablesState(this.app);
   FirebaseDatabase database;
   DatabaseReference tableReference;
-  List<Table_1> tableList = [];
+  List<Table1> tableList = [];
   List tempList = [];
 
   @override
@@ -78,7 +78,7 @@ class _TablesState extends State<Tables> {
       ),
       body: WillPopScope(
         onWillPop: () {
-          Navigator.pushReplacement(
+          return Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => HomePage(app)));
         },
         child: FutureBuilder(
@@ -90,15 +90,15 @@ class _TablesState extends State<Tables> {
               Map values = snapshot.data.value;
               if (values != null) {
                 values.forEach((key, value) {
-                  tempList.add(Table_1.toTable(value));
+                  tempList.add(Table1.toTable(value));
                 });
 
                 for (int i = 0; i < tempList.length; i++) {
-                  tableList.add(Table_1(0, ""));
+                  tableList.add(Table1(0, ""));
                 }
 
                 values.forEach((key, value) {
-                  tableList[value['tableNo'] - 1] = Table_1.toTable(value);
+                  tableList[value['tableNo'] - 1] = Table1.toTable(value);
                   //tableList.add(Table_1.toTable(value));
                 });
               }
@@ -135,7 +135,7 @@ class _TablesState extends State<Tables> {
         });
       }
       String id = tableReference.push().key;
-      Map tableMap = Table_1(tableNo, id).toMap();
+      Map tableMap = Table1(tableNo, id).toMap();
       tableReference.child(id).set(tableMap);
       updateListView();
       showSnackBar("Table added successfully...", context);
@@ -206,6 +206,7 @@ class _TablesState extends State<Tables> {
         }
         return false;
       }
+      return Future.value(true);
     });
 
     return isThereOrder;

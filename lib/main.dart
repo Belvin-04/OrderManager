@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
 }
 
 class SplashScreen1 extends StatelessWidget {
-  FirebaseApp app;
+  final FirebaseApp app;
   SplashScreen1(this.app);
 
   @override
@@ -79,7 +79,8 @@ class SplashScreen1 extends StatelessWidget {
         hoverColor: Color(0xff3A3A3B),
         focusColor: Color(0xffffffff),
         disabledColor: Colors.grey,
-        textSelectionColor: Colors.white,
+        textSelectionTheme:
+            TextSelectionThemeData(selectionColor: Colors.black),
         cardColor: Color(0xFF151515),
         canvasColor: Colors.black,
         brightness: Brightness.dark,
