@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 
-import 'HomePage.dart';
-
 class Orders extends StatefulWidget {
   final Table_1 table;
   Orders(this.table);

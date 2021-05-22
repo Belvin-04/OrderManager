@@ -1,6 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:order_manager/utils/NavigationDrawer.dart';
 import 'package:order_manager/modal/Table.dart';
 
 import 'HomePage.dart';
@@ -54,11 +53,18 @@ class _TablesState extends State<Tables> {
         ],
       ),
       appBar: AppBar(
+        leading: GestureDetector(
+          child: Icon(Icons.arrow_back),
+          onTap: () {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (context) => HomePage()));
+          },
+        ),
         title: Text("Manage Tables"),
       ),
       body: WillPopScope(
         onWillPop: () {
-          Navigator.push(
+          Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => HomePage()));
         },
         child: FutureBuilder(

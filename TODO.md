@@ -1,6 +1,5 @@
 ### Todo
 
-- [ ] Fix issue 1  
 - [ ] Repeat entire order  
 - [ ] Bill Page  
 - [ ] Cancel entire table and complete order  
@@ -24,4 +23,5 @@
 - [x] Add empty field for type  
 - [x] Empty fields should not be displayed in orders list  
 - [x] Solve the hero dart warning  
+- [x] Fix issue 1  
 

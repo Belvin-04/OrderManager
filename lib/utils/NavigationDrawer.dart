@@ -15,9 +15,10 @@ class NavigationDrawer extends StatelessWidget {
             ListTile(
               tileColor: Colors.white24,
               title: Text("Items"),
-              onTap: (){
+              onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Items()));
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => Items()));
                 //Navigator.push(context, MaterialPageRoute(builder:(context) => ViewAllItems() ));
               },
             ),
@@ -26,20 +27,18 @@ class NavigationDrawer extends StatelessWidget {
             ),
             ListTile(
               tileColor: Colors.white24,
-                onTap: (){
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Tables()));
-                },
-                title: Text("Tables"),
-              ),
+              onTap: () {
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => Tables()));
+              },
+              title: Text("Tables"),
+            ),
             Divider(
               color: Colors.white24,
             ),
             ListTile(
               tileColor: Colors.white24,
-              onTap: (){
-
-              },
+              onTap: () {},
               title: Text("Bill"),
             )
           ],

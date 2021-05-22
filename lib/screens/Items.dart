@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
 import 'package:order_manager/modal/Item.dart';
-import 'package:order_manager/screens/HomePage.dart';
-import 'package:order_manager/utils/NavigationDrawer.dart';
 
 class Items extends StatefulWidget {
   const Items({Key key}) : super(key: key);
