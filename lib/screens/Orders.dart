@@ -377,12 +377,6 @@ class _OrdersState extends State<Orders> {
     });
   }
 
-  void deleteOrder(Order order) {
-    orderReference.child(order.getId()).remove();
-    updateList();
-    showSnackBar("Order Deleted Successfully...", context);
-  }
-
   showSaveOrderDialog(Order order) {
     String itemNameDropDownValue1;
     String itemTypeDropDownValue1;

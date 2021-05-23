@@ -1,9 +1,9 @@
 ### Todo
 
 - [ ] Bill Page  
-- [ ] Clear table  
 - [ ] Change table order if customer changes table  
 - [ ] Keep checking the offline support  
+- [ ] warn before clearing table, and bill should be paid before clearing table  
 - [ ] Toggle between light/dark/system theme  
 
 
@@ -29,4 +29,4 @@
 - [x] Add Proper tooltips wherever possible  
 - [x] Repeat entire order  
 - [x] Restore all canceled order  
-
+- [x] Clear table  

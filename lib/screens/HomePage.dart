@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 import 'package:order_manager/screens/Orders.dart';
 import 'package:order_manager/utils/NavigationDrawer.dart';
@@ -20,6 +21,10 @@ class HomePage extends StatelessWidget {
     final DatabaseReference tableReference =
         database.reference().child("tables");
     tableReference.keepSynced(true);
+
+    final DatabaseReference orderReference =
+        database.reference().child("orders");
+    orderReference.keepSynced(true);
 
     return Scaffold(
       key: _scaffoldStateKey,
@@ -63,19 +68,37 @@ class HomePage extends StatelessWidget {
                       child: ListTile(
                         title:
                             Text("Table No. : ${tableList[index].geTableNo()}"),
-                        trailing: GestureDetector(
-                          child: Tooltip(
-                            message: "Take Order",
-                            child: Icon(Icons.event_note_outlined,
-                                color: Colors.green),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        Orders(tableList[index], app)));
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              child: Tooltip(
+                                message: "Take Order",
+                                child: Icon(Icons.event_note_outlined,
+                                    color: Colors.green),
+                              ),
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            Orders(tableList[index], app)));
+                              },
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 10.0),
+                            ),
+                            GestureDetector(
+                              child: Tooltip(
+                                message: "Clear Table",
+                                child: Icon(Icons.clear, color: Colors.blue),
+                              ),
+                              onTap: () {
+                                clearTable(tableList[index].geTableNo(),
+                                    context, orderReference);
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -86,5 +109,34 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void deleteOrder(Order order, DatabaseReference orderReference) {
+    orderReference.child(order.getId()).remove();
+  }
+
+  void clearTable(
+      int tableNo, BuildContext context, DatabaseReference orderReference) {
+    orderReference
+        .orderByChild("tableNo")
+        .equalTo(tableNo)
+        .once()
+        .then((value) {
+      if (value != null) {
+        Map values = value.value;
+        if (values != null) {
+          values.forEach((key, value) {
+            deleteOrder(Order.toOrder(value), orderReference);
+          });
+        }
+      }
+    });
+
+    showSnackBar("Table cleared Successfully...", context);
+  }
+
+  void showSnackBar(String message, BuildContext context) {
+    SnackBar snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
