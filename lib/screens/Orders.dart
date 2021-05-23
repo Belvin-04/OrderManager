@@ -50,21 +50,47 @@ class _OrdersState extends State<Orders> {
           },
         ),
         appBar: AppBar(
-          bottom: TabBar(
-            tabs: [
-              Tab(
-                child: Text("Pending Orders"),
-              ),
-              Tab(
-                child: Text("Completed Orders"),
-              ),
-              Tab(
-                child: Text("Canceled Orders"),
-              ),
-            ],
-          ),
-          title: Text("Table ${table.geTableNo()}: Orders"),
-        ),
+            bottom: TabBar(
+              tabs: [
+                Tab(
+                  child: Text("Pending Orders"),
+                ),
+                Tab(
+                  child: Text("Completed Orders"),
+                ),
+                Tab(
+                  child: Text("Canceled Orders"),
+                ),
+              ],
+            ),
+            title: Text("Table ${table.geTableNo()}: Orders"),
+            actions: [
+              PopupMenuButton(onSelected: (value) {
+                switch (value) {
+                  case "Repeat all":
+                    {
+                      repeatAllOrder();
+                      showSnackBar(
+                          "All orders repeated successfully...", context);
+                      break;
+                    }
+                  case "Restore all":
+                    {
+                      restoreAllOrder();
+                      showSnackBar(
+                          "All orders restored successfully...", context);
+                      break;
+                    }
+                }
+              }, itemBuilder: (BuildContext context) {
+                return ["Repeat all", "Restore all"].map((choice) {
+                  return PopupMenuItem(
+                    child: Text(choice),
+                    value: choice,
+                  );
+                }).toList();
+              })
+            ]),
         body: WillPopScope(
           onWillPop: () {
             Navigator.pop(context);
@@ -105,6 +131,7 @@ class _OrdersState extends State<Orders> {
               });
             }
             return ListView.builder(
+              shrinkWrap: true,
               itemCount: orderList.length,
               itemBuilder: (context, index) {
                 return Card(
@@ -187,6 +214,7 @@ class _OrdersState extends State<Orders> {
               });
             }
             return ListView.builder(
+              shrinkWrap: true,
               itemCount: orderList.length,
               itemBuilder: (context, index) {
                 return Card(
@@ -205,6 +233,8 @@ class _OrdersState extends State<Orders> {
                           ),
                           onTap: () {
                             repeatOrder(orderList[index]);
+                            showSnackBar(
+                                "Order Repeated Successfully...", context);
                           },
                         )
                       ],
@@ -235,6 +265,7 @@ class _OrdersState extends State<Orders> {
               });
             }
             return ListView.builder(
+              shrinkWrap: true,
               itemCount: orderList.length,
               itemBuilder: (context, index) {
                 return Card(
@@ -253,8 +284,10 @@ class _OrdersState extends State<Orders> {
                           ),
                           onTap: () {
                             restoreOrder(orderList[index]);
+                            showSnackBar(
+                                "Order Restored Successfully...", context);
                           },
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -297,7 +330,6 @@ class _OrdersState extends State<Orders> {
     order.setStatus("pending");
     saveOrder(order);
     updateList();
-    showSnackBar("Order Restored Successfully...", context);
   }
 
   void repeatOrder(Order order) {
@@ -305,7 +337,50 @@ class _OrdersState extends State<Orders> {
     order.setStatus("pending");
     saveOrder(order);
     updateList();
-    showSnackBar("Order Repeated Successfully...", context);
+  }
+
+  void repeatAllOrder() {
+    orderReference
+        .orderByChild("tableNo")
+        .equalTo(table.geTableNo())
+        .once()
+        .then((value) {
+      if (value != null) {
+        Map values = value.value;
+        if (values != null) {
+          values.forEach((key, value) {
+            if (value['status'] != "canceled") {
+              repeatOrder(Order.toOrder(value));
+            }
+          });
+        }
+      }
+    });
+  }
+
+  void restoreAllOrder() {
+    orderReference
+        .orderByChild("tableNo")
+        .equalTo(table.geTableNo())
+        .once()
+        .then((value) {
+      if (value != null) {
+        Map values = value.value;
+        if (values != null) {
+          values.forEach((key, value) {
+            if (value['status'] == "canceled") {
+              restoreOrder(Order.toOrder(value));
+            }
+          });
+        }
+      }
+    });
+  }
+
+  void deleteOrder(Order order) {
+    orderReference.child(order.getId()).remove();
+    updateList();
+    showSnackBar("Order Deleted Successfully...", context);
   }
 
   showSaveOrderDialog(Order order) {

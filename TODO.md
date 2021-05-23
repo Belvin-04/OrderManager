@@ -1,8 +1,7 @@
 ### Todo
 
-- [ ] Repeat entire order  
 - [ ] Bill Page  
-- [ ] Cancel entire table and complete order  
+- [ ] Clear table  
 - [ ] Change table order if customer changes table  
 - [ ] Keep checking the offline support  
 - [ ] Toggle between light/dark/system theme  
@@ -28,4 +27,6 @@
 - [x] Added support for offline  
 - [x] Solve the problems displayed during runtime  
 - [x] Add Proper tooltips wherever possible  
+- [x] Repeat entire order  
+- [x] Restore all canceled order  
 
