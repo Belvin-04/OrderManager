@@ -110,8 +110,8 @@ class _TablesState extends State<Tables> {
                   itemBuilder: (BuildContext context, int index) {
                     return Card(
                       child: ListTile(
-                        title:
-                            Text("Table No. : ${tableList[index].geTableNo()}"),
+                        title: Text(
+                            "Table No. : ${tableList[index].getTableNo()}"),
                       ),
                     );
                   });

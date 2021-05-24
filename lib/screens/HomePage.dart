@@ -66,8 +66,8 @@ class HomePage extends StatelessWidget {
                   itemBuilder: (BuildContext context, int index) {
                     return Card(
                       child: ListTile(
-                        title:
-                            Text("Table No. : ${tableList[index].geTableNo()}"),
+                        title: Text(
+                            "Table No. : ${tableList[index].getTableNo()}"),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -90,11 +90,68 @@ class HomePage extends StatelessWidget {
                             ),
                             GestureDetector(
                               child: Tooltip(
+                                message: "Swap Table Order",
+                                child:
+                                    Icon(Icons.swap_vert, color: Colors.yellow),
+                              ),
+                              onTap: () {
+                                List<Table1> totalTables = [];
+                                tableList.forEach((element) {
+                                  totalTables.add(element);
+                                });
+                                Set occupiedTables = Set();
+                                List availableTables;
+                                orderReference.once().then((value) {
+                                  if (value != null) {
+                                    Map values = value.value;
+                                    print(values);
+                                    if (values != null) {
+                                      values.forEach((key, value) {
+                                        occupiedTables.add(value["tableNo"]);
+                                      });
+                                      occupiedTables.forEach((element) {
+                                        totalTables.removeAt(element - 1);
+                                      });
+                                      totalTables.forEach((element) {
+                                        print(element.getTableNo());
+                                      });
+                                    }
+                                  }
+                                });
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: Text("Swap Table"),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                swapTable(
+                                                    tableList[index]
+                                                        .getTableNo(),
+                                                    context,
+                                                    orderReference);
+                                                showSnackBar(
+                                                    "Table changed successfully...!",
+                                                    context);
+                                              },
+                                              child: Text("OK"))
+                                        ],
+                                      );
+                                    });
+                              },
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 10.0),
+                            ),
+                            GestureDetector(
+                              child: Tooltip(
                                 message: "Clear Table",
                                 child: Icon(Icons.clear, color: Colors.blue),
                               ),
                               onTap: () {
-                                clearTable(tableList[index].geTableNo(),
+                                clearTable(tableList[index].getTableNo(),
                                     context, orderReference);
                               },
                             ),
@@ -114,6 +171,9 @@ class HomePage extends StatelessWidget {
   void deleteOrder(Order order, DatabaseReference orderReference) {
     orderReference.child(order.getId()).remove();
   }
+
+  void swapTable(
+      int tableNo, BuildContext context, DatabaseReference orderReference) {}
 
   void clearTable(
       int tableNo, BuildContext context, DatabaseReference orderReference) {

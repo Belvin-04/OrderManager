@@ -46,7 +46,7 @@ class _OrdersState extends State<Orders> {
           child: Icon(Icons.add),
           onPressed: () {
             showSaveOrderDialog(
-                Order(0, "", "", table.geTableNo(), "", "pending", ""));
+                Order(0, "", "", table.getTableNo(), "", "pending", ""));
           },
         ),
         appBar: AppBar(
@@ -63,22 +63,18 @@ class _OrdersState extends State<Orders> {
                 ),
               ],
             ),
-            title: Text("Table ${table.geTableNo()}: Orders"),
+            title: Text("Table ${table.getTableNo()}: Orders"),
             actions: [
               PopupMenuButton(onSelected: (value) {
                 switch (value) {
                   case "Repeat all":
                     {
-                      repeatAllOrder();
-                      showSnackBar(
-                          "All orders repeated successfully...", context);
+                      repeatAllOrder(context);
                       break;
                     }
                   case "Restore all":
                     {
-                      restoreAllOrder();
-                      showSnackBar(
-                          "All orders restored successfully...", context);
+                      restoreAllOrder(context);
                       break;
                     }
                 }
@@ -117,7 +113,7 @@ class _OrdersState extends State<Orders> {
     return FutureBuilder(
         future: orderReference
             .orderByChild("tableNo")
-            .equalTo(table.geTableNo())
+            .equalTo(table.getTableNo())
             .once(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -208,7 +204,7 @@ class _OrdersState extends State<Orders> {
             Map values = snapshot.data.value;
             if (values != null) {
               values.forEach((key, value) {
-                if (value['tableNo'] == table.geTableNo()) {
+                if (value['tableNo'] == table.getTableNo()) {
                   orderList.add(Order.toOrder(value));
                 }
               });
@@ -259,7 +255,7 @@ class _OrdersState extends State<Orders> {
             Map values = snapshot.data.value;
             if (values != null) {
               values.forEach((key, value) {
-                if (value['tableNo'] == table.geTableNo()) {
+                if (value['tableNo'] == table.getTableNo()) {
                   orderList.add(Order.toOrder(value));
                 }
               });
@@ -339,39 +335,57 @@ class _OrdersState extends State<Orders> {
     updateList();
   }
 
-  void repeatAllOrder() {
+  void repeatAllOrder(BuildContext context) {
     orderReference
         .orderByChild("tableNo")
-        .equalTo(table.geTableNo())
+        .equalTo(table.getTableNo())
         .once()
         .then((value) {
       if (value != null) {
+        bool check = false;
         Map values = value.value;
         if (values != null) {
           values.forEach((key, value) {
             if (value['status'] != "canceled") {
               repeatOrder(Order.toOrder(value));
+              check = true;
             }
           });
+          if (check) {
+            showSnackBar("All orders repeated successfully...!", context);
+          } else {
+            showSnackBar("There are no orders to repeat...!", context);
+          }
+        } else {
+          showSnackBar("There are no orders to repeat...!", context);
         }
       }
     });
   }
 
-  void restoreAllOrder() {
+  void restoreAllOrder(BuildContext context) {
     orderReference
         .orderByChild("tableNo")
-        .equalTo(table.geTableNo())
+        .equalTo(table.getTableNo())
         .once()
         .then((value) {
       if (value != null) {
+        bool check = false;
         Map values = value.value;
         if (values != null) {
           values.forEach((key, value) {
             if (value['status'] == "canceled") {
               restoreOrder(Order.toOrder(value));
+              check = true;
             }
           });
+          if (check) {
+            showSnackBar("All orders restored successfully...!", context);
+          } else {
+            showSnackBar("There are no canceled orders...!", context);
+          }
+        } else {
+          showSnackBar("There are no canceled orders...!", context);
         }
       }
     });

@@ -17,7 +17,7 @@ class Table1 {
     this.tableNo = tableNo;
   }
 
-  int geTableNo() => this.tableNo;
+  int getTableNo() => this.tableNo;
 
   Map toMap() {
     Map tableMap = new Map();
