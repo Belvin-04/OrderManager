@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:order_manager/screens/Tables.dart';
 import 'package:order_manager/screens/Items.dart';
+import 'package:order_manager/screens/Types.dart';
 
 class NavigationDrawer extends StatelessWidget {
   final FirebaseApp app;
@@ -40,8 +41,12 @@ class NavigationDrawer extends StatelessWidget {
             ),
             ListTile(
               tileColor: Colors.white24,
-              onTap: () {},
-              title: Text("Bill"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => Types(app)));
+              },
+              title: Text("Types"),
             )
           ],
         ),

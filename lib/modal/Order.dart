@@ -6,9 +6,10 @@ class Order {
   String type;
   String status;
   String note;
+  int amount;
 
   Order(this.quantity, this.id, this.itemName, this.tableNo, this.type,
-      this.status, this.note);
+      this.status, this.note, this.amount);
 
   void setId(String id) {
     this.id = id;
@@ -52,6 +53,14 @@ class Order {
 
   String getNote() => this.note;
 
+  void setAmount(int amount) {
+    this.amount = amount;
+  }
+
+  int getAmount() {
+    return this.amount;
+  }
+
   Map toMap() {
     Map orderMap = new Map();
 
@@ -62,12 +71,14 @@ class Order {
     orderMap['quantity'] = this.quantity;
     orderMap['note'] = this.note;
     orderMap['status'] = this.status;
+    orderMap['amount'] = this.amount;
     return orderMap;
   }
 
   static Order toOrder(Map orderMap) {
     String id, itemName, type, note, status;
-    int tableNo, quantity;
+    int tableNo, quantity, amount;
+
     id = orderMap['id'];
     tableNo = orderMap['tableNo'];
     itemName = orderMap['itemName'];
@@ -75,13 +86,14 @@ class Order {
     quantity = orderMap['quantity'];
     note = orderMap['note'];
     status = orderMap['status'];
+    amount = orderMap['amount'];
 
-    return Order(quantity, id, itemName, tableNo, type, status, note);
+    return Order(quantity, id, itemName, tableNo, type, status, note, amount);
   }
 
   String toString() {
     String orderDetails =
-        "Id: ${this.id}\nQuantity: ${this.quantity}\nItem Name: ${this.itemName}\nTable No: ${this.tableNo}\nType: ${this.type}\nNote: ${this.note}\nStatus: ${this.status}";
+        "Id: ${this.id}\nQuantity: ${this.quantity}\nItem Name: ${this.itemName}\nTable No: ${this.tableNo}\nType: ${this.type}\nNote: ${this.note}\nStatus: ${this.status}\nAmount: ${this.amount}";
     return orderDetails;
   }
 

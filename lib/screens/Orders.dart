@@ -25,6 +25,8 @@ class _OrdersState extends State<Orders> {
   FirebaseDatabase database;
   DatabaseReference orderReference;
   DatabaseReference itemReference;
+  DatabaseReference typeReference;
+  Map itemMap = Map();
 
   @override
   void initState() {
@@ -34,8 +36,10 @@ class _OrdersState extends State<Orders> {
     database.setPersistenceCacheSizeBytes(10000000);
     itemReference = database.reference().child("items");
     orderReference = database.reference().child("orders");
+    typeReference = database.reference().child("types");
     itemReference.keepSynced(true);
     orderReference.keepSynced(true);
+    typeReference.keepSynced(true);
   }
 
   @override
@@ -48,7 +52,7 @@ class _OrdersState extends State<Orders> {
           child: Icon(Icons.add),
           onPressed: () {
             showSaveOrderDialog(
-                Order(0, "", "", table.getTableNo(), "", "pending", ""));
+                Order(0, "", "", table.getTableNo(), "", "pending", "", 0));
           },
         ),
         appBar: AppBar(
@@ -307,6 +311,7 @@ class _OrdersState extends State<Orders> {
     }
     Map orderMap = order.toMap();
     orderMap['id'] = id;
+    orderMap['amount'] = itemMap[order.getItemName()] * order.getQuantity();
     orderReference.child(orderMap['id']).set(orderMap);
     updateList();
   }
@@ -398,6 +403,7 @@ class _OrdersState extends State<Orders> {
     String itemNameDropDownValue1;
     String itemTypeDropDownValue1;
     List itemNameDropDownList1 = [];
+    List itemTypeDropDownList1 = [];
     TextEditingController itemQuantityController1 = TextEditingController();
     TextEditingController itemNoteController1 = TextEditingController();
     if (order.getQuantity() != 0) {
@@ -410,152 +416,168 @@ class _OrdersState extends State<Orders> {
         if (values != null) {
           values.forEach((key, value) {
             itemNameDropDownList1.add(value['name']);
+            itemMap[value['name']] = value['price'];
           });
           itemNameDropDownValue1 = itemNameDropDownList1[0];
           if (order.itemName != "") {
             itemNameDropDownValue1 = order.itemName;
           }
-          if (order.type != "") {
-            itemTypeDropDownValue1 = order.type;
-          } else {
-            itemTypeDropDownValue1 = "Oil";
-          }
-          showDialog(
-              context: context,
-              builder: (context) {
-                String itemNameDropDownValue = itemNameDropDownValue1;
-                String itemTypeDropDownValue = itemTypeDropDownValue1;
-                TextEditingController itemQuantityController =
-                    itemQuantityController1;
-                TextEditingController itemNoteController = itemNoteController1;
-                List itemNameDropDownList = itemNameDropDownList1;
-                order.setItemName(itemNameDropDownValue);
-                order.setType(itemTypeDropDownValue);
-                if (order.getQuantity() != 0) {
-                  itemQuantityController.text = order.getQuantity().toString();
-                }
-                itemNoteController.text = order.getNote();
 
-                return StatefulBuilder(builder: (context, setState) {
-                  return AlertDialog(
-                    title: Text("Order Detail"),
-                    content: Form(
-                      key: _formStateKey,
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(child: Text("Item Name: ")),
-                              Expanded(
-                                child: DropdownButton(
-                                  items: itemNameDropDownList.map((value) {
-                                    return DropdownMenuItem(
-                                        value: value, child: Text(value));
-                                  }).toList(),
-                                  value: itemNameDropDownValue,
-                                  onChanged: (newValue) {
-                                    order.setItemName(newValue);
-                                    print(order.getItemName());
-                                    setState(() {
-                                      itemNameDropDownValue = newValue;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            width: 0,
-                            height: 0,
-                            margin: EdgeInsets.only(bottom: 15.0),
-                          ),
-                          Row(
-                            children: [
-                              Expanded(child: Text("Item Type: ")),
-                              Expanded(
-                                child: DropdownButton(
-                                  items: ["Oil", "Butter", "Cheese", "None"]
-                                      .map((value) {
-                                    return DropdownMenuItem(
-                                        value: value, child: Text(value));
-                                  }).toList(),
-                                  value: itemTypeDropDownValue,
-                                  onChanged: (newValue) {
-                                    order.setType(newValue);
-                                    print(order.getType());
-                                    setState(() {
-                                      itemTypeDropDownValue = newValue;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          Container(
-                            width: 0,
-                            height: 0,
-                            margin: EdgeInsets.only(bottom: 15.0),
-                          ),
-                          TextFormField(
-                            controller: itemQuantityController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: <TextInputFormatter>[
-                              FilteringTextInputFormatter.digitsOnly
-                            ],
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return "Please Enter Quantity";
-                              }
-                              return null;
-                            },
-                            decoration: InputDecoration(
-                                labelText: "Quantiy",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            onChanged: (newQuantity) {
-                              if (newQuantity.isNotEmpty) {
-                                order.setQuantity(int.parse(newQuantity));
-                              }
-                              print(order.getQuantity());
-                            },
-                          ),
-                          Container(
-                            width: 0,
-                            height: 0,
-                            margin: EdgeInsets.only(bottom: 15.0),
-                          ),
-                          TextFormField(
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            controller: itemNoteController,
-                            decoration: InputDecoration(
-                                labelText: "Note",
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10.0))),
-                            onChanged: (newNote) {
-                              order.setNote(newNote);
-                              print(order.getNote());
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () {
-                            if (_formStateKey.currentState.validate()) {
-                              saveOrder(order);
-                              Navigator.pop(context);
-                              showSnackBar(
-                                  "Order Saved Successfully...!", context);
-                            }
-                          },
-                          child: Text("Save Order"))
-                    ],
-                  );
+          typeReference.once().then((value) {
+            if (value != null) {
+              Map typeValues = value.value;
+              if (typeValues != null) {
+                typeValues.forEach((key, value) {
+                  itemTypeDropDownList1.add(value['type']);
                 });
-              });
+                itemTypeDropDownList1.add("None");
+                itemTypeDropDownValue1 = itemTypeDropDownList1[0];
+              }
+            }
+            if (order.type != "") {
+              itemTypeDropDownValue1 = order.type;
+            }
+            showDialog(
+                context: context,
+                builder: (context) {
+                  String itemNameDropDownValue = itemNameDropDownValue1;
+                  String itemTypeDropDownValue = itemTypeDropDownValue1;
+                  TextEditingController itemQuantityController =
+                      itemQuantityController1;
+                  TextEditingController itemNoteController =
+                      itemNoteController1;
+                  List itemNameDropDownList = itemNameDropDownList1;
+                  List itemTypeDropDownList = itemTypeDropDownList1;
+                  order.setItemName(itemNameDropDownValue);
+                  order.setType(itemTypeDropDownValue);
+                  if (order.getQuantity() != 0) {
+                    itemQuantityController.text =
+                        order.getQuantity().toString();
+                  }
+                  itemNoteController.text = order.getNote();
+
+                  return StatefulBuilder(builder: (context, setState) {
+                    return AlertDialog(
+                      title: Text("Order Detail"),
+                      content: Form(
+                        key: _formStateKey,
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(child: Text("Item Name: ")),
+                                Expanded(
+                                  child: DropdownButton(
+                                    items: itemNameDropDownList.map((value) {
+                                      return DropdownMenuItem(
+                                          value: value, child: Text(value));
+                                    }).toList(),
+                                    value: itemNameDropDownValue,
+                                    onChanged: (newValue) {
+                                      order.setItemName(newValue);
+                                      print(order.getItemName());
+                                      setState(() {
+                                        itemNameDropDownValue = newValue;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              width: 0,
+                              height: 0,
+                              margin: EdgeInsets.only(bottom: 15.0),
+                            ),
+                            Row(
+                              children: [
+                                Expanded(child: Text("Item Type: ")),
+                                Expanded(
+                                  child: DropdownButton(
+                                    items: itemTypeDropDownList.map((value) {
+                                      return DropdownMenuItem(
+                                          value: value, child: Text(value));
+                                    }).toList(),
+                                    value: itemTypeDropDownValue,
+                                    onChanged: (newValue) {
+                                      order.setType(newValue);
+                                      print(order.getType());
+                                      setState(() {
+                                        itemTypeDropDownValue = newValue;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              width: 0,
+                              height: 0,
+                              margin: EdgeInsets.only(bottom: 15.0),
+                            ),
+                            TextFormField(
+                              controller: itemQuantityController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: <TextInputFormatter>[
+                                FilteringTextInputFormatter.digitsOnly
+                              ],
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Please Enter Quantity";
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                  labelText: "Quantiy",
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.0))),
+                              onChanged: (newQuantity) {
+                                if (newQuantity.isNotEmpty) {
+                                  order.setQuantity(int.parse(newQuantity));
+                                }
+                                print(order.getQuantity());
+                              },
+                            ),
+                            Container(
+                              width: 0,
+                              height: 0,
+                              margin: EdgeInsets.only(bottom: 15.0),
+                            ),
+                            TextFormField(
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              controller: itemNoteController,
+                              decoration: InputDecoration(
+                                  labelText: "Note",
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10.0))),
+                              onChanged: (newNote) {
+                                order.setNote(newNote);
+                                print(order.getNote());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              if (_formStateKey.currentState.validate()) {
+                                saveOrder(order);
+                                Navigator.pop(context);
+                                showSnackBar(
+                                    "Order Saved Successfully...!", context);
+                              }
+                            },
+                            child: Text("Save Order"))
+                      ],
+                    );
+                  });
+                });
+          });
         }
       }
     });

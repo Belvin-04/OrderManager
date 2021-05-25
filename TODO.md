@@ -36,3 +36,4 @@
 - [x] Add proper conditions for repeating and restoring all orders  
 - [x] Start a timer after taking the order  
 - [x] Remove the countup timer  
+- [x] Add page to add/edit/delete types of items  
