@@ -5,7 +5,7 @@
 - [ ] Keep checking the offline support  
 - [ ] warn before clearing table, and bill should be paid before clearing table  
 - [ ] Toggle between light/dark/system theme  
-- [ ] Start a timer after taking the order  
+- [ ] Give proper notifications if the order is getting late  
 
 
 
@@ -33,3 +33,4 @@
 - [x] Restore all canceled order  
 - [x] Clear table  
 - [x] Add proper conditions for repeating and restoring all orders  
+- [x] Start a timer after taking the order  
