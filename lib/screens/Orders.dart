@@ -48,7 +48,7 @@ class _OrdersState extends State<Orders> {
           child: Icon(Icons.add),
           onPressed: () {
             showSaveOrderDialog(
-                Order(0, "", "", table.getTableNo(), "", "pending", "", null));
+                Order(0, "", "", table.getTableNo(), "", "pending", ""));
           },
         ),
         appBar: AppBar(
@@ -124,9 +124,6 @@ class _OrdersState extends State<Orders> {
             if (values != null) {
               values.forEach((key, value) {
                 if (value['status'] == "pending") {
-                  if (!(value['time'] is DateTime)) {
-                    value['time'] = DateTime.parse(value['time']);
-                  }
                   orderList.add(Order.toOrder(value));
                 }
               });
@@ -138,67 +135,55 @@ class _OrdersState extends State<Orders> {
                 return Card(
                   child: ListTile(
                     title: Text(orderList[index].getData()),
-                    trailing: Column(
+                    trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            GestureDetector(
-                              child: Tooltip(
-                                message: "Complete Order",
-                                child: Icon(
-                                  Icons.check,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              onTap: () {
-                                completeOrder(orderList[index]);
-                              },
+                        GestureDetector(
+                          child: Tooltip(
+                            message: "Complete Order",
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.green,
                             ),
-                            Container(
-                              height: 0,
-                              width: 0,
-                              margin: EdgeInsets.only(right: 10.0),
-                            ),
-                            GestureDetector(
-                              child: Tooltip(
-                                message: "Edit Order",
-                                child: Icon(
-                                  Icons.edit,
-                                  color: Colors.blue,
-                                ),
-                              ),
-                              onTap: () {
-                                showSaveOrderDialog(orderList[index]);
-                              },
-                            ),
-                            Container(
-                              height: 0,
-                              width: 0,
-                              margin: EdgeInsets.only(right: 10.0),
-                            ),
-                            GestureDetector(
-                              child: Tooltip(
-                                message: "Cancel Order",
-                                child: Icon(
-                                  Icons.cancel,
-                                  color: Colors.red,
-                                ),
-                              ),
-                              onTap: () {
-                                cancelOrder(orderList[index]);
-                              },
-                            ),
-                          ],
+                          ),
+                          onTap: () {
+                            completeOrder(orderList[index]);
+                          },
                         ),
                         Container(
                           height: 0,
                           width: 0,
-                          margin: EdgeInsets.only(bottom: 15.0),
+                          margin: EdgeInsets.only(right: 10.0),
                         ),
-                        Text(
-                            "Time: ${calculateTime(orderList[index].getTime())}")
+                        GestureDetector(
+                          child: Tooltip(
+                            message: "Edit Order",
+                            child: Icon(
+                              Icons.edit,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          onTap: () {
+                            showSaveOrderDialog(orderList[index]);
+                          },
+                        ),
+                        Container(
+                          height: 0,
+                          width: 0,
+                          margin: EdgeInsets.only(right: 10.0),
+                        ),
+                        GestureDetector(
+                          child: Tooltip(
+                            message: "Cancel Order",
+                            child: Icon(
+                              Icons.cancel,
+                              color: Colors.red,
+                            ),
+                          ),
+                          onTap: () {
+                            cancelOrder(orderList[index]);
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -223,9 +208,6 @@ class _OrdersState extends State<Orders> {
             if (values != null) {
               values.forEach((key, value) {
                 if (value['tableNo'] == table.getTableNo()) {
-                  if (!(value['time'] is DateTime)) {
-                    value['time'] = DateTime.parse(value['time']);
-                  }
                   orderList.add(Order.toOrder(value));
                 }
               });
@@ -277,9 +259,6 @@ class _OrdersState extends State<Orders> {
             if (values != null) {
               values.forEach((key, value) {
                 if (value['tableNo'] == table.getTableNo()) {
-                  if (!(value['time'] is DateTime)) {
-                    value['time'] = DateTime.parse(value['time']);
-                  }
                   orderList.add(Order.toOrder(value));
                 }
               });
@@ -326,12 +305,8 @@ class _OrdersState extends State<Orders> {
     } else {
       id = order.getId();
     }
-    if (order.getTime() == null) {
-      order.setTime(DateTime.now());
-    }
     Map orderMap = order.toMap();
     orderMap['id'] = id;
-    orderMap['time'] = order.getTime().toString();
     orderReference.child(orderMap['id']).set(orderMap);
     updateList();
   }
@@ -352,7 +327,6 @@ class _OrdersState extends State<Orders> {
 
   void restoreOrder(Order order) {
     order.setStatus("pending");
-    order.setTime(DateTime.now());
     saveOrder(order);
     updateList();
   }
@@ -360,7 +334,6 @@ class _OrdersState extends State<Orders> {
   void repeatOrder(Order order) {
     order.setId("");
     order.setStatus("pending");
-    order.setTime(DateTime.now());
     saveOrder(order);
     updateList();
   }
@@ -419,14 +392,6 @@ class _OrdersState extends State<Orders> {
         }
       }
     });
-  }
-
-  String calculateTime(DateTime time) {
-    DateTime now = DateTime.now();
-    if (now.difference(time).inSeconds > 59) {
-      return "${now.difference(time).inMinutes}:${now.difference(time).inSeconds % 60} mins.";
-    }
-    return "${now.difference(time).inSeconds} secs.";
   }
 
   showSaveOrderDialog(Order order) {

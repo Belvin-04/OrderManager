@@ -6,6 +6,7 @@
 - [ ] warn before clearing table, and bill should be paid before clearing table  
 - [ ] Toggle between light/dark/system theme  
 - [ ] Give proper notifications if the order is getting late  
+- [ ] Give timing to entire table  
 
 
 
@@ -34,3 +35,4 @@
 - [x] Clear table  
 - [x] Add proper conditions for repeating and restoring all orders  
 - [x] Start a timer after taking the order  
+- [x] Remove the countup timer  
