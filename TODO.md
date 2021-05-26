@@ -1,6 +1,5 @@
 ### Todo
 
-- [ ] Bill Page  
 - [ ] Change table order if customer changes table  
 - [ ] Keep checking the offline support  
 - [ ] warn before clearing table, and bill should be paid before clearing table  
@@ -37,3 +36,5 @@
 - [x] Start a timer after taking the order  
 - [x] Remove the countup timer  
 - [x] Add page to add/edit/delete types of items  
+- [x] (Bug)(Fixed)To repeat or cancel orders fab need to be pressed once because typeMap is only loaded after clicking the fab  
+- [x] Bill Page  

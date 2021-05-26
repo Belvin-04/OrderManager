@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 
+import 'Bills.dart';
+
 class Orders extends StatefulWidget {
   final Table1 table;
   final FirebaseApp app;
@@ -27,6 +29,7 @@ class _OrdersState extends State<Orders> {
   DatabaseReference itemReference;
   DatabaseReference typeReference;
   Map itemMap = Map();
+  Map typeMap = Map();
 
   @override
   void initState() {
@@ -40,6 +43,8 @@ class _OrdersState extends State<Orders> {
     itemReference.keepSynced(true);
     orderReference.keepSynced(true);
     typeReference.keepSynced(true);
+    showSaveOrderDialog(
+        Order(0, "", "", table.getTableNo(), "", "pending", "", 0), 1);
   }
 
   @override
@@ -52,7 +57,7 @@ class _OrdersState extends State<Orders> {
           child: Icon(Icons.add),
           onPressed: () {
             showSaveOrderDialog(
-                Order(0, "", "", table.getTableNo(), "", "pending", "", 0));
+                Order(0, "", "", table.getTableNo(), "", "pending", "", 0), 0);
           },
         ),
         appBar: AppBar(
@@ -83,9 +88,17 @@ class _OrdersState extends State<Orders> {
                       restoreAllOrder(context);
                       break;
                     }
+                  case "Bill":
+                    {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Bills(table, app)));
+                      break;
+                    }
                 }
               }, itemBuilder: (BuildContext context) {
-                return ["Repeat all", "Restore all"].map((choice) {
+                return ["Repeat all", "Restore all", "Bill"].map((choice) {
                   return PopupMenuItem(
                     child: Text(choice),
                     value: choice,
@@ -168,7 +181,7 @@ class _OrdersState extends State<Orders> {
                             ),
                           ),
                           onTap: () {
-                            showSaveOrderDialog(orderList[index]);
+                            showSaveOrderDialog(orderList[index], 0);
                           },
                         ),
                         Container(
@@ -311,7 +324,9 @@ class _OrdersState extends State<Orders> {
     }
     Map orderMap = order.toMap();
     orderMap['id'] = id;
-    orderMap['amount'] = itemMap[order.getItemName()] * order.getQuantity();
+    orderMap['amount'] =
+        (itemMap[order.getItemName()] + typeMap[order.getType()]) *
+            order.getQuantity();
     orderReference.child(orderMap['id']).set(orderMap);
     updateList();
   }
@@ -399,7 +414,7 @@ class _OrdersState extends State<Orders> {
     });
   }
 
-  showSaveOrderDialog(Order order) {
+  showSaveOrderDialog(Order order, int flag) {
     String itemNameDropDownValue1;
     String itemTypeDropDownValue1;
     List itemNameDropDownList1 = [];
@@ -429,8 +444,10 @@ class _OrdersState extends State<Orders> {
               if (typeValues != null) {
                 typeValues.forEach((key, value) {
                   itemTypeDropDownList1.add(value['type']);
+                  typeMap[value['type']] = value['price'];
                 });
                 itemTypeDropDownList1.add("None");
+                typeMap["None"] = 0;
                 itemTypeDropDownValue1 = itemTypeDropDownList1[0];
               }
             }
@@ -577,6 +594,9 @@ class _OrdersState extends State<Orders> {
                     );
                   });
                 });
+            if (flag == 1) {
+              Navigator.pop(context);
+            }
           });
         }
       }
