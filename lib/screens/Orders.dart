@@ -325,7 +325,7 @@ class _OrdersState extends State<Orders> {
     Map orderMap = order.toMap();
     orderMap['id'] = id;
     orderMap['amount'] =
-        (itemMap[order.getItemName()] + typeMap[order.getType()]) *
+        (itemMap[order.getItemName()] + typeMap[order.getType(1)]) *
             order.getQuantity();
     orderReference.child(orderMap['id']).set(orderMap);
     updateList();
@@ -519,7 +519,7 @@ class _OrdersState extends State<Orders> {
                                     value: itemTypeDropDownValue,
                                     onChanged: (newValue) {
                                       order.setType(newValue);
-                                      print(order.getType());
+                                      print(order.getType(1));
                                       setState(() {
                                         itemTypeDropDownValue = newValue;
                                       });

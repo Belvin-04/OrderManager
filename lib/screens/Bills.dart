@@ -21,7 +21,11 @@ class _BillsState extends State<Bills> {
 
   FirebaseDatabase database;
   DatabaseReference orderReference;
+  DatabaseReference typeReference;
+  DatabaseReference itemReference;
   List<Order> orderList = [];
+  Map typeMap = Map();
+  Map itemMap = Map();
 
   @override
   void initState() {
@@ -30,7 +34,11 @@ class _BillsState extends State<Bills> {
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
     orderReference = database.reference().child("orders");
+    typeReference = database.reference().child("types");
+    itemReference = database.reference().child("items");
     orderReference.keepSynced(true);
+    typeReference.keepSynced(true);
+    itemReference.keepSynced(true);
     orderReference
         .orderByChild("tableNo")
         .equalTo(table.getTableNo())
@@ -85,10 +93,10 @@ class _BillsState extends State<Bills> {
                 itemCount: orderList.length,
                 itemBuilder: (context, index) {
                   return BillItem(
-                      "${orderList[index].getItemName()} ${orderList[index].getType()}",
+                      "${orderList[index].getItemName()} ${orderList[index].getType(0)}",
                       "${orderList[index].getQuantity()}",
                       "${orderList[index].getAmount()}",
-                      "");
+                      "${(orderList[index].getAmount() / orderList[index].getQuantity())}");
                 }),
             Divider(
               color: Colors.white,

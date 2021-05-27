@@ -39,7 +39,12 @@ class Order {
     this.type = type;
   }
 
-  String getType() => this.type;
+  String getType(int flag) {
+    if (this.type == "None" && flag == 0) {
+      return "";
+    }
+    return this.type;
+  }
 
   void setStatus(String status) {
     this.status = status;

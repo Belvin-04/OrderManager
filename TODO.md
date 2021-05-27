@@ -8,7 +8,6 @@
 - [ ] Give timing to entire table  
 
 
-
 ### Done ✓
 
 - [x] Add/Edit/Delete Item  
@@ -38,3 +37,4 @@
 - [x] Add page to add/edit/delete types of items  
 - [x] (Bug)(Fixed)To repeat or cancel orders fab need to be pressed once because typeMap is only loaded after clicking the fab  
 - [x] Bill Page  
+- [x] Add single price for each item in bill page  
