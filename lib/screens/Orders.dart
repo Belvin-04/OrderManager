@@ -52,6 +52,7 @@ class _OrdersState extends State<Orders> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: FloatingActionButton(
           tooltip: "Take New Order",
           child: Icon(Icons.add),

@@ -38,6 +38,7 @@ class _TypesState extends State<Types> {
       appBar: AppBar(
         title: Text("Types"),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         tooltip: "Add Type",
         child: Icon(Icons.add),

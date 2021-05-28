@@ -38,6 +38,7 @@ class _ItemsState extends State<Items> {
       appBar: AppBar(
         title: Text("Items"),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         tooltip: "Add Item",
         child: Icon(Icons.add),

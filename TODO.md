@@ -6,6 +6,12 @@
 - [ ] Toggle between light/dark/system theme  
 - [ ] Give proper notifications if the order is getting late  
 - [ ] Give timing to entire table  
+- [ ] Notify everyone about all the events  
+
+
+
+### If needed
+- [ ] Merge and seperate table with all/individual bills  
 
 
 ### Done ✓
@@ -38,3 +44,4 @@
 - [x] (Bug)(Fixed)To repeat or cancel orders fab need to be pressed once because typeMap is only loaded after clicking the fab  
 - [x] Bill Page  
 - [x] Add single price for each item in bill page  
+- [x] FAB icons blocking action buttons(fixed)  
