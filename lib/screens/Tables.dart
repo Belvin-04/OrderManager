@@ -169,8 +169,7 @@ class _TablesState extends State<Tables> {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    content: Text(
-                        "Table can't be deleted if there is a pending order"),
+                    content: Text("Please clear the table to delete...!"),
                     actions: [
                       TextButton(
                           onPressed: () {
@@ -189,11 +188,7 @@ class _TablesState extends State<Tables> {
   Future<bool> isOrderExists(int tableNo) async {
     DatabaseReference orderReference = database.reference().child("orders");
     List temp = [];
-    bool isThereOrder = await orderReference
-        .orderByChild("status")
-        .equalTo("pending")
-        .once()
-        .then((value) {
+    bool isThereOrder = await orderReference.once().then((value) {
       if (value != null) {
         Map values = value.value;
         if (values != null) {

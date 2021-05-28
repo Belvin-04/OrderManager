@@ -184,15 +184,56 @@ class HomePage extends StatelessWidget {
         .then((value) {
       if (value != null) {
         Map values = value.value;
+        List temp = [];
         if (values != null) {
           values.forEach((key, value) {
-            deleteOrder(Order.toOrder(value), orderReference);
+            if (value["status"] == "pending") {
+              temp.add(1);
+            }
           });
+          if (temp.length != 0) {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    content: Text(
+                        "Table cannot be cleared if there are pending orders...!"),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("OK"))
+                    ],
+                  );
+                });
+          } else {
+            showDialog(
+                barrierDismissible: false,
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text("WARNING...!"),
+                    content: Text(
+                        "All order details will be lost after clearing the table...!"),
+                    actions: [
+                      TextButton(
+                          onPressed: () {
+                            values.forEach((key, value) {
+                              deleteOrder(Order.toOrder(value), orderReference);
+                            });
+                            Navigator.pop(context);
+                            showSnackBar(
+                                "Table cleared Successfully...", context);
+                          },
+                          child: Text("OK"))
+                    ],
+                  );
+                });
+          }
         }
       }
     });
-
-    showSnackBar("Table cleared Successfully...", context);
   }
 
   void showSnackBar(String message, BuildContext context) {

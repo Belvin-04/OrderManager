@@ -456,6 +456,7 @@ class _OrdersState extends State<Orders> {
               itemTypeDropDownValue1 = order.type;
             }
             showDialog(
+                barrierDismissible: false,
                 context: context,
                 builder: (context) {
                   String itemNameDropDownValue = itemNameDropDownValue1;
