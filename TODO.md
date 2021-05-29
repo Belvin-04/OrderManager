@@ -2,7 +2,6 @@
 
 - [ ] Change table order if customer changes table  
 - [ ] Keep checking the offline support  
-- [ ] Toggle between light/dark/system theme  
 - [ ] Give proper notifications if the order is getting late  
 - [ ] Give timing to entire table  
 - [ ] Notify everyone about all the events  
@@ -45,3 +44,4 @@
 - [x] Add single price for each item in bill page  
 - [x] FAB icons blocking action buttons(fixed)  
 - [x] warn before clearing table, table should contain no pending orders  
+- [x] Toggle between light/dark theme  

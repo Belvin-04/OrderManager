@@ -4,6 +4,8 @@ import 'package:order_manager/screens/Tables.dart';
 import 'package:order_manager/screens/Items.dart';
 import 'package:order_manager/screens/Types.dart';
 
+import 'ChangeThemeSwitch.dart';
+
 class NavigationDrawer extends StatelessWidget {
   final FirebaseApp app;
   NavigationDrawer(this.app);
@@ -16,20 +18,17 @@ class NavigationDrawer extends StatelessWidget {
         child: ListView(
           children: [
             ListTile(
-              tileColor: Colors.white24,
               title: Text("Items"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Items(app)));
-                //Navigator.push(context, MaterialPageRoute(builder:(context) => ViewAllItems() ));
               },
             ),
             Divider(
               color: Colors.white24,
             ),
             ListTile(
-              tileColor: Colors.white24,
               onTap: () {
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (context) => Tables(app)));
@@ -40,14 +39,21 @@ class NavigationDrawer extends StatelessWidget {
               color: Colors.white24,
             ),
             ListTile(
-              tileColor: Colors.white24,
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => Types(app)));
               },
               title: Text("Types"),
-            )
+            ),
+            Divider(
+              color: Colors.white24,
+            ),
+            ListTile(
+              onTap: () {},
+              title: Text("Dark Theme"),
+              trailing: ChangeThemeSwitch(),
+            ),
           ],
         ),
       ),
