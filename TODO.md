@@ -47,3 +47,4 @@
 - [x] warn before clearing table, table should contain no pending orders  
 - [x] Toggle between light/dark theme  
 - [x] Fix issue #4  
+- [x] Fix issue #3  

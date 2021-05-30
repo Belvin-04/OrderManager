@@ -231,6 +231,8 @@ class HomePage extends StatelessWidget {
                   );
                 });
           }
+        } else {
+          showSnackBar("Table is already cleared ...", context);
         }
       }
     });
