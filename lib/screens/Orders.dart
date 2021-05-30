@@ -488,9 +488,15 @@ class _OrdersState extends State<Orders> {
                                 Expanded(child: Text("Item Name: ")),
                                 Expanded(
                                   child: DropdownButton(
+                                    isExpanded: true,
                                     items: itemNameDropDownList.map((value) {
                                       return DropdownMenuItem(
-                                          value: value, child: Text(value));
+                                          value: value,
+                                          child: Text(
+                                            value,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ));
                                     }).toList(),
                                     value: itemNameDropDownValue,
                                     onChanged: (newValue) {
@@ -514,9 +520,15 @@ class _OrdersState extends State<Orders> {
                                 Expanded(child: Text("Item Type: ")),
                                 Expanded(
                                   child: DropdownButton(
+                                    isExpanded: true,
                                     items: itemTypeDropDownList.map((value) {
                                       return DropdownMenuItem(
-                                          value: value, child: Text(value));
+                                          value: value,
+                                          child: Text(
+                                            value,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ));
                                     }).toList(),
                                     value: itemTypeDropDownValue,
                                     onChanged: (newValue) {

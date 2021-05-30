@@ -10,6 +10,7 @@
 
 ### If needed
 - [ ] Merge and seperate table with all/individual bills  
+- [ ] Change stateful state mangement to provider  
 
 
 ### Done ✓
@@ -45,3 +46,4 @@
 - [x] FAB icons blocking action buttons(fixed)  
 - [x] warn before clearing table, table should contain no pending orders  
 - [x] Toggle between light/dark theme  
+- [x] Fix issue #4  
