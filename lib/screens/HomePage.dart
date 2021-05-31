@@ -5,6 +5,8 @@ import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 import 'package:order_manager/screens/Orders.dart';
 import 'package:order_manager/utils/NavigationDrawer.dart';
+import 'package:order_manager/utils/ThemeProvider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
   final FirebaseApp app;
@@ -95,51 +97,8 @@ class HomePage extends StatelessWidget {
                                     Icon(Icons.swap_vert, color: Colors.yellow),
                               ),
                               onTap: () {
-                                List<Table1> totalTables = [];
-                                tableList.forEach((element) {
-                                  totalTables.add(element);
-                                });
-                                Set occupiedTables = Set();
-                                List availableTables;
-                                orderReference.once().then((value) {
-                                  if (value != null) {
-                                    Map values = value.value;
-                                    print(values);
-                                    if (values != null) {
-                                      values.forEach((key, value) {
-                                        occupiedTables.add(value["tableNo"]);
-                                      });
-                                      occupiedTables.forEach((element) {
-                                        totalTables.removeAt(element - 1);
-                                      });
-                                      totalTables.forEach((element) {
-                                        print(element.getTableNo());
-                                      });
-                                    }
-                                  }
-                                });
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: Text("Swap Table"),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                swapTable(
-                                                    tableList[index]
-                                                        .getTableNo(),
-                                                    context,
-                                                    orderReference);
-                                                showSnackBar(
-                                                    "Table changed successfully...!",
-                                                    context);
-                                              },
-                                              child: Text("OK"))
-                                        ],
-                                      );
-                                    });
+                                swapTable(tableList[index].getTableNo(),
+                                    context, orderReference);
                               },
                             ),
                             Container(
@@ -172,8 +131,82 @@ class HomePage extends StatelessWidget {
     orderReference.child(order.getId()).remove();
   }
 
+  void saveOrder(Order order, DatabaseReference orderReference) {
+    Map orderMap = order.toMap();
+    orderReference.child(orderMap['id']).set(orderMap);
+  }
+
   void swapTable(
-      int tableNo, BuildContext context, DatabaseReference orderReference) {}
+      int tableNo, BuildContext context, DatabaseReference orderReference) {
+    List<int> totalTables = [];
+    List<Order> orderList = [];
+    Set selectedTableOrderCheckSet = Set();
+    tableList.forEach((element) {
+      totalTables.add(element.getTableNo());
+    });
+    Set occupiedTables = Set();
+    orderReference.once().then((value) {
+      if (value != null) {
+        Map values = value.value;
+        if (values != null) {
+          values.forEach((key, value) {
+            occupiedTables.add(value["tableNo"]);
+            if (value["tableNo"] == tableNo) {
+              selectedTableOrderCheckSet.add(1);
+              orderList.add(Order.toOrder(value));
+            }
+          });
+          if (selectedTableOrderCheckSet.length != 0) {
+            if (occupiedTables.length != 0) {
+              occupiedTables.forEach((element) {
+                totalTables.remove(element);
+              });
+            }
+            if (totalTables.length != 0) {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("Select Table No. to swap the order"),
+                      content: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: totalTables.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              color:
+                                  Provider.of<ThemeProvider>(context).isdarkMode
+                                      ? Colors.grey.shade900
+                                      : Colors.white,
+                              child: ListTile(
+                                title:
+                                    Text("Table No. : ${totalTables[index]}"),
+                                onTap: () {
+                                  orderList.forEach((element) {
+                                    element.setTableNo(totalTables[index]);
+                                    saveOrder(element, orderReference);
+                                  });
+                                  Navigator.pop(context);
+                                  showSnackBar(
+                                      "Orders swapped from Table : $tableNo to Table : ${totalTables[index]}",
+                                      context);
+                                },
+                              ),
+                            );
+                          }),
+                    );
+                  });
+            } else {
+              showSnackBar("There are no free tables....!", context);
+            }
+          } else {
+            showSnackBar("There are no orders on the table...!", context);
+          }
+        } else {
+          showSnackBar("All tables are free...!", context);
+        }
+      }
+    });
+  }
 
   void clearTable(
       int tableNo, BuildContext context, DatabaseReference orderReference) {

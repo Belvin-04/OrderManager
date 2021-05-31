@@ -1,10 +1,10 @@
 ### Todo
 
-- [ ] Change table order if customer changes table  
 - [ ] Keep checking the offline support  
 - [ ] Give proper notifications if the order is getting late  
 - [ ] Give timing to entire table  
 - [ ] Notify everyone about all the events  
+- [ ] Remove widget return functions and just create class instead wherever necessary  
 
 
 
@@ -48,3 +48,4 @@
 - [x] Toggle between light/dark theme  
 - [x] Fix issue #4  
 - [x] Fix issue #3  
+- [x] Change table order if customer changes table  
