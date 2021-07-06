@@ -153,6 +153,7 @@ class _TypesState extends State<Types> {
 
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 

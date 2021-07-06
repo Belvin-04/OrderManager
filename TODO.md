@@ -4,14 +4,12 @@
 - [ ] Give proper notifications if the order is getting late  
 - [ ] Give timing to entire table  
 - [ ] Notify everyone about all the events  
-- [ ] Remove widget return functions and just create class instead wherever necessary  
-
-
 
 ### If needed
 - [ ] Merge and seperate table with all/individual bills  
 - [ ] Change stateful state mangement to provider  
-
+- [ ] Remove widget return functions and just create class instead wherever necessary  
+- [ ] Optimize the code  
 
 ### Done ✓
 
@@ -48,4 +46,5 @@
 - [x] Toggle between light/dark theme  
 - [x] Fix issue #4  
 - [x] Fix issue #3  
-- [x] Change table order if customer changes table  
+- [x] Change table order if customer changes table
+- [x] Scaffold messages now replaces the previous one instead of just displaying everything one by one    

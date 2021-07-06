@@ -216,6 +216,7 @@ class _TablesState extends State<Tables> {
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
     //Scaffold.of(context).showSnackBar(snackBar);
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

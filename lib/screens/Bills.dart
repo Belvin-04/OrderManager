@@ -101,14 +101,19 @@ class _BillsState extends State<Bills> {
             Divider(
               color: Colors.white,
             ),
-            billFooter(orderList)
+            BillFooter(orderList)
           ],
         ),
       ),
     );
   }
+}
 
-  Widget billFooter(List<Order> orderList) {
+class BillFooter extends StatelessWidget {
+  final List orderList;
+  BillFooter(this.orderList);
+  @override
+  Widget build(BuildContext context) {
     int totalAmount = 0;
     int totalQuantity = 0;
     orderList.forEach((element) {
