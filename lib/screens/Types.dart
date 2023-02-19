@@ -166,57 +166,62 @@ class _TypesState extends State<Types> {
     }
     return AlertDialog(
       title: Text("Type Detail"),
-      content: Form(
-          key: _formKey,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              TextFormField(
-                onChanged: (name) {
-                  type.setType(name);
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return "Please Enter Type";
-                  }
+      content: Container(
+        width: 200,
+        height: 130,
+        child: Form(
 
-                  return null;
-                },
-                controller: typeNameController,
-                decoration: InputDecoration(
-                    labelText: "Type Name",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0))),
-              ),
-              Container(
-                width: 0.0,
-                height: 0.0,
-                margin: EdgeInsets.only(bottom: 10.0),
-              ),
-              TextFormField(
-                onChanged: (price) {
-                  if (price.isNotEmpty) {
-                    type.setPrice(int.parse(price));
-                  }
-                },
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return "Please Enter Type Price";
-                  }
-                  return null;
-                },
-                controller: typePriceController,
-                decoration: InputDecoration(
-                    labelText: "Type Price",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0))),
-              ),
-            ],
-          )),
+            key: _formKey,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                TextFormField(
+                  onChanged: (name) {
+                    type.setType(name);
+                  },
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return "Please Enter Type";
+                    }
+
+                    return null;
+                  },
+                  controller: typeNameController,
+                  decoration: InputDecoration(
+                      labelText: "Type Name",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0))),
+                ),
+                Container(
+                  width: 0.0,
+                  height: 0.0,
+                  margin: EdgeInsets.only(bottom: 10.0),
+                ),
+                TextFormField(
+                  onChanged: (price) {
+                    if (price.isNotEmpty) {
+                      type.setPrice(int.parse(price));
+                    }
+                  },
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return "Please Enter Type Price";
+                    }
+                    return null;
+                  },
+                  controller: typePriceController,
+                  decoration: InputDecoration(
+                      labelText: "Type Price",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0))),
+                ),
+              ],
+            )),
+      ),
       actions: [
         TextButton(
             onPressed: () {

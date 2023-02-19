@@ -434,6 +434,7 @@ class _OrdersState extends State<Orders> {
             itemNameDropDownList1.add(value['name']);
             itemMap[value['name']] = value['price'];
           });
+          itemNameDropDownList1.sort();
           itemNameDropDownValue1 = itemNameDropDownList1[0];
           if (order.itemName != "") {
             itemNameDropDownValue1 = order.itemName;
@@ -478,119 +479,123 @@ class _OrdersState extends State<Orders> {
                   return StatefulBuilder(builder: (context, setState) {
                     return AlertDialog(
                       title: Text("Order Detail"),
-                      content: Form(
-                        key: _formStateKey,
-                        child: ListView(
-                          shrinkWrap: true,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(child: Text("Item Name: ")),
-                                Expanded(
-                                  child: DropdownButton(
-                                    isExpanded: true,
-                                    items: itemNameDropDownList.map((value) {
-                                      return DropdownMenuItem(
-                                          value: value,
-                                          child: Text(
-                                            value,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ));
-                                    }).toList(),
-                                    value: itemNameDropDownValue,
-                                    onChanged: (newValue) {
-                                      order.setItemName(newValue);
-                                      print(order.getItemName());
-                                      setState(() {
-                                        itemNameDropDownValue = newValue;
-                                      });
-                                    },
+                      content: Container(
+                        width: 200,
+                        height: 270,
+                        child: Form(
+                          key: _formStateKey,
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(child: Text("Item Name: ")),
+                                  Expanded(
+                                    child: DropdownButton(
+                                      isExpanded: true,
+                                      items: itemNameDropDownList.map((value) {
+                                        return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(
+                                              value,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ));
+                                      }).toList(),
+                                      value: itemNameDropDownValue,
+                                      onChanged: (newValue) {
+                                        order.setItemName(newValue);
+                                        print(order.getItemName());
+                                        setState(() {
+                                          itemNameDropDownValue = newValue;
+                                        });
+                                      },
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              width: 0,
-                              height: 0,
-                              margin: EdgeInsets.only(bottom: 15.0),
-                            ),
-                            Row(
-                              children: [
-                                Expanded(child: Text("Item Type: ")),
-                                Expanded(
-                                  child: DropdownButton(
-                                    isExpanded: true,
-                                    items: itemTypeDropDownList.map((value) {
-                                      return DropdownMenuItem(
-                                          value: value,
-                                          child: Text(
-                                            value,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ));
-                                    }).toList(),
-                                    value: itemTypeDropDownValue,
-                                    onChanged: (newValue) {
-                                      order.setType(newValue);
-                                      print(order.getType(1));
-                                      setState(() {
-                                        itemTypeDropDownValue = newValue;
-                                      });
-                                    },
+                                ],
+                              ),
+                              Container(
+                                width: 0,
+                                height: 0,
+                                margin: EdgeInsets.only(bottom: 15.0),
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(child: Text("Item Type: ")),
+                                  Expanded(
+                                    child: DropdownButton(
+                                      isExpanded: true,
+                                      items: itemTypeDropDownList.map((value) {
+                                        return DropdownMenuItem(
+                                            value: value,
+                                            child: Text(
+                                              value,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ));
+                                      }).toList(),
+                                      value: itemTypeDropDownValue,
+                                      onChanged: (newValue) {
+                                        order.setType(newValue);
+                                        print(order.getType(1));
+                                        setState(() {
+                                          itemTypeDropDownValue = newValue;
+                                        });
+                                      },
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              width: 0,
-                              height: 0,
-                              margin: EdgeInsets.only(bottom: 15.0),
-                            ),
-                            TextFormField(
-                              controller: itemQuantityController,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: <TextInputFormatter>[
-                                FilteringTextInputFormatter.digitsOnly
-                              ],
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return "Please Enter Quantity";
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                  labelText: "Quantiy",
-                                  border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10.0))),
-                              onChanged: (newQuantity) {
-                                if (newQuantity.isNotEmpty) {
-                                  order.setQuantity(int.parse(newQuantity));
-                                }
-                                print(order.getQuantity());
-                              },
-                            ),
-                            Container(
-                              width: 0,
-                              height: 0,
-                              margin: EdgeInsets.only(bottom: 15.0),
-                            ),
-                            TextFormField(
-                              keyboardType: TextInputType.multiline,
-                              maxLines: null,
-                              controller: itemNoteController,
-                              decoration: InputDecoration(
-                                  labelText: "Note",
-                                  border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10.0))),
-                              onChanged: (newNote) {
-                                order.setNote(newNote);
-                                print(order.getNote());
-                              },
-                            ),
-                          ],
+                                ],
+                              ),
+                              Container(
+                                width: 0,
+                                height: 0,
+                                margin: EdgeInsets.only(bottom: 15.0),
+                              ),
+                              TextFormField(
+                                controller: itemQuantityController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter.digitsOnly
+                                ],
+                                validator: (value) {
+                                  if (value.isEmpty) {
+                                    return "Please Enter Quantity";
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                    labelText: "Quantiy",
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0))),
+                                onChanged: (newQuantity) {
+                                  if (newQuantity.isNotEmpty) {
+                                    order.setQuantity(int.parse(newQuantity));
+                                  }
+                                  print(order.getQuantity());
+                                },
+                              ),
+                              Container(
+                                width: 0,
+                                height: 0,
+                                margin: EdgeInsets.only(bottom: 15.0),
+                              ),
+                              TextFormField(
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null,
+                                controller: itemNoteController,
+                                decoration: InputDecoration(
+                                    labelText: "Note",
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0))),
+                                onChanged: (newNote) {
+                                  order.setNote(newNote);
+                                  print(order.getNote());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       actions: [

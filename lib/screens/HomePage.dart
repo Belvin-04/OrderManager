@@ -168,31 +168,35 @@ class HomePage extends StatelessWidget {
                   builder: (context) {
                     return AlertDialog(
                       title: Text("Select Table No. to swap the order"),
-                      content: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: totalTables.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              color:
-                                  Provider.of<ThemeProvider>(context).isdarkMode
-                                      ? Colors.grey.shade900
-                                      : Colors.white,
-                              child: ListTile(
-                                title:
-                                    Text("Table No. : ${totalTables[index]}"),
-                                onTap: () {
-                                  orderList.forEach((element) {
-                                    element.setTableNo(totalTables[index]);
-                                    saveOrder(element, orderReference);
-                                  });
-                                  Navigator.pop(context);
-                                  showSnackBar(
-                                      "Orders swapped from Table : $tableNo to Table : ${totalTables[index]}",
-                                      context);
-                                },
-                              ),
-                            );
-                          }),
+                      content: Container(
+                        width: 200,
+                        height: 200,
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: totalTables.length,
+                            itemBuilder: (context, index) {
+                              return Card(
+                                color:
+                                    Provider.of<ThemeProvider>(context).isdarkMode
+                                        ? Colors.grey.shade900
+                                        : Colors.white,
+                                child: ListTile(
+                                  title:
+                                      Text("Table No. : ${totalTables[index]}"),
+                                  onTap: () {
+                                    orderList.forEach((element) {
+                                      element.setTableNo(totalTables[index]);
+                                      saveOrder(element, orderReference);
+                                    });
+                                    Navigator.pop(context);
+                                    showSnackBar(
+                                        "Orders swapped from Table : $tableNo to Table : ${totalTables[index]}",
+                                        context);
+                                  },
+                                ),
+                              );
+                            }),
+                      ),
                     );
                   });
             } else {

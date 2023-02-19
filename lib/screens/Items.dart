@@ -166,57 +166,61 @@ class _ItemsState extends State<Items> {
     }
     return AlertDialog(
       title: Text("Item Detail"),
-      content: Form(
-          key: _formKey,
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              TextFormField(
-                onChanged: (name) {
-                  item.setName(name);
-                },
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return "Please Enter Product Name";
-                  }
+      content: Container(
+        width: 200,
+        height: 150,
+        child: Form(
+            key: _formKey,
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                TextFormField(
+                  onChanged: (name) {
+                    item.setName(name);
+                  },
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return "Please Enter Product Name";
+                    }
 
-                  return null;
-                },
-                controller: itemNameController,
-                decoration: InputDecoration(
-                    labelText: "Item Name",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0))),
-              ),
-              Container(
-                width: 0.0,
-                height: 0.0,
-                margin: EdgeInsets.only(bottom: 10.0),
-              ),
-              TextFormField(
-                onChanged: (price) {
-                  if (price.isNotEmpty) {
-                    item.setPrice(int.parse(price));
-                  }
-                },
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return "Please Enter Product Price";
-                  }
-                  return null;
-                },
-                controller: itemPriceController,
-                decoration: InputDecoration(
-                    labelText: "Item Price",
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0))),
-              ),
-            ],
-          )),
+                    return null;
+                  },
+                  controller: itemNameController,
+                  decoration: InputDecoration(
+                      labelText: "Item Name",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0))),
+                ),
+                Container(
+                  width: 0.0,
+                  height: 0.0,
+                  margin: EdgeInsets.only(bottom: 10.0),
+                ),
+                TextFormField(
+                  onChanged: (price) {
+                    if (price.isNotEmpty) {
+                      item.setPrice(int.parse(price));
+                    }
+                  },
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return "Please Enter Product Price";
+                    }
+                    return null;
+                  },
+                  controller: itemPriceController,
+                  decoration: InputDecoration(
+                      labelText: "Item Price",
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0))),
+                ),
+              ],
+            )),
+      ),
       actions: [
         TextButton(
             onPressed: () {
