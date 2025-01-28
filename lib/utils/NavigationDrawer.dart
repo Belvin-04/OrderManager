@@ -1,15 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:order_manager/screens/Tables.dart';
-import 'package:order_manager/screens/Items.dart';
-import 'package:order_manager/screens/Types.dart';
+import 'package:order_manager/screens/tables.dart';
+import 'package:order_manager/screens/items.dart';
+import 'package:order_manager/screens/types.dart';
 
 import 'ChangeThemeSwitch.dart';
 
 class NavigationDrawer extends StatelessWidget {
-  final FirebaseApp app;
-  NavigationDrawer(this.app);
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -22,7 +19,7 @@ class NavigationDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Items(app)));
+                    MaterialPageRoute(builder: (context) => Items()));
               },
             ),
             Divider(
@@ -30,8 +27,9 @@ class NavigationDrawer extends StatelessWidget {
             ),
             ListTile(
               onTap: () {
+                Navigator.pop(context);
                 Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => Tables(app)));
+                    MaterialPageRoute(builder: (context) => Tables()));
               },
               title: Text("Tables"),
             ),
@@ -42,7 +40,7 @@ class NavigationDrawer extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Types(app)));
+                    MaterialPageRoute(builder: (context) => Types()));
               },
               title: Text("Types"),
             ),
