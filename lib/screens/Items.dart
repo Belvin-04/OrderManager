@@ -15,18 +15,18 @@ class Items extends StatefulWidget {
 class _ItemsState extends State<Items> {
   FirebaseApp app;
   _ItemsState(this.app);
-  DatabaseReference itemReference;
+  late DatabaseReference itemReference;
   TextEditingController itemNameController = TextEditingController();
   TextEditingController itemPriceController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  FirebaseDatabase database;
+  late FirebaseDatabase database;
   @override
   void initState() {
     super.initState();
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    itemReference = database.reference().child("items");
+    itemReference = database.ref().child("items");
     itemReference.keepSynced(true);
   }
 
@@ -54,12 +54,12 @@ class _ItemsState extends State<Items> {
           Navigator.pop(context);
           return Future.value(true);
         },
-        child: FutureBuilder(
+        child: FutureBuilder<DatabaseEvent>(
             future: itemReference.once(),
-            builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
-              if (snapshot.hasData) {
+            builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+              if (snapshot.data?.snapshot.value != null) {
                 itemList.clear();
-                Map values = snapshot.data.value;
+                Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
                 if (values != null) {
                   values.forEach((key, values) {
                     itemList.add(Item.toItem(values));
@@ -179,7 +179,7 @@ class _ItemsState extends State<Items> {
                     item.setName(name);
                   },
                   validator: (value) {
-                    if (value.isEmpty) {
+                    if (value!.isEmpty) {
                       return "Please Enter Product Name";
                     }
 
@@ -207,7 +207,7 @@ class _ItemsState extends State<Items> {
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   validator: (value) {
-                    if (value.isEmpty) {
+                    if (value!.isEmpty) {
                       return "Please Enter Product Price";
                     }
                     return null;
@@ -224,7 +224,7 @@ class _ItemsState extends State<Items> {
       actions: [
         TextButton(
             onPressed: () {
-              if (_formKey.currentState.validate()) {
+              if (_formKey.currentState!.validate()) {
                 saveItem(item);
                 itemPriceController.text = "";
                 itemNameController.text = "";
@@ -245,7 +245,7 @@ class _ItemsState extends State<Items> {
         .then((value) {
       String id = item.getId();
       if (id.isEmpty) {
-        id = itemReference.push().key;
+        id = itemReference.push().key!;
       } else {
         id = item.getId();
       }
@@ -253,8 +253,9 @@ class _ItemsState extends State<Items> {
       itemMap['id'] = id;
 
       if (value != null) {
-        Map values = value.value;
-        if (values != null) {
+        Map values =  {};
+        if (value.snapshot.value != null) {
+          values = value.snapshot.value as Map<dynamic,dynamic>;
           values.forEach((key, value) {
             itemMap['id'] = value['id'];
           });

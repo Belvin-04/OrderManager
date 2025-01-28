@@ -24,22 +24,22 @@ class _OrdersState extends State<Orders> {
   Table1 table;
   FirebaseApp app;
   _OrdersState(this.table, this.app);
-  FirebaseDatabase database;
-  DatabaseReference orderReference;
-  DatabaseReference itemReference;
-  DatabaseReference typeReference;
+  late FirebaseDatabase database;
+  late DatabaseReference orderReference;
+  late DatabaseReference itemReference;
+  late DatabaseReference typeReference;
   Map itemMap = Map();
   Map typeMap = Map();
 
   @override
   void initState() {
     super.initState();
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    itemReference = database.reference().child("items");
-    orderReference = database.reference().child("orders");
-    typeReference = database.reference().child("types");
+    itemReference = database.ref().child("items");
+    orderReference = database.ref().child("orders");
+    typeReference = database.ref().child("types");
     itemReference.keepSynced(true);
     orderReference.keepSynced(true);
     typeReference.keepSynced(true);
@@ -136,9 +136,9 @@ class _OrdersState extends State<Orders> {
             .equalTo(table.getTableNo())
             .once(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.data?.snapshot.value != null) {
             orderList.clear();
-            Map values = snapshot.data.value;
+            Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
             if (values != null) {
               values.forEach((key, value) {
                 if (value['status'] == "pending") {
@@ -220,9 +220,9 @@ class _OrdersState extends State<Orders> {
         future:
             orderReference.orderByChild("status").equalTo("completed").once(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.data?.snapshot.value != null) {
             orderList.clear();
-            Map values = snapshot.data.value;
+            Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
             if (values != null) {
               values.forEach((key, value) {
                 if (value['tableNo'] == table.getTableNo()) {
@@ -271,9 +271,9 @@ class _OrdersState extends State<Orders> {
         future:
             orderReference.orderByChild("status").equalTo("canceled").once(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.data?.snapshot.value != null) {
             orderList.clear();
-            Map values = snapshot.data.value;
+            Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
             if (values != null) {
               values.forEach((key, value) {
                 if (value['tableNo'] == table.getTableNo()) {
@@ -319,7 +319,7 @@ class _OrdersState extends State<Orders> {
   void saveOrder(Order order) {
     String id = order.getId();
     if (id.isEmpty) {
-      id = orderReference.push().key;
+      id = orderReference.push().key!;
     } else {
       id = order.getId();
     }
@@ -367,7 +367,7 @@ class _OrdersState extends State<Orders> {
         .then((value) {
       if (value != null) {
         bool check = false;
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             if (value['status'] != "canceled") {
@@ -395,7 +395,7 @@ class _OrdersState extends State<Orders> {
         .then((value) {
       if (value != null) {
         bool check = false;
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             if (value['status'] == "canceled") {
@@ -416,8 +416,8 @@ class _OrdersState extends State<Orders> {
   }
 
   showSaveOrderDialog(Order order, int flag) {
-    String itemNameDropDownValue1;
-    String itemTypeDropDownValue1;
+    String? itemNameDropDownValue1;
+    String? itemTypeDropDownValue1;
     List itemNameDropDownList1 = [];
     List itemTypeDropDownList1 = [];
     TextEditingController itemQuantityController1 = TextEditingController();
@@ -428,7 +428,7 @@ class _OrdersState extends State<Orders> {
     itemNoteController1.text = order.getNote();
     itemReference.once().then((value) {
       if (value != null) {
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             itemNameDropDownList1.add(value['name']);
@@ -442,7 +442,7 @@ class _OrdersState extends State<Orders> {
 
           typeReference.once().then((value) {
             if (value != null) {
-              Map typeValues = value.value;
+              Map typeValues = value.snapshot.value as Map<dynamic,dynamic>;
               if (typeValues != null) {
                 typeValues.forEach((key, value) {
                   itemTypeDropDownList1.add(value['type']);
@@ -460,8 +460,8 @@ class _OrdersState extends State<Orders> {
                 barrierDismissible: false,
                 context: context,
                 builder: (context) {
-                  String itemNameDropDownValue = itemNameDropDownValue1;
-                  String itemTypeDropDownValue = itemTypeDropDownValue1;
+                  String itemNameDropDownValue = itemNameDropDownValue1!;
+                  String itemTypeDropDownValue = itemTypeDropDownValue1!;
                   TextEditingController itemQuantityController =
                       itemQuantityController1;
                   TextEditingController itemNoteController =
@@ -504,10 +504,10 @@ class _OrdersState extends State<Orders> {
                                       }).toList(),
                                       value: itemNameDropDownValue,
                                       onChanged: (newValue) {
-                                        order.setItemName(newValue);
+                                        order.setItemName(newValue.toString());
                                         print(order.getItemName());
                                         setState(() {
-                                          itemNameDropDownValue = newValue;
+                                          itemNameDropDownValue = newValue.toString();
                                         });
                                       },
                                     ),
@@ -536,10 +536,10 @@ class _OrdersState extends State<Orders> {
                                       }).toList(),
                                       value: itemTypeDropDownValue,
                                       onChanged: (newValue) {
-                                        order.setType(newValue);
+                                        order.setType(newValue.toString());
                                         print(order.getType(1));
                                         setState(() {
-                                          itemTypeDropDownValue = newValue;
+                                          itemTypeDropDownValue = newValue.toString();
                                         });
                                       },
                                     ),
@@ -558,7 +558,7 @@ class _OrdersState extends State<Orders> {
                                   FilteringTextInputFormatter.digitsOnly
                                 ],
                                 validator: (value) {
-                                  if (value.isEmpty) {
+                                  if (value!.isEmpty) {
                                     return "Please Enter Quantity";
                                   }
                                   return null;
@@ -601,7 +601,7 @@ class _OrdersState extends State<Orders> {
                       actions: [
                         TextButton(
                             onPressed: () {
-                              if (_formStateKey.currentState.validate()) {
+                              if (_formStateKey.currentState!.validate()) {
                                 saveOrder(order);
                                 Navigator.pop(context);
                                 showSnackBar(

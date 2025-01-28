@@ -3,11 +3,7 @@ class Item{
   String name;
   String id;
 
-  Item(String name,int price,String id){
-    this.name = name;
-    this.price = price;
-    this.id = id;
-  }
+  Item(this.name,this.price,this.id);
 
 
   void setId(String id){

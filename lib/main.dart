@@ -3,7 +3,7 @@ import 'package:order_manager/screens/HomePage.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:order_manager/utils/ThemeProvider.dart';
 import 'dart:async';
-
+import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -12,8 +12,6 @@ Future<void> main() async {
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key key}) : super(key: key);
-
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -21,17 +19,20 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool _initialized = false;
   bool _error = false;
-  FirebaseApp app;
+  late FirebaseApp app;
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
     try {
       // Wait for Firebase to initialize and set `_initialized` state to true
-      FirebaseApp app1 = await Firebase.initializeApp();
+      FirebaseApp app1 = await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform
+      );
       setState(() {
         _initialized = true;
         app = app1;
       });
     } catch (e) {
+      print(e);
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
