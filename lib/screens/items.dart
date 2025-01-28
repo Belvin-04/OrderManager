@@ -1,52 +1,37 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/services.dart';
-import 'package:order_manager/modal/Type.dart';
+import 'package:order_manager/modal/item.dart';
+import 'package:order_manager/utils/firebase_service.dart';
 
-class Types extends StatefulWidget {
-  final FirebaseApp app;
-  Types(this.app);
-
+class Items extends StatefulWidget {
   @override
-  _TypesState createState() => _TypesState(app);
+  _ItemsState createState() => _ItemsState();
 }
 
-class _TypesState extends State<Types> {
-  FirebaseApp app;
-  _TypesState(this.app);
-  late DatabaseReference typeReference;
-  TextEditingController typeNameController = TextEditingController();
-  TextEditingController typePriceController = TextEditingController();
+class _ItemsState extends State<Items> {
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController itemPriceController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  late FirebaseDatabase database;
-  @override
-  void initState() {
-    super.initState();
-    database = FirebaseDatabase.instance;
-    database.setPersistenceEnabled(true);
-    database.setPersistenceCacheSizeBytes(10000000);
-    typeReference = database.ref().child("types");
-    typeReference.keepSynced(true);
-  }
+  FirebaseService service = FirebaseService();
 
   @override
   Widget build(BuildContext context) {
-    List<Type1> typeList = [];
+    List<Item> itemList = [];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Types"),
+        title: Text("Items"),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        tooltip: "Add Type",
+        tooltip: "Add Item",
         child: Icon(Icons.add),
         onPressed: () {
           showDialog(
               context: context,
               builder: (BuildContext context) =>
-                  showAddItemDialog(Type1("", 0, ""), context));
+                  showAddItemDialog(Item("", 0, ""), context));
         },
       ),
       body: WillPopScope(
@@ -55,32 +40,33 @@ class _TypesState extends State<Types> {
           return Future.value(true);
         },
         child: FutureBuilder<DatabaseEvent>(
-            future: typeReference.once(),
+            future: service.itemReference.once(),
             builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
               if (snapshot.data?.snapshot.value != null) {
-                typeList.clear();
-                Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
-                if (values != null) {
+                itemList.clear();
+                Map values = {};
+                if (snapshot.data?.snapshot.value != null) {
+                  values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
                   values.forEach((key, values) {
-                    typeList.add(Type1.toType(values));
+                    itemList.add(Item.toItem(values));
                   });
                 }
 
-                return new ListView.builder(
+                return ListView.builder(
                     shrinkWrap: true,
-                    itemCount: typeList.length,
+                    itemCount: itemList.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Card(
                         child: ListTile(
-                          title: Text("Type: " + typeList[index].getType()),
+                          title: Text("Name: " + itemList[index].getName()),
                           subtitle: Text("Price: " +
-                              typeList[index].getPrice().toString()),
+                              itemList[index].getPrice().toString()),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               GestureDetector(
                                 child: Tooltip(
-                                  message: "Edit Type",
+                                  message: "Edit Item",
                                   child: Icon(
                                     Icons.edit,
                                     color: Colors.blue,
@@ -91,7 +77,7 @@ class _TypesState extends State<Types> {
                                       context: context,
                                       builder: (BuildContext context) =>
                                           showAddItemDialog(
-                                              typeList[index], context));
+                                              itemList[index], context));
                                 },
                               ),
                               Container(
@@ -99,7 +85,7 @@ class _TypesState extends State<Types> {
                               ),
                               GestureDetector(
                                 child: Tooltip(
-                                  message: "Delete Type",
+                                  message: "Delete Item",
                                   child: Icon(
                                     Icons.delete,
                                     color: Colors.red,
@@ -110,7 +96,7 @@ class _TypesState extends State<Types> {
                                       context: context,
                                       builder: (BuildContext context) {
                                         return AlertDialog(
-                                          title: Text("Delete Type ?"),
+                                          title: Text("Delete Item ?"),
                                           content: Text(
                                               "This action cannot be undone..."),
                                           actions: [
@@ -118,8 +104,9 @@ class _TypesState extends State<Types> {
                                                 child: Text("OK"),
                                                 onPressed: () {
                                                   Navigator.pop(context);
-                                                  _delete(
-                                                      context, typeList[index]);
+                                                  service.deleteItem(itemList[index]);
+                                                  service.showSnackBar("Item Deleted Successfully", context);
+                                                  updateListItem();
                                                 })
                                           ],
                                         );
@@ -138,57 +125,42 @@ class _TypesState extends State<Types> {
     );
   }
 
-  void _delete(BuildContext context, Type1 type) {
-    String id = type.getId();
-
-    DatabaseReference typeReference1 = typeReference.child(id);
-    typeReference1.remove();
-    updateTypeList();
-    showSnackBar("Type Deleted Successfully", context);
+  void updateListItem(){
+    setState(() {
+    });
   }
 
-  void updateTypeList() {
-    setState(() {});
-  }
-
-  void showSnackBar(String message, BuildContext context) {
-    SnackBar snackBar = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
-  AlertDialog showAddItemDialog(Type1 type, BuildContext context) {
-    typeNameController.text = type.getType();
-    if (type.getPrice() != 0) {
-      typePriceController.text = type.getPrice().toString();
+  AlertDialog showAddItemDialog(Item item, BuildContext context) {
+    itemNameController.text = item.getName();
+    if (item.getPrice() != 0) {
+      itemPriceController.text = item.getPrice().toString();
     } else {
-      typePriceController.text = "";
+      itemPriceController.text = "";
     }
     return AlertDialog(
-      title: Text("Type Detail"),
+      title: Text("Item Detail"),
       content: Container(
         width: 200,
-        height: 130,
+        height: 150,
         child: Form(
-
             key: _formKey,
             child: ListView(
               shrinkWrap: true,
               children: [
                 TextFormField(
                   onChanged: (name) {
-                    type.setType(name);
+                    item.setName(name);
                   },
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "Please Enter Type";
+                      return "Please Enter Product Name";
                     }
 
                     return null;
                   },
-                  controller: typeNameController,
+                  controller: itemNameController,
                   decoration: InputDecoration(
-                      labelText: "Type Name",
+                      labelText: "Item Name",
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                 ),
@@ -200,7 +172,7 @@ class _TypesState extends State<Types> {
                 TextFormField(
                   onChanged: (price) {
                     if (price.isNotEmpty) {
-                      type.setPrice(int.parse(price));
+                      item.setPrice(int.parse(price));
                     }
                   },
                   keyboardType: TextInputType.number,
@@ -209,13 +181,13 @@ class _TypesState extends State<Types> {
                   ],
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "Please Enter Type Price";
+                      return "Please Enter Product Price";
                     }
                     return null;
                   },
-                  controller: typePriceController,
+                  controller: itemPriceController,
                   decoration: InputDecoration(
-                      labelText: "Type Price",
+                      labelText: "Item Price",
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0))),
                 ),
@@ -224,45 +196,18 @@ class _TypesState extends State<Types> {
       ),
       actions: [
         TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
-                saveType(type);
-                typePriceController.text = "";
-                typeNameController.text = "";
+                await service.saveItem(item);
+                itemPriceController.text = "";
+                itemNameController.text = "";
                 Navigator.pop(context);
-                showSnackBar("Type Saved Successfully...", context);
+                service.showSnackBar("Item Saved Successfully...", context);
+                updateListItem();
               }
             },
-            child: Text("Save Type"))
+            child: Text("Save Item"))
       ],
     );
-  }
-
-  void saveType(Type1 type) {
-    typeReference
-        .orderByChild("type")
-        .equalTo(type.getType())
-        .once()
-        .then((value) {
-      String id = type.getId();
-      if (id.isEmpty) {
-        id = typeReference.push().key!;
-      } else {
-        id = type.getId();
-      }
-      Map typeMap = type.toMap();
-      typeMap['id'] = id;
-
-      if (value != null) {
-        Map values = value.snapshot.value as Map<dynamic,dynamic>;
-        if (values != null) {
-          values.forEach((key, value) {
-            typeMap['id'] = value['id'];
-          });
-        }
-        typeReference.child(typeMap['id']).set(typeMap);
-        updateTypeList();
-      }
-    });
   }
 }
