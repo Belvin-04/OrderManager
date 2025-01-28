@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
-import 'package:order_manager/screens/HomePage.dart';
+import 'package:order_manager/screens/home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:order_manager/utils/ThemeProvider.dart';
 import 'dart:async';
-
+import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
@@ -12,8 +12,6 @@ Future<void> main() async {
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key key}) : super(key: key);
-
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -21,17 +19,20 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool _initialized = false;
   bool _error = false;
-  FirebaseApp app;
+  late FirebaseApp app;
   // Define an async function to initialize FlutterFire
   void initializeFlutterFire() async {
     try {
       // Wait for Firebase to initialize and set `_initialized` state to true
-      FirebaseApp app1 = await Firebase.initializeApp();
+      FirebaseApp app1 = await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform
+      );
       setState(() {
         _initialized = true;
         app = app1;
       });
     } catch (e) {
+      print(e);
       // Set `_error` state to true if Firebase initialization fails
       setState(() {
         _error = true;
@@ -95,32 +96,9 @@ class _SplashScreen1State extends State<SplashScreen1> {
             theme: MyThemes.lightTheme,
             darkTheme: MyThemes.darkTheme,
             themeMode: MyThemes.getTheme(themeProvider.isdarkMode),
-            /*theme: ThemeData(
-          primarySwatch: Colors.red,
-          primaryColor: Colors.black,
-          backgroundColor: Colors.black,
-          indicatorColor: Color(0xff0E1D36),
-          buttonColor: Color(0xff3B3B3B),
-          hintColor: Color(0xffffffff),
-          highlightColor: Color(0xff372901),
-          hoverColor: Color(0xff3A3A3B),
-          focusColor: Color(0xffffffff),
-          disabledColor: Colors.grey,
-          textSelectionTheme:
-              TextSelectionThemeData(selectionColor: Colors.black),
-          cardColor: Color(0xFF151515),
-          canvasColor: Colors.black,
-          brightness: Brightness.dark,
-          buttonTheme: Theme.of(context)
-              .buttonTheme
-              .copyWith(colorScheme: ColorScheme.dark()),
-          appBarTheme: AppBarTheme(
-            elevation: 0.0,
-          ),
-        ),*/
             debugShowCheckedModeBanner: false,
             home: Material(
-              child: HomePage(this.widget.app),
+              child: HomePage(),
             ),
           );
         });

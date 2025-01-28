@@ -1,8 +1,9 @@
 {
   "project_info": {
     "project_number": "33997041371",
+    "firebase_url": "https://order-manager-1f6bf-default-rtdb.firebaseio.com",
     "project_id": "order-manager-1f6bf",
-    "storage_bucket": "order-manager-1f6bf.appspot.com"
+    "storage_bucket": "order-manager-1f6bf.firebasestorage.app"
   },
   "client": [
     {
