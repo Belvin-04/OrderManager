@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:order_manager/modal/Order.dart';
 import 'package:order_manager/modal/Table.dart';
 import 'package:order_manager/screens/Orders.dart';
-import 'package:order_manager/utils/NavigationDrawer.dart';
+import 'package:order_manager/utils/NavigationDrawer.dart' as Drawer;
 import 'package:order_manager/utils/ThemeProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,37 +17,38 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FirebaseDatabase database;
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
     final DatabaseReference tableReference =
-        database.reference().child("tables");
+        database.ref("tables");
     tableReference.keepSynced(true);
 
     final DatabaseReference orderReference =
-        database.reference().child("orders");
+        database.ref("orders");
     orderReference.keepSynced(true);
+    print(tableReference.path);
 
     return Scaffold(
       key: _scaffoldStateKey,
-      drawer: NavigationDrawer(app),
+      drawer: Drawer.NavigationDrawer(app),
       appBar: AppBar(
         title: Text("Home"),
       ),
       body: WillPopScope(
         onWillPop: () {
-          if (_scaffoldStateKey.currentState.isDrawerOpen) {
+          if (_scaffoldStateKey.currentState!.isDrawerOpen) {
             Navigator.pop(context);
           }
           return Future.value(false);
         },
-        child: FutureBuilder(
-          future: tableReference.once(),
+        child: FutureBuilder<DataSnapshot>(
+          future: tableReference.get(),
           builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
             if (snapshot.hasData) {
               tableList.clear();
               tempList.clear();
-              Map values = snapshot.data.value;
+              Map values = snapshot.data?.value as Map<dynamic,dynamic>;
               if (values != null) {
                 values.forEach((key, value) {
                   tempList.add(Table1.toTable(value));
@@ -147,7 +148,7 @@ class HomePage extends StatelessWidget {
     Set occupiedTables = Set();
     orderReference.once().then((value) {
       if (value != null) {
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             occupiedTables.add(value["tableNo"]);
@@ -220,9 +221,10 @@ class HomePage extends StatelessWidget {
         .once()
         .then((value) {
       if (value != null) {
-        Map values = value.value;
+        Map values = {};
         List temp = [];
-        if (values != null) {
+        if (value.snapshot.value != null) {
+          values = value.snapshot.value as Map<dynamic,dynamic>;
           values.forEach((key, value) {
             if (value["status"] == "pending") {
               temp.add(1);

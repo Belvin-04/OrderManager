@@ -2,10 +2,7 @@ class Table1 {
   String id;
   int tableNo;
 
-  Table1(int tableNo, String id) {
-    this.tableNo = tableNo;
-    this.id = id;
-  }
+  Table1(this.tableNo, this.id);
 
   void setId(String id) {
     this.id = id;

@@ -16,18 +16,18 @@ class Tables extends StatefulWidget {
 class _TablesState extends State<Tables> {
   FirebaseApp app;
   _TablesState(this.app);
-  FirebaseDatabase database;
-  DatabaseReference tableReference;
+  late FirebaseDatabase database;
+  late DatabaseReference tableReference;
   List<Table1> tableList = [];
   List tempList = [];
 
   @override
   void initState() {
     super.initState();
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    tableReference = database.reference().child("tables");
+    tableReference = database.ref().child("tables");
     tableReference.keepSynced(true);
   }
 
@@ -80,16 +80,16 @@ class _TablesState extends State<Tables> {
       ),
       body: WillPopScope(
         onWillPop: () {
-          return Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => HomePage(app)));
+          Navigator.pop(context);
+          return Future.value(true);
         },
-        child: FutureBuilder(
+        child: FutureBuilder<DatabaseEvent>(
           future: tableReference.once(),
-          builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
-            if (snapshot.hasData) {
+          builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+            if (snapshot.data?.snapshot.value != null) {
               tableList.clear();
               tempList.clear();
-              Map values = snapshot.data.value;
+              Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
               if (values != null) {
                 values.forEach((key, value) {
                   tempList.add(Table1.toTable(value));
@@ -127,7 +127,7 @@ class _TablesState extends State<Tables> {
     int tableNo = 0;
     Query tableNoQuery = tableReference.orderByChild('tableNo').limitToLast(1);
     tableNoQuery.once().then((value) {
-      Map values = value.value;
+      Map values = value.snapshot.value as Map<dynamic,dynamic>;
       if (values == null) {
         tableNo++;
       } else {
@@ -136,7 +136,7 @@ class _TablesState extends State<Tables> {
           tableNo++;
         });
       }
-      String id = tableReference.push().key;
+      String id = tableReference.push().key!;
       Map tableMap = Table1(tableNo, id).toMap();
       tableReference.child(id).set(tableMap);
       updateListView();
@@ -145,11 +145,11 @@ class _TablesState extends State<Tables> {
   }
 
   void removeTable() {
-    String tableId;
-    int tableNo;
+    String? tableId;
+    int? tableNo;
     Query tableNoQuery = tableReference.orderByChild('tableNo').limitToLast(1);
     tableNoQuery.once().then((value) {
-      Map values = value.value;
+      Map values = value.snapshot.value as Map<dynamic,dynamic>;
       if (values == null) {
         showSnackBar("No Tables found...", context);
       } else {
@@ -158,9 +158,9 @@ class _TablesState extends State<Tables> {
           tableNo = value['tableNo'];
         });
 
-        isOrderExists(tableNo).then((value) {
+        isOrderExists(tableNo!).then((value) {
           if (!value) {
-            DatabaseReference tableReference1 = tableReference.child(tableId);
+            DatabaseReference tableReference1 = tableReference.child(tableId!);
             tableReference1.remove();
             updateListView();
             showSnackBar("Table removed successfully...", context);
@@ -186,11 +186,11 @@ class _TablesState extends State<Tables> {
   }
 
   Future<bool> isOrderExists(int tableNo) async {
-    DatabaseReference orderReference = database.reference().child("orders");
+    DatabaseReference orderReference = database.ref().child("orders");
     List temp = [];
     bool isThereOrder = await orderReference.once().then((value) {
       if (value != null) {
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             if (value['tableNo'] == tableNo) {

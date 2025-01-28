@@ -3,7 +3,7 @@ class Type1 {
   String type;
   String id;
 
-  Type1(String type, int price, String id) {
+  Type1(this.type, this.price, this.id) {
     this.type = type;
     this.price = price;
     this.id = id;

@@ -15,18 +15,18 @@ class Types extends StatefulWidget {
 class _TypesState extends State<Types> {
   FirebaseApp app;
   _TypesState(this.app);
-  DatabaseReference typeReference;
+  late DatabaseReference typeReference;
   TextEditingController typeNameController = TextEditingController();
   TextEditingController typePriceController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  FirebaseDatabase database;
+  late FirebaseDatabase database;
   @override
   void initState() {
     super.initState();
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    typeReference = database.reference().child("types");
+    typeReference = database.ref().child("types");
     typeReference.keepSynced(true);
   }
 
@@ -54,12 +54,12 @@ class _TypesState extends State<Types> {
           Navigator.pop(context);
           return Future.value(true);
         },
-        child: FutureBuilder(
+        child: FutureBuilder<DatabaseEvent>(
             future: typeReference.once(),
-            builder: (context, AsyncSnapshot<DataSnapshot> snapshot) {
-              if (snapshot.hasData) {
+            builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+              if (snapshot.data?.snapshot.value != null) {
                 typeList.clear();
-                Map values = snapshot.data.value;
+                Map values = snapshot.data?.snapshot.value as Map<dynamic,dynamic>;
                 if (values != null) {
                   values.forEach((key, values) {
                     typeList.add(Type1.toType(values));
@@ -180,7 +180,7 @@ class _TypesState extends State<Types> {
                     type.setType(name);
                   },
                   validator: (value) {
-                    if (value.isEmpty) {
+                    if (value!.isEmpty) {
                       return "Please Enter Type";
                     }
 
@@ -208,7 +208,7 @@ class _TypesState extends State<Types> {
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   validator: (value) {
-                    if (value.isEmpty) {
+                    if (value!.isEmpty) {
                       return "Please Enter Type Price";
                     }
                     return null;
@@ -225,7 +225,7 @@ class _TypesState extends State<Types> {
       actions: [
         TextButton(
             onPressed: () {
-              if (_formKey.currentState.validate()) {
+              if (_formKey.currentState!.validate()) {
                 saveType(type);
                 typePriceController.text = "";
                 typeNameController.text = "";
@@ -246,7 +246,7 @@ class _TypesState extends State<Types> {
         .then((value) {
       String id = type.getId();
       if (id.isEmpty) {
-        id = typeReference.push().key;
+        id = typeReference.push().key!;
       } else {
         id = type.getId();
       }
@@ -254,7 +254,7 @@ class _TypesState extends State<Types> {
       typeMap['id'] = id;
 
       if (value != null) {
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             typeMap['id'] = value['id'];

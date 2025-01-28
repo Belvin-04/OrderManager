@@ -19,10 +19,10 @@ class _BillsState extends State<Bills> {
   final FirebaseApp app;
   _BillsState(this.table, this.app);
 
-  FirebaseDatabase database;
-  DatabaseReference orderReference;
-  DatabaseReference typeReference;
-  DatabaseReference itemReference;
+  late FirebaseDatabase database;
+  late DatabaseReference orderReference;
+  late DatabaseReference typeReference;
+  late DatabaseReference itemReference;
   List<Order> orderList = [];
   Map typeMap = Map();
   Map itemMap = Map();
@@ -30,12 +30,12 @@ class _BillsState extends State<Bills> {
   @override
   void initState() {
     super.initState();
-    database = FirebaseDatabase(app: app);
+    database = FirebaseDatabase.instance;
     database.setPersistenceEnabled(true);
     database.setPersistenceCacheSizeBytes(10000000);
-    orderReference = database.reference().child("orders");
-    typeReference = database.reference().child("types");
-    itemReference = database.reference().child("items");
+    orderReference = database.ref().child("orders");
+    typeReference = database.ref().child("types");
+    itemReference = database.ref().child("items");
     orderReference.keepSynced(true);
     typeReference.keepSynced(true);
     itemReference.keepSynced(true);
@@ -46,7 +46,7 @@ class _BillsState extends State<Bills> {
         .then((value) {
       if (value != null) {
         List<Order> orderList = [];
-        Map values = value.value;
+        Map values = value.snapshot.value as Map<dynamic,dynamic>;
         if (values != null) {
           values.forEach((key, value) {
             if (value['status'] != "canceled") {
@@ -110,15 +110,15 @@ class _BillsState extends State<Bills> {
 }
 
 class BillFooter extends StatelessWidget {
-  final List orderList;
+  final List<Order> orderList;
   BillFooter(this.orderList);
   @override
   Widget build(BuildContext context) {
     int totalAmount = 0;
     int totalQuantity = 0;
     orderList.forEach((element) {
-      totalAmount += element.getAmount();
-      totalQuantity += element.getQuantity();
+      totalAmount += (element.getAmount());
+      totalQuantity += (element.getQuantity());
     });
     return BillItem("", "$totalQuantity", "$totalAmount", "");
   }
