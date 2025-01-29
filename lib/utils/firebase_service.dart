@@ -309,6 +309,18 @@ class FirebaseService {
     orderReference.child(orderMap['id']).set(orderMap);
   }
 
+  void recalculateOrderPrices() async {
+    var value = await orderReference.once();
+    Map values = {};
+    if(value.snapshot.value != null){
+      values = value.snapshot.value as Map<dynamic,dynamic>;
+      values.forEach((key,value){
+        Order order = Order.toOrder(value);
+        saveOrder(order);
+      });
+    }
+  }
+
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).removeCurrentSnackBar();

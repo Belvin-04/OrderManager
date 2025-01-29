@@ -202,6 +202,7 @@ class _TypesState extends State<Types> {
                 typeNameController.text = "";
                 Navigator.pop(context);
                 service.showSnackBar("Type Saved Successfully...", context);
+                service.recalculateOrderPrices();
                 updateTypeList();
               }
             },
