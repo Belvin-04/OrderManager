@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:order_manager/modal/order.dart';
 import 'package:order_manager/modal/table.dart';
+import 'package:order_manager/screens/home_page.dart';
 import 'package:order_manager/screens/tabs/cancelled_orders.dart';
 import 'package:order_manager/screens/tabs/completed_orders.dart';
 import 'package:order_manager/screens/tabs/pending_orders.dart';
@@ -35,6 +36,13 @@ class _OrdersState extends State<Orders> {
       child: Scaffold(
 
         appBar: AppBar(
+            leading: GestureDetector(
+              child: Icon(Icons.arrow_back),
+              onTap: () {
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => HomePage()));
+              },
+            ),
             bottom: TabBar(
               tabs: [
                 Tab(
@@ -96,7 +104,7 @@ class _OrdersState extends State<Orders> {
             ]),
         body: WillPopScope(
           onWillPop: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=>HomePage()));
             return Future.value(true);
           },
           child: TabBarView(

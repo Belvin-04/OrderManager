@@ -321,6 +321,22 @@ class FirebaseService {
     }
   }
 
+  Future<double> getTotalAmount(Table1 table) async {
+    var value = await orderReference.orderByChild("tableNo").equalTo(table.getTableNo()).once();
+    var values = {};
+    double totalAmt = 0;
+    if(value.snapshot.value != null){
+      values = value.snapshot.value as Map<dynamic,dynamic>;
+      values.forEach((key,value){
+        Order order = Order.toOrder(value);
+        if(order.getStatus() != "canceled"){
+          totalAmt += order.getAmount();
+        }
+      });
+    }
+    return totalAmt;
+  }
+
   void showSnackBar(String message, BuildContext context) {
     SnackBar snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
@@ -354,7 +370,7 @@ class FirebaseService {
           });
         }
         if (totalTables.length != 0) {
-          showDialog(
+          await showDialog(
               context: context,
               builder: (context) {
                 return AlertDialog(

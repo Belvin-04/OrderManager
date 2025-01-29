@@ -8,10 +8,18 @@ import 'package:order_manager/utils/firebase_service.dart';
 
 import '../modal/order.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final FirebaseService service = FirebaseService();
+
   final List<Table1> tableList = [];
+
   final List tempList = [];
+
   final _scaffoldStateKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -62,6 +70,16 @@ class HomePage extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            FutureBuilder(future: service.getTotalAmount(tableList[index]), builder: (context,snapshot){
+                              return (snapshot.data != 0.0)?Container(
+                                margin: EdgeInsets.only(right: 10.0),
+                                  padding: EdgeInsets.all(5.0),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.white,width: 1)
+                                ),
+                                  child: Text('\u{20B9}'+snapshot.data.toString(),style: TextStyle(fontSize: 14),)
+                              ):Container();
+                            }),
                             GestureDetector(
                               child: Tooltip(
                                 message: "Take Order",
@@ -69,7 +87,7 @@ class HomePage extends StatelessWidget {
                                     color: Colors.green),
                               ),
                               onTap: () {
-                                Navigator.push(
+                                Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
@@ -88,7 +106,7 @@ class HomePage extends StatelessWidget {
                               onTap: () async {
                                 int check = await service.swapTable(context,tableList[index].getTableNo(),tableList);
                                 if(check == 0){
-
+                                  updateList();
                                 }
                                 else if(check == 1){
                                   service.showSnackBar("There are no free tables....!", context);
@@ -146,6 +164,7 @@ class HomePage extends StatelessWidget {
                                                   }
                                                   Navigator.pop(context);
                                                   service.showSnackBar("Table cleared Successfully...", context);
+                                                  updateList();
                                                 },
                                                 child: Text("OK"))
                                           ],
@@ -168,5 +187,11 @@ class HomePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  updateList(){
+    setState(() {
+
+    });
   }
 }
