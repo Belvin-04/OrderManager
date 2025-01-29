@@ -19,6 +19,7 @@ class _BillsState extends State<Bills> {
   late Future<List<Order>> orderList;
   FirebaseService service = FirebaseService();
 
+
   @override
   void initState() {
     super.initState();
@@ -27,6 +28,7 @@ class _BillsState extends State<Bills> {
 
   @override
   Widget build(BuildContext context) {
+    double maxHeight = MediaQuery.of(context).size.height - 270;
     return Scaffold(
       appBar: AppBar(
         title: Text("Table ${widget.table.getTableNo()}: Bill"),
@@ -37,7 +39,6 @@ class _BillsState extends State<Bills> {
           return Future.value(true);
         },
         child: ListView(
-          shrinkWrap: true,
           children: [
             Center(
               child: Text(
@@ -63,18 +64,25 @@ class _BillsState extends State<Bills> {
                     return Center(child: Text('No orders found.'));
                   } else {
                     List<Order> orders = snapshot.data!;
+
                     return Column(
                       children: [
-                        ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: orders.length,
-                            itemBuilder: (context, index) {
-                              return BillItem(
-                                  "${orders[index].getItemName()} ${orders[index].getType(0)}",
-                                  "${orders[index].getQuantity()}",
-                                  "${orders[index].getAmount()}",
-                                  "${(orders[index].getAmount() / orders[index].getQuantity())}");
-                            }),
+                        Container(
+                          height: orders.length * 60,
+                          child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: orders.length,
+                              itemBuilder: (context, index) {
+                                return BillItem(
+                                    "${orders[index].getItemName()} ${orders[index].getType(0)}",
+                                    "${orders[index].getQuantity()}",
+                                    "${orders[index].getAmount()}",
+                                    "${(orders[index].getAmount() / orders[index].getQuantity())}");
+                              }),
+                          constraints: BoxConstraints(
+                            maxHeight: maxHeight
+                          ),
+                        ),
                         Divider(
                           color: Colors.white,
                         ),
