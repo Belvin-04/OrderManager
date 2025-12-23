@@ -1,0 +1,116 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/table.dart';
+import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/order_repository.dart';
+import 'package:order_manager/repositories/table_repository.dart';
+
+enum RemoveTableResult { noTables, hasOrders, removed }
+
+enum ClearTableResult { hasPendingOrders, alreadyCleared, canClear }
+
+enum SwapTableResult { canSwap, noFreeTables, noOrdersOnSource, noOrdersAtAll }
+
+final tablesProvider = StreamProvider<List<Table1>>((ref) {
+  return ref.read(tableRepositoryProvider).watchTables();
+});
+
+final tablesViewmodelProvider = AsyncNotifierProvider<TablesViewmodel, void>(
+  TablesViewmodel.new,
+);
+
+class SwapTableDecision {
+  final SwapTableResult result;
+  final List<int> availableTables;
+
+  SwapTableDecision({required this.result, this.availableTables = const []});
+}
+
+class TablesViewmodel extends AsyncNotifier<void> {
+  late final TableRepository _tableRepo;
+  late final OrderRepository _orderRepo;
+
+  @override
+  FutureOr<void> build() {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
+  }
+
+  Future<void> addTable() async {
+    final lastNo = await _tableRepo.getLastTable();
+    final nextTableNo = (lastNo?.getTableNo() ?? 0) + 1;
+    await _tableRepo.addTable(nextTableNo);
+  }
+
+  Future<RemoveTableResult> removeTable() async {
+    final lastTable = await _tableRepo.getLastTable();
+
+    if (lastTable == null) {
+      return RemoveTableResult.noTables;
+    }
+
+    final hasOrders = await _orderRepo.hasAnyOrdersForTable(
+      lastTable.getTableNo().toString(),
+    );
+    if (hasOrders) {
+      return RemoveTableResult.hasOrders;
+    }
+
+    await _tableRepo.deleteTableById(lastTable.getId());
+    return RemoveTableResult.removed;
+  }
+
+  Future<ClearTableResult> clearTable(String tableKey) async {
+    final hasAnyOrders = await _orderRepo.hasAnyOrdersForTable(tableKey);
+
+    if (!hasAnyOrders) {
+      return ClearTableResult.alreadyCleared;
+    }
+
+    final hasPending = await _orderRepo.hasPendingOrdersForTable(tableKey);
+
+    if (hasPending) {
+      return ClearTableResult.hasPendingOrders;
+    }
+    return ClearTableResult.canClear;
+  }
+
+  Future<void> clearTableConfirm(String tableKey) async {
+    await _orderRepo.deleteOrdersForTable(tableKey);
+  }
+
+  Future<SwapTableDecision> swapTable(String sourceTableKey) async {
+    final tables = ref.read(tablesProvider).value ?? [];
+    final ordersOnSource = await _orderRepo.getOrdersForTable(sourceTableKey);
+
+    if (ordersOnSource.isEmpty) {
+      return SwapTableDecision(result: SwapTableResult.noOrdersOnSource);
+    }
+
+    final occupiedTables = await _orderRepo.getOccupiedTableNos();
+
+    if (occupiedTables.isEmpty) {
+      return SwapTableDecision(result: SwapTableResult.noOrdersAtAll);
+    }
+
+    final allTableNos = tables.map((t) => t.tableNo).toSet();
+    final freeTables = allTableNos.difference(occupiedTables).toList();
+
+    if (freeTables.isEmpty) {
+      return SwapTableDecision(result: SwapTableResult.noFreeTables);
+    }
+
+    return SwapTableDecision(
+      result: SwapTableResult.canSwap,
+      availableTables: freeTables,
+    );
+  }
+
+  Future<void> confirmSwap({
+    required String fromTableKey,
+    required String toTableKey,
+  }) async {
+    await _orderRepo.moveOrders(fromTableKey, toTableKey);
+  }
+}

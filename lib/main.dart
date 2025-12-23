@@ -1,106 +1,71 @@
-import "package:flutter/material.dart";
-import 'package:order_manager/screens/home_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:order_manager/utils/ThemeProvider.dart';
-import 'dart:async';
+
 import 'firebase_options.dart';
-import 'package:provider/provider.dart';
+import 'package:order_manager/views/home_page/home_page.dart';
+import 'package:order_manager/utils/theme_provider.dart';
+import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/utils/firebase_initializer.dart';
+
+
+final firebaseInitProvider = FutureProvider<FirebaseApp>((ref) async {
+  final app = await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseInitializer.enableOfflineFeatures();
+  return app;
+});
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(SplashScreen());
+  runApp(const ProviderScope(child: App()));
 }
 
-class SplashScreen extends StatefulWidget {
+class App extends ConsumerWidget {
+  const App({super.key});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firebaseState = ref.watch(firebaseInitProvider);
+    final themeMode = ref.watch(themeProvider);
+
+    return MaterialApp(
+      title: "Order Manager",
+      debugShowCheckedModeBanner: false,
+      theme: MyThemes.lightTheme,
+      darkTheme: MyThemes.darkTheme,
+      themeMode: themeMode,
+      home: firebaseState.when(
+        loading: () => const SplashScreen(),
+        error: (e, _) => ErrorScreen(error: e.toString()),
+        data: (_) => HomePage(),
+      ),
+    );
+  }
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  bool _initialized = false;
-  bool _error = false;
-  late FirebaseApp app;
-  // Define an async function to initialize FlutterFire
-  void initializeFlutterFire() async {
-    try {
-      // Wait for Firebase to initialize and set `_initialized` state to true
-      FirebaseApp app1 = await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform
-      );
-      setState(() {
-        _initialized = true;
-        app = app1;
-      });
-    } catch (e) {
-      print(e);
-      // Set `_error` state to true if Firebase initialization fails
-      setState(() {
-        _error = true;
-      });
-    }
-  }
-
-  @override
-  void initState() {
-    initializeFlutterFire();
-    super.initState();
-  }
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Show error message if initialization failed
-    if (_error) {
-      //return SomethingWentWrong();
-    }
-
-    // Show a loader until FlutterFire is initialized
-    if (!_initialized) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    return SplashScreen1(app);
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
   }
 }
 
-class SplashScreen1 extends StatefulWidget {
-  final FirebaseApp app;
-  SplashScreen1(this.app);
-
-  @override
-  _SplashScreen1State createState() => _SplashScreen1State();
-}
-
-class _SplashScreen1State extends State<SplashScreen1> {
-  ThemeProvider themeProvider = ThemeProvider();
-  @override
-  void initState() {
-    super.initState();
-    getCurrentTheme();
-  }
-
-  void getCurrentTheme() async {
-    themeProvider.darkTheme =
-        await themeProvider.darkThemePreference.getTheme();
-  }
+class ErrorScreen extends StatelessWidget {
+  final String error;
+  const ErrorScreen({super.key, required this.error});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-        create: (context) => themeProvider,
-        builder: (context, _) {
-          ThemeProvider themeProvider = Provider.of<ThemeProvider>(context);
-          return MaterialApp(
-            title: "Order Manager",
-            theme: MyThemes.lightTheme,
-            darkTheme: MyThemes.darkTheme,
-            themeMode: MyThemes.getTheme(themeProvider.isdarkMode),
-            debugShowCheckedModeBanner: false,
-            home: Material(
-              child: HomePage(),
-            ),
-          );
-        });
+    return Scaffold(
+      body: Center(
+        child: Text("Error initializing app:\n$error"),
+      ),
+    );
   }
 }
