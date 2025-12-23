@@ -41,7 +41,9 @@ final billOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
   tableNo,
 ) {
-  return ref.read(orderRepositoryProvider).getBillOrdersForTable(tableNo);
+  return ref
+      .read(ordersViewModelProvider.notifier)
+      .getBillOrdersForTable(tableNo);
 });
 
 final billTotalsProvider = Provider.family<Map<String, int>, String>((
@@ -117,6 +119,32 @@ class OrdersViewModel extends AsyncNotifier<void> {
     }
 
     return restored;
+  }
+
+  Stream<List<Order>> getBillOrdersForTable(String tableNo) async* {
+    Stream<List<Order>> orderStream = ref
+        .read(orderRepositoryProvider)
+        .getBillOrdersForTable(tableNo);
+    Map<String, Order> orderMap = {};
+
+    await for (List<Order> orderList in orderStream) {
+      orderMap.clear();
+      for (Order order in orderList) {
+        final key = '${order.getItemName()} ${order.getType(1)}';
+        if (orderMap.containsKey(key)) {
+          final existingOrder = orderMap[key]!;
+          final updatedOrder = existingOrder.copyWith(
+            quantity: existingOrder.quantity + order.quantity,
+            amount: existingOrder.amount + order.amount,
+          );
+          orderMap[key] = updatedOrder;
+        } else {
+          orderMap[key] = order;
+        }
+      }
+      List<Order> orders = orderMap.values.toList();
+      yield orders;
+    }
   }
 
   @override

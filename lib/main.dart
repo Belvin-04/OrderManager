@@ -8,7 +8,6 @@ import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/firebase_initializer.dart';
 
-
 final firebaseInitProvider = FutureProvider<FirebaseApp>((ref) async {
   final app = await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -50,9 +49,7 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 
@@ -63,9 +60,7 @@ class ErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Text("Error initializing app:\n$error"),
-      ),
+      body: Center(child: Text("Error initializing app:\n$error")),
     );
   }
 }
