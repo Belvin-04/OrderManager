@@ -15,13 +15,13 @@ class Items extends ConsumerWidget {
     final itemsState = ref.watch(itemsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Items")),
+      appBar: AppBar(title: const Text("Items")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         tooltip: "Add Item",
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () {
-          showAddItemDialog(context, ref, Item("", 0, ""));
+          showAddItemDialog(context, ref, Item(id: "", name: "", price: 0));
         },
       ),
       body: itemsState.when(
@@ -39,13 +39,13 @@ class Items extends ConsumerWidget {
               Item item = items[index];
               return Card(
                 child: ListTile(
-                  title: Text("Name: ${item.getName()}"),
-                  subtitle: Text("Price: ${item.getPrice()}"),
+                  title: Text("Name: ${item.name}"),
+                  subtitle: Text("Price: ${item.price}"),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Edit Item",
                           child: Icon(Icons.edit, color: Colors.blue),
                         ),
@@ -53,9 +53,9 @@ class Items extends ConsumerWidget {
                           showAddItemDialog(context, ref, item);
                         },
                       ),
-                      Container(margin: EdgeInsets.only(right: 10.0)),
+                      Container(margin: const EdgeInsets.only(right: 10.0)),
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Delete Item",
                           child: Icon(Icons.delete, color: Colors.red),
                         ),

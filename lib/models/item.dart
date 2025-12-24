@@ -1,47 +1,23 @@
 class Item {
-  int price;
-  String name;
-  String id;
+  final int price;
+  final String name;
+  final String id;
 
-  Item(this.name, this.price, this.id);
+  Item({required this.name, required this.price, required this.id});
 
-  void setId(String id) {
-    this.id = id;
-  }
-
-  String getId() {
-    return id;
-  }
-
-  void setName(String name) {
-    this.name = name;
-  }
-
-  String getName() {
-    return name;
-  }
-
-  void setPrice(int price) {
-    this.price = price;
-  }
-
-  int getPrice() {
-    return price;
-  }
-
-  Map toMap() {
-    Map itemMap = {};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> itemMap = {};
     itemMap['name'] = name;
     itemMap['price'] = price;
     itemMap['id'] = id;
     return itemMap;
   }
 
-  static Item toItem(Map itemMap) {
+  factory Item.fromMap(Map<String, dynamic> itemMap) {
     String name = itemMap['name'];
     int price = itemMap['price'];
     String id = itemMap['id'];
-    return Item(name, price, id);
+    return Item(name: name, price: price, id: id);
   }
 
   @override
@@ -51,6 +27,10 @@ class Item {
   }
 
   Item copyWith({int? price, String? name, String? id}) {
-    return Item(name ?? this.name, price ?? this.price, id ?? this.id);
+    return Item(
+      name: name ?? this.name,
+      price: price ?? this.price,
+      id: id ?? this.id,
+    );
   }
 }

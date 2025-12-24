@@ -26,7 +26,7 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
     );
 
     await typesRepo.saveType(type);
-    if (type.getId().isEmpty) return;
+    if (type.id.isEmpty) return;
     await updateOrderPricesAndNames(oldType, type);
   }
 
@@ -36,13 +36,13 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
 
   Future<void> updateOrderPricesAndNames(Type1 oldType, Type1 type) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
-    final orders = await ordersRepo.getOrdersByType(oldType.getType());
+    final orders = await ordersRepo.getOrdersByType(oldType.type);
     for (final order in orders) {
       final item = await ref
           .read(itemRepositoryProvider)
           .getItem(order.itemName);
       final newAmount = (item!.price + type.price) * order.quantity;
-      final newName = type.getType();
+      final newName = type.type;
 
       final updated = order.copyWith(amount: newAmount, type: newName);
 

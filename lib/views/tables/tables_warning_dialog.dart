@@ -6,13 +6,13 @@ class TablesWarningDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      content: Text("Please clear the table to delete...!"),
+      content: const Text("Please clear the table to delete...!"),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: Text("OK"),
+          child: const Text("OK"),
         ),
       ],
     );

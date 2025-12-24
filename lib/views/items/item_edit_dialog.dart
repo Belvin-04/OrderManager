@@ -27,13 +27,11 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
   void initState() {
     super.initState();
     _editedItem = widget.initialItem;
-    _itemNameController = TextEditingController(
-      text: widget.initialItem.getName(),
-    );
+    _itemNameController = TextEditingController(text: widget.initialItem.name);
     _itemPriceController = TextEditingController(
-      text: widget.initialItem.getPrice() == 0
+      text: widget.initialItem.price == 0
           ? ''
-          : widget.initialItem.getPrice().toString(),
+          : widget.initialItem.price.toString(),
     );
   }
 
@@ -47,7 +45,7 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Item Detail"),
+      title: const Text("Item Detail"),
       content: SizedBox(
         width: 200,
         height: 150,
@@ -78,7 +76,7 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
               Container(
                 width: 0.0,
                 height: 0.0,
-                margin: EdgeInsets.only(bottom: 10.0),
+                margin: const EdgeInsets.only(bottom: 10.0),
               ),
               TextFormField(
                 onChanged: (price) {
@@ -117,7 +115,7 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
               Navigator.pop(context);
             }
           },
-          child: Text("Save Item"),
+          child: const Text("Save Item"),
         ),
       ],
     );

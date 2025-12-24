@@ -1,51 +1,23 @@
 class Type1 {
-  int price;
-  String type;
-  String id;
+  final int price;
+  final String type;
+  final String id;
 
-  Type1(this.type, this.price, this.id) {
-    type = type;
-    price = price;
-    id = id;
-  }
+  Type1({required this.type, required this.price, required this.id});
 
-  void setId(String id) {
-    this.id = id;
-  }
-
-  String getId() {
-    return id;
-  }
-
-  void setType(String type) {
-    this.type = type;
-  }
-
-  String getType() {
-    return type;
-  }
-
-  void setPrice(int price) {
-    this.price = price;
-  }
-
-  int getPrice() {
-    return price;
-  }
-
-  Map toMap() {
-    Map typeMap = {};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> typeMap = {};
     typeMap['type'] = type;
     typeMap['price'] = price;
     typeMap['id'] = id;
     return typeMap;
   }
 
-  static Type1 toType(Map typeMap) {
+  factory Type1.fromMap(Map<String, dynamic> typeMap) {
     String name = typeMap['type'];
     int price = typeMap['price'];
     String id = typeMap['id'];
-    return Type1(name, price, id);
+    return Type1(type: name, price: price, id: id);
   }
 
   @override
@@ -55,6 +27,10 @@ class Type1 {
   }
 
   Type1 copyWith({String? id, int? price, String? type}) {
-    return Type1(type ?? this.type, price ?? this.price, id ?? this.id);
+    return Type1(
+      type: type ?? this.type,
+      price: price ?? this.price,
+      id: id ?? this.id,
+    );
   }
 }

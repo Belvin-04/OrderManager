@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/items/items.dart';
+import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
 
 import 'change_theme_switch.dart';
@@ -16,42 +16,42 @@ class NavigationDrawer extends StatelessWidget {
         child: ListView(
           children: [
             ListTile(
-              title: Text("Items"),
+              title: const Text("Items"),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Items()),
+                  MaterialPageRoute(builder: (context) => const Items()),
                 );
               },
             ),
-            Divider(color: Colors.white24),
+            const Divider(color: Colors.white24),
             ListTile(
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => Tables()),
+                  MaterialPageRoute(builder: (context) => const Tables()),
                 );
               },
-              title: Text("Tables"),
+              title: const Text("Tables"),
             ),
-            Divider(color: Colors.white24),
+            const Divider(color: Colors.white24),
             ListTile(
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => Types()),
+                  MaterialPageRoute(builder: (context) => const Types()),
                 );
               },
-              title: Text("Types"),
+              title: const Text("Types"),
             ),
-            Divider(color: Colors.white24),
+            const Divider(color: Colors.white24),
             ListTile(
               onTap: () {},
-              title: Text("Dark Theme"),
-              trailing: ChangeThemeSwitch(),
+              title: const Text("Dark Theme"),
+              trailing: const ChangeThemeSwitch(),
             ),
           ],
         ),

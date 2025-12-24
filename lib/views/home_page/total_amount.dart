@@ -13,7 +13,7 @@ class TotalAmount extends ConsumerWidget {
     return StreamBuilder<int>(
       stream: ref
           .read(orderRepositoryProvider)
-          .getTotalAmountForTable(table.getTableNo().toString()),
+          .getTotalAmountForTable(table.tableNo.toString()),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
 
@@ -24,9 +24,7 @@ class TotalAmount extends ConsumerWidget {
         return Container(
           margin: const EdgeInsets.only(right: 10.0),
           padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 1),
-          ),
+          decoration: BoxDecoration(border: Border.all(color: Colors.white)),
           child: Text('\u{20B9}$total', style: const TextStyle(fontSize: 14)),
         );
       },

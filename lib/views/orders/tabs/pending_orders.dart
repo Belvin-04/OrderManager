@@ -14,18 +14,27 @@ class PendingOrders extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingOrdersState = ref.watch(
-      pendingOrdersProvider(table.getTableNo().toString()),
+      pendingOrdersProvider(table.tableNo.toString()),
     );
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         tooltip: "Take New Order",
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () {
           showSaveOrderDialog(
             context,
             ref,
-            Order(0, "", "", table.getTableNo(), "", "pending", "", 0),
+            Order(
+              id: "",
+              itemName: "",
+              amount: 0,
+              type: "",
+              tableNo: table.tableNo,
+              note: "",
+              status: "pending",
+              quantity: 0,
+            ),
             0,
           );
         },
@@ -49,7 +58,7 @@ class PendingOrders extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Complete Order",
                           child: Icon(Icons.check, color: Colors.green),
                         ),
@@ -67,10 +76,10 @@ class PendingOrders extends ConsumerWidget {
                       Container(
                         height: 0,
                         width: 0,
-                        margin: EdgeInsets.only(right: 10.0),
+                        margin: const EdgeInsets.only(right: 10.0),
                       ),
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Edit Order",
                           child: Icon(Icons.edit, color: Colors.blue),
                         ),
@@ -81,10 +90,10 @@ class PendingOrders extends ConsumerWidget {
                       Container(
                         height: 0,
                         width: 0,
-                        margin: EdgeInsets.only(right: 10.0),
+                        margin: const EdgeInsets.only(right: 10.0),
                       ),
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Cancel Order",
                           child: Icon(Icons.cancel, color: Colors.red),
                         ),

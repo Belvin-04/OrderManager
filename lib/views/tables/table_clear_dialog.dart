@@ -13,18 +13,18 @@ class TableClearDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("WARNING...!"),
-      content: Text(
+      title: const Text("WARNING...!"),
+      content: const Text(
         "All order details will be lost after clearing the table...!",
       ),
       actions: [
         TextButton(
           onPressed: () async {
-            await onClear(table.getTableNo().toString());
+            await onClear(table.tableNo.toString());
             if (!context.mounted) return;
             Navigator.pop(context);
           },
-          child: Text("OK"),
+          child: const Text("OK"),
         ),
       ],
     );

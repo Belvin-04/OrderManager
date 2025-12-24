@@ -36,7 +36,7 @@ class CancelledOrders extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Restore Order",
                           child: Icon(Icons.restore, color: Colors.green),
                         ),

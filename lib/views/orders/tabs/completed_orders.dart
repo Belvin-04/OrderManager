@@ -12,7 +12,7 @@ class CompletedOrders extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final completedOrdersState = ref.watch(
-      completedOrdersProvider(table.getTableNo().toString()),
+      completedOrdersProvider(table.tableNo.toString()),
     );
     return completedOrdersState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -35,7 +35,7 @@ class CompletedOrders extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      child: Tooltip(
+                      child: const Tooltip(
                         message: "Repeat Order",
                         child: Icon(Icons.replay_rounded, color: Colors.green),
                       ),

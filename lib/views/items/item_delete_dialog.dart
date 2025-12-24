@@ -14,11 +14,11 @@ class ItemDeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Delete Item ?"),
-      content: Text("This action cannot be undone..."),
+      title: const Text("Delete Item ?"),
+      content: const Text("This action cannot be undone..."),
       actions: [
         TextButton(
-          child: Text("OK"),
+          child: const Text("OK"),
           onPressed: () async {
             await onDelete(initialItem);
             if (!context.mounted) return;

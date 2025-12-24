@@ -10,9 +10,7 @@ class BillFooter extends ConsumerWidget {
   const BillFooter(this.table, {super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final billTotals = ref.watch(
-      billTotalsProvider(table.getTableNo().toString()),
-    );
+    final billTotals = ref.watch(billTotalsProvider(table.tableNo.toString()));
     final totalAmount = billTotals['amount'] ?? 0;
     final totalQuantity = billTotals['quantity'] ?? 0;
     return BillItem("", "$totalQuantity", "$totalAmount", "");

@@ -14,11 +14,11 @@ class TypeDeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Delete Type ?"),
-      content: Text("This action cannot be undone..."),
+      title: const Text("Delete Type ?"),
+      content: const Text("This action cannot be undone..."),
       actions: [
         TextButton(
-          child: Text("OK"),
+          child: const Text("OK"),
           onPressed: () async {
             await onDelete(initialType);
             if (!context.mounted) return;

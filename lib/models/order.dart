@@ -1,51 +1,23 @@
 class Order {
-  int quantity;
-  String id;
-  String itemName;
-  int tableNo;
-  String type;
-  String status;
-  String note;
-  int amount;
+  final int quantity;
+  final String id;
+  final String itemName;
+  final int tableNo;
+  final String type;
+  final String status;
+  final String note;
+  final int amount;
 
-  Order(
-    this.quantity,
-    this.id,
-    this.itemName,
-    this.tableNo,
-    this.type,
-    this.status,
-    this.note,
-    this.amount,
-  );
-
-  void setId(String id) {
-    this.id = id;
-  }
-
-  String getId() => id;
-
-  void setQuantity(int quantity) {
-    this.quantity = quantity;
-  }
-
-  int getQuantity() => quantity;
-
-  void setItemName(String itemName) {
-    this.itemName = itemName;
-  }
-
-  String getItemName() => itemName;
-
-  void setTableNo(int tableNo) {
-    this.tableNo = tableNo;
-  }
-
-  int getTableId() => tableNo;
-
-  void setType(String type) {
-    this.type = type;
-  }
+  Order({
+    required this.quantity,
+    required this.id,
+    required this.itemName,
+    required this.tableNo,
+    required this.type,
+    required this.status,
+    required this.note,
+    required this.amount,
+  });
 
   String getType(int flag) {
     if (type == "None" && flag == 0) {
@@ -54,28 +26,8 @@ class Order {
     return type;
   }
 
-  void setStatus(String status) {
-    this.status = status;
-  }
-
-  String getStatus() => status;
-
-  void setNote(String note) {
-    this.note = note;
-  }
-
-  String getNote() => note;
-
-  void setAmount(int amount) {
-    this.amount = amount;
-  }
-
-  int getAmount() {
-    return amount;
-  }
-
-  Map toMap() {
-    Map orderMap = {};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> orderMap = {};
 
     orderMap['id'] = id;
     orderMap['tableNo'] = tableNo;
@@ -88,9 +40,15 @@ class Order {
     return orderMap;
   }
 
-  static Order toOrder(Map orderMap) {
-    String id, itemName, type, note, status;
-    int tableNo, quantity, amount;
+  factory Order.fromMap(Map<String, dynamic> orderMap) {
+    String id;
+    String itemName;
+    String type;
+    String note;
+    String status;
+    int tableNo;
+    int quantity;
+    int amount;
 
     id = orderMap['id'];
     tableNo = orderMap['tableNo'];
@@ -101,13 +59,22 @@ class Order {
     status = orderMap['status'];
     amount = orderMap['amount'];
 
-    return Order(quantity, id, itemName, tableNo, type, status, note, amount);
+    return Order(
+      quantity: quantity,
+      id: id,
+      itemName: itemName,
+      tableNo: tableNo,
+      type: type,
+      status: status,
+      note: note,
+      amount: amount,
+    );
   }
 
   @override
   String toString() {
     String orderDetails =
-        "Id: $id\nQuantity: $quantity\nItem Name: $itemName\nTable No: $tableNo\nType: $type\nNote: $note\nStatus: $status\nAmount: $amount";
+        """Id: $id\nQuantity: $quantity\nItem Name: $itemName\nTable No: $tableNo\nType: $type\nNote: $note\nStatus: $status\nAmount: $amount""";
     return orderDetails;
   }
 
@@ -134,14 +101,14 @@ class Order {
     int? amount,
   }) {
     return Order(
-      quantity ?? this.quantity,
-      id ?? this.id,
-      itemName ?? this.itemName,
-      tableNo ?? this.tableNo,
-      type ?? this.type,
-      status ?? this.status,
-      note ?? this.note,
-      amount ?? this.amount,
+      quantity: quantity ?? this.quantity,
+      id: id ?? this.id,
+      itemName: itemName ?? this.itemName,
+      tableNo: tableNo ?? this.tableNo,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      note: note ?? this.note,
+      amount: amount ?? this.amount,
     );
   }
 }

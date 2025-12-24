@@ -21,7 +21,7 @@ class Orders extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           leading: GestureDetector(
-            child: Icon(Icons.arrow_back),
+            child: const Icon(Icons.arrow_back),
             onTap: () {
               Navigator.pushReplacement(
                 context,
@@ -29,14 +29,14 @@ class Orders extends ConsumerWidget {
               );
             },
           ),
-          bottom: TabBar(
+          bottom: const TabBar(
             tabs: [
               Tab(child: Text("Pending Orders")),
               Tab(child: Text("Completed Orders")),
               Tab(child: Text("Canceled Orders")),
             ],
           ),
-          title: Text("Table ${table.getTableNo()}: Orders"),
+          title: Text("Table ${table.tableNo}: Orders"),
           actions: [
             PopupMenuButton(
               onSelected: (value) async {
@@ -83,7 +83,7 @@ class Orders extends ConsumerWidget {
                     }
                   case "Bill":
                     {
-                      Navigator.push(
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => Bills(table)),
                       );

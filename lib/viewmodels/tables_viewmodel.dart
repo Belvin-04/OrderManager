@@ -39,7 +39,7 @@ class TablesViewmodel extends AsyncNotifier<void> {
 
   Future<void> addTable() async {
     final lastNo = await _tableRepo.getLastTable();
-    final nextTableNo = (lastNo?.getTableNo() ?? 0) + 1;
+    final nextTableNo = (lastNo?.tableNo ?? 0) + 1;
     await _tableRepo.addTable(nextTableNo);
   }
 
@@ -51,13 +51,13 @@ class TablesViewmodel extends AsyncNotifier<void> {
     }
 
     final hasOrders = await _orderRepo.hasAnyOrdersForTable(
-      lastTable.getTableNo().toString(),
+      lastTable.tableNo.toString(),
     );
     if (hasOrders) {
       return RemoveTableResult.hasOrders;
     }
 
-    await _tableRepo.deleteTableById(lastTable.getId());
+    await _tableRepo.deleteTableById(lastTable.id);
     return RemoveTableResult.removed;
   }
 

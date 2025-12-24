@@ -25,7 +25,7 @@ class FirebaseTypeRepository implements TypeRepository {
       final map = Map<String, dynamic>.from(data as Map);
 
       return map.values.map((value) {
-        return Type1.toType(Map<String, dynamic>.from(value));
+        return Type1.fromMap(Map<String, dynamic>.from(value));
       }).toList();
     });
   }
@@ -34,31 +34,33 @@ class FirebaseTypeRepository implements TypeRepository {
   Future<void> saveType(Type1 type) async {
     var value = await typeReference
         .orderByChild("type")
-        .equalTo(type.getType())
+        .equalTo(type.type)
         .once();
 
-    String id = type.getId();
+    String id = type.id;
     if (id.isEmpty) {
       id = typeReference.push().key!;
     } else {
-      id = type.getId();
+      id = type.id;
     }
-    Map typeMap = type.toMap();
+    Map<String, dynamic> typeMap = type.toMap();
     typeMap['id'] = id;
 
-    Map values = {};
-    if (value.snapshot.value != null) {
-      values = value.snapshot.value as Map<dynamic, dynamic>;
-      values.forEach((key, value) {
-        typeMap['id'] = value['id'];
-      });
+    Map<String, dynamic> values = {};
+    if (value.snapshot.value is Map) {
+      if (value.snapshot.value != null) {
+        values = Map<String, dynamic>.from(value.snapshot.value as Map);
+        values.forEach((key, value) {
+          typeMap['id'] = value['id'];
+        });
+      }
     }
-    typeReference.child(typeMap['id']).set(typeMap);
+    await typeReference.child(typeMap['id']).set(typeMap);
   }
 
   @override
   Future<void> deleteType(Type1 type) async {
-    await typeReference.child(type.getId()).remove();
+    await typeReference.child(type.id).remove();
   }
 
   @override
@@ -67,9 +69,9 @@ class FirebaseTypeRepository implements TypeRepository {
       value,
     ) {
       if (value.snapshot.value != null) {
-        Map values = value.snapshot.value as Map<dynamic, dynamic>;
+        var values = value.snapshot.value as Map;
         final firstValue = values.values.first;
-        return Type1.toType(Map<String, dynamic>.from(firstValue));
+        return Type1.fromMap(Map<String, dynamic>.from(firstValue));
       }
       return null;
     });
@@ -82,34 +84,34 @@ class FirebaseItemRepository implements ItemsRepository {
   FirebaseItemRepository(this.itemReference);
   @override
   Future<void> deleteItem(Item item) async {
-    String id = item.getId();
-    itemReference.child(id).remove();
+    String id = item.id;
+    await itemReference.child(id).remove();
   }
 
   @override
   Future<void> saveItem(Item item) async {
     var value = await itemReference
         .orderByChild("name")
-        .equalTo(item.getName())
+        .equalTo(item.name)
         .once();
 
-    String id = item.getId();
+    String id = item.id;
     if (id.isEmpty) {
       id = itemReference.push().key!;
     } else {
-      id = item.getId();
+      id = item.id;
     }
-    Map itemMap = item.toMap();
+    final itemMap = item.toMap();
     itemMap['id'] = id;
 
-    Map values = {};
+    var values = {};
     if (value.snapshot.value != null) {
-      values = value.snapshot.value as Map<dynamic, dynamic>;
+      values = value.snapshot.value as Map;
       values.forEach((key, value) {
         itemMap['id'] = value['id'];
       });
     }
-    itemReference.child(itemMap['id']).set(itemMap);
+    await itemReference.child(itemMap['id']).set(itemMap);
   }
 
   @override
@@ -124,7 +126,7 @@ class FirebaseItemRepository implements ItemsRepository {
       final map = Map<String, dynamic>.from(data as Map);
 
       return map.values.map((value) {
-        return Item.toItem(Map<String, dynamic>.from(value));
+        return Item.fromMap(Map<String, dynamic>.from(value));
       }).toList();
     });
   }
@@ -135,9 +137,9 @@ class FirebaseItemRepository implements ItemsRepository {
       value,
     ) {
       if (value.snapshot.value != null) {
-        Map values = value.snapshot.value as Map<dynamic, dynamic>;
+        final values = value.snapshot.value as Map;
         final firstValue = values.values.first;
-        return Item.toItem(Map<String, dynamic>.from(firstValue));
+        return Item.fromMap(Map<String, dynamic>.from(firstValue));
       }
       return null;
     });
@@ -151,7 +153,7 @@ class FirebaseTableRepository extends TableRepository {
   @override
   Future<void> addTable(int tableNo) async {
     final id = tablesReference.push().key!;
-    final table = Table1(tableNo, id);
+    final table = Table1(tableNo: tableNo, id: id);
     await tablesReference.child(table.id).set(table.toMap());
   }
 
@@ -162,8 +164,8 @@ class FirebaseTableRepository extends TableRepository {
 
     if (event.snapshot.value == null) return null;
 
-    final values = event.snapshot.value as Map<dynamic, dynamic>;
-    return Table1.toTable(values.values.first);
+    final values = event.snapshot.value as Map;
+    return Table1.fromMap(Map<String, dynamic>.from(values.values.first));
   }
 
   @override
@@ -174,7 +176,7 @@ class FirebaseTableRepository extends TableRepository {
 
       final map = Map<String, dynamic>.from(data as Map);
       return map.values
-          .map((e) => Table1.toTable(Map<String, dynamic>.from(e)))
+          .map((e) => Table1.fromMap(Map<String, dynamic>.from(e)))
           .toList();
     });
   }
@@ -193,7 +195,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final event = await orderReference.once();
     if (event.snapshot.value == null) return false;
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     return orders.values.any(
       (order) => order['tableNo'].toString() == tableKey,
     );
@@ -208,7 +210,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
     if (event.snapshot.value == null) return false;
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     return orders.values.any((order) => order['status'] == 'pending');
   }
 
@@ -220,7 +222,7 @@ class FirebaseOrderRepository extends OrderRepository {
         .once();
     if (event.snapshot.value == null) return;
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     for (final entry in orders.entries) {
       await orderReference.child(entry.key).remove();
     }
@@ -231,7 +233,7 @@ class FirebaseOrderRepository extends OrderRepository {
     return orderReference.onValue.map((event) {
       if (event.snapshot.value == null) return 0;
 
-      final orders = event.snapshot.value as Map<dynamic, dynamic>;
+      final orders = event.snapshot.value as Map;
       int total = 0;
 
       orders.forEach((key, value) {
@@ -249,7 +251,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final event = await orderReference.once();
     if (event.snapshot.value == null) return {};
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     return orders.values.map((o) => o['tableNo'] as int).toSet();
   }
 
@@ -258,9 +260,9 @@ class FirebaseOrderRepository extends OrderRepository {
     final event = await orderReference.once();
     if (event.snapshot.value == null) return [];
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     return orders.values
-        .map((v) => Order.toOrder(v))
+        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
         .where((o) => o.tableNo.toString() == tableKey)
         .toList();
   }
@@ -270,7 +272,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final event = await orderReference.once();
     if (event.snapshot.value == null) return;
 
-    final orders = event.snapshot.value as Map<dynamic, dynamic>;
+    final orders = event.snapshot.value as Map;
     for (final entry in orders.entries) {
       if (entry.value['tableNo'].toString() == fromTableKey) {
         await orderReference.child(entry.key).update({
@@ -295,10 +297,10 @@ class FirebaseOrderRepository extends OrderRepository {
 
     if (event.snapshot.value == null) return [];
 
-    final map = event.snapshot.value as Map<dynamic, dynamic>;
+    final map = event.snapshot.value as Map;
 
     return map.values
-        .map((raw) => Order.toOrder(raw))
+        .map((raw) => Order.fromMap(Map<String, dynamic>.from(raw)))
         .where((order) => order.getType(1) == typeName)
         .toList();
   }
@@ -310,10 +312,10 @@ class FirebaseOrderRepository extends OrderRepository {
     ) {
       if (event.snapshot.value == null) return [];
 
-      final data = event.snapshot.value as Map<dynamic, dynamic>;
+      final data = event.snapshot.value as Map;
 
       return data.values
-          .map((e) => Order.toOrder(e))
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e)))
           .where((o) => o.tableNo.toString() == tableNo)
           .toList();
     });
@@ -331,7 +333,7 @@ class FirebaseOrderRepository extends OrderRepository {
           final map = Map<String, dynamic>.from(event.snapshot.value as Map);
 
           return map.values
-              .map((value) => Order.toOrder(Map<String, dynamic>.from(value)))
+              .map((value) => Order.fromMap(Map<String, dynamic>.from(value)))
               .where(
                 (order) =>
                     order.status == "pending" || order.status == "completed",

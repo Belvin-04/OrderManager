@@ -63,7 +63,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
             children: [
               itemsState.when(
                 loading: () => const CircularProgressIndicator(),
-                error: (e, _) => Text("Error loading items"),
+                error: (e, _) => const Text("Error loading items"),
                 data: (items) {
                   editedOrder = editedOrder.copyWith(
                     itemName: editedOrder.itemName.isEmpty
@@ -73,7 +73,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                   if (items.isEmpty) return const Text("No items found");
                   return Row(
                     children: [
-                      Expanded(child: Text("Item Name: ")),
+                      const Expanded(child: Text("Item Name: ")),
                       Expanded(
                         child: DropdownButton(
                           isExpanded: true,
@@ -106,7 +106,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
               const SizedBox(height: 15),
               typesState.when(
                 loading: () => const CircularProgressIndicator(),
-                error: (e, _) => Text("Error loading types"),
+                error: (e, _) => const Text("Error loading types"),
                 data: (types) {
                   final typeNames = [...types.map((t) => t.type), "None"];
                   editedOrder = editedOrder.copyWith(
@@ -116,7 +116,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                   );
                   return Row(
                     children: [
-                      Expanded(child: Text("Item Type: ")),
+                      const Expanded(child: Text("Item Type: ")),
                       Expanded(
                         child: DropdownButton(
                           isExpanded: true,
@@ -202,7 +202,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
               Navigator.pop(context);
             }
           },
-          child: Text("Save Order"),
+          child: const Text("Save Order"),
         ),
       ],
     );

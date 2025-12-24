@@ -15,13 +15,13 @@ class Types extends ConsumerWidget {
     final typesState = ref.watch(typesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Types")),
+      appBar: AppBar(title: const Text("Types")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         tooltip: "Add Type",
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: () {
-          showAddItemDialog(Type1("", 0, ""), context, ref);
+          showAddItemDialog(Type1(id: "", price: 0, type: ""), context, ref);
         },
       ),
       body: typesState.when(
@@ -39,13 +39,13 @@ class Types extends ConsumerWidget {
               final Type1 type = types[index];
               return Card(
                 child: ListTile(
-                  title: Text("Type: ${type.getType()}"),
-                  subtitle: Text("Price: ${type.getPrice()}"),
+                  title: Text("Type: ${type.type}"),
+                  subtitle: Text("Price: ${type.price}"),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Edit Type",
                           child: Icon(Icons.edit, color: Colors.blue),
                         ),
@@ -53,9 +53,9 @@ class Types extends ConsumerWidget {
                           showAddItemDialog(type, context, ref);
                         },
                       ),
-                      Container(margin: EdgeInsets.only(right: 10.0)),
+                      Container(margin: const EdgeInsets.only(right: 10.0)),
                       GestureDetector(
-                        child: Tooltip(
+                        child: const Tooltip(
                           message: "Delete Type",
                           child: Icon(Icons.delete, color: Colors.red),
                         ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/viewmodels/tables_viewmodel.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
 import 'package:order_manager/views/orders/orders.dart';
-import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/views/tables/table_clear_dialog.dart';
 import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
 import 'package:order_manager/views/tables/table_swap_dialog.dart';
@@ -20,8 +20,8 @@ class HomePage extends ConsumerWidget {
     final tableState = ref.watch(tablesProvider);
     return Scaffold(
       key: _scaffoldStateKey,
-      drawer: drawer.NavigationDrawer(),
-      appBar: AppBar(title: Text("Home")),
+      drawer: const drawer.NavigationDrawer(),
+      appBar: AppBar(title: const Text("Home")),
       body: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
@@ -46,13 +46,13 @@ class HomePage extends ConsumerWidget {
                 final Table1 table = sortedTables[index];
                 return Card(
                   child: ListTile(
-                    title: Text("Table No. : ${table.getTableNo()}"),
+                    title: Text("Table No. : ${table.tableNo}"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         TotalAmount(table: table),
                         GestureDetector(
-                          child: Tooltip(
+                          child: const Tooltip(
                             message: "Take Order",
                             child: Icon(
                               Icons.event_note_outlined,
@@ -68,9 +68,9 @@ class HomePage extends ConsumerWidget {
                             );
                           },
                         ),
-                        Container(margin: EdgeInsets.only(right: 10.0)),
+                        Container(margin: const EdgeInsets.only(right: 10.0)),
                         GestureDetector(
-                          child: Tooltip(
+                          child: const Tooltip(
                             message: "Swap Table Order",
                             child: Icon(Icons.swap_vert, color: Colors.yellow),
                           ),
@@ -86,35 +86,32 @@ class HomePage extends ConsumerWidget {
                                   context,
                                 );
 
-                                break;
                               case SwapTableResult.noOrdersOnSource:
                                 showSnackBar(
                                   "There are no orders on the table...!",
                                   context,
                                 );
 
-                                break;
                               case SwapTableResult.noOrdersAtAll:
                                 showSnackBar(
                                   "All tables are free...!",
                                   context,
                                 );
 
-                                break;
                               case SwapTableResult.canSwap:
                                 showSwapDialog(
                                   context,
                                   ref,
-                                  table.getTableNo(),
+                                  table.tableNo,
                                   decision.availableTables,
                                 );
                             }
                           },
                         ),
 
-                        Container(margin: EdgeInsets.only(right: 10.0)),
+                        Container(margin: const EdgeInsets.only(right: 10.0)),
                         GestureDetector(
-                          child: Tooltip(
+                          child: const Tooltip(
                             message: "Clear Table",
                             child: Icon(Icons.clear, color: Colors.blue),
                           ),
@@ -126,16 +123,13 @@ class HomePage extends ConsumerWidget {
                             switch (result) {
                               case ClearTableResult.hasPendingOrders:
                                 showClearTableWarningDialog(context);
-                                break;
                               case ClearTableResult.canClear:
                                 showClearTableDialog(context, ref, table);
-                                break;
                               case ClearTableResult.alreadyCleared:
                                 showSnackBar(
                                   "Table is already cleared ...",
                                   context,
                                 );
-                                break;
                             }
                           },
                         ),
@@ -154,7 +148,7 @@ class HomePage extends ConsumerWidget {
   void showClearTableWarningDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) => TableClearWarningDialog(),
+      builder: (BuildContext context) => const TableClearWarningDialog(),
     );
   }
 
@@ -164,9 +158,10 @@ class HomePage extends ConsumerWidget {
       builder: (BuildContext context) => TableClearDialog(
         table: table,
         onClear: (tableKey) async {
-          ref
+          await ref
               .read(tablesViewmodelProvider.notifier)
               .clearTableConfirm(tableKey);
+          if (!context.mounted) return;
           showSnackBar("Table cleared Successfully...", context);
         },
       ),
@@ -192,7 +187,7 @@ class HomePage extends ConsumerWidget {
               );
           if (!context.mounted) return;
           showSnackBar(
-            "Orders swapped from Table : $sourceTable to Table : $targetTableNo",
+            """Orders swapped from Table : $sourceTable to Table : $targetTableNo""",
             context,
           );
         },

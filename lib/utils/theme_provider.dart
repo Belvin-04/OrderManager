@@ -17,10 +17,10 @@ class ThemeNotifier extends Notifier<ThemeMode> {
     state = savedDark ? ThemeMode.dark : ThemeMode.light;
   }
 
-  Future<void> toggleTheme(bool dark) async {
+  Future<void> toggleTheme({required bool isDark}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, dark);
-    state = dark ? ThemeMode.dark : ThemeMode.light;
+    await prefs.setBool(_themeKey, isDark);
+    state = isDark ? ThemeMode.dark : ThemeMode.light;
   }
 }
 
@@ -28,15 +28,15 @@ class MyThemes {
   static final darkTheme = ThemeData(
     scaffoldBackgroundColor: Colors.grey.shade900,
     primaryColor: Colors.black,
-    colorScheme: ColorScheme.dark(),
+    colorScheme: const ColorScheme.dark(),
   );
   static final lightTheme = ThemeData(
     scaffoldBackgroundColor: Colors.white,
     primaryColor: Colors.white,
-    colorScheme: ColorScheme.light(),
+    colorScheme: const ColorScheme.light(),
   );
-  static ThemeMode getTheme(bool darkMode) {
-    if (darkMode) {
+  static ThemeMode getTheme({required bool isDarkMode}) {
+    if (isDarkMode) {
       return ThemeMode.dark;
     }
     return ThemeMode.light;

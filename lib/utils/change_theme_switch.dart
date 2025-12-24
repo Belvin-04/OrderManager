@@ -12,7 +12,7 @@ class ChangeThemeSwitch extends ConsumerWidget {
 
     return Switch.adaptive(
       value: themeMode == ThemeMode.dark,
-      onChanged: notifier.toggleTheme,
+      onChanged: (value) => notifier.toggleTheme(isDark: value),
     );
   }
 }

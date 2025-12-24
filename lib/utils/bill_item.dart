@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class BillItem extends StatelessWidget {
-  final String totalPrice, singlePrice, quantity;
+  final String totalPrice;
+  final String singlePrice;
+  final String quantity;
   final String name;
   const BillItem(
     this.name,
@@ -17,10 +19,10 @@ class BillItem extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          Expanded(child: Text(name.toString())),
-          Expanded(child: Center(child: Text(quantity.toString()))),
-          Expanded(child: Center(child: Text(totalPrice.toString()))),
-          Expanded(child: Center(child: Text(singlePrice.toString()))),
+          Expanded(child: Text(name)),
+          Expanded(child: Center(child: Text(quantity))),
+          Expanded(child: Center(child: Text(totalPrice))),
+          Expanded(child: Center(child: Text(singlePrice))),
         ],
       ),
     );

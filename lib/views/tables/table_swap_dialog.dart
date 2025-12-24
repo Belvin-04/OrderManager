@@ -16,7 +16,7 @@ class TableSwapDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
     return AlertDialog(
-      title: Text("Select Table No. to swap the order"),
+      title: const Text("Select Table No. to swap the order"),
       content: SizedBox(
         width: 200,
         height: 200,

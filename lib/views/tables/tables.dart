@@ -28,19 +28,20 @@ class Tables extends ConsumerWidget {
               switch (result) {
                 case RemoveTableResult.noTables:
                   showSnackBar("No Tables found...", context);
-                  break;
                 case RemoveTableResult.hasOrders:
                   showWarningDialog(context);
-                  break;
                 case RemoveTableResult.removed:
                   showSnackBar("Table removed successfully...", context);
-                  break;
               }
             },
             backgroundColor: Colors.red,
-            child: Icon(Icons.delete, color: Colors.white),
+            child: const Icon(Icons.delete, color: Colors.white),
           ),
-          Container(width: 0, height: 0, margin: EdgeInsets.only(right: 10.0)),
+          Container(
+            width: 0,
+            height: 0,
+            margin: const EdgeInsets.only(right: 10.0),
+          ),
           FloatingActionButton(
             tooltip: "Add Table",
             heroTag: "Add Button",
@@ -50,13 +51,13 @@ class Tables extends ConsumerWidget {
               showSnackBar("Table added successfully...", context);
             },
             backgroundColor: Colors.red,
-            child: Icon(Icons.add, color: Colors.white),
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ],
       ),
       appBar: AppBar(
         leading: GestureDetector(
-          child: Icon(Icons.arrow_back),
+          child: const Icon(Icons.arrow_back),
           onTap: () {
             Navigator.pushReplacement(
               context,
@@ -64,7 +65,7 @@ class Tables extends ConsumerWidget {
             );
           },
         ),
-        title: Text("Manage Tables"),
+        title: const Text("Manage Tables"),
       ),
       body: PopScope(
         canPop: false,
@@ -90,9 +91,7 @@ class Tables extends ConsumerWidget {
               itemBuilder: (BuildContext context, int index) {
                 final Table1 table = sortedTables[index];
                 return Card(
-                  child: ListTile(
-                    title: Text("Table No. : ${table.getTableNo()}"),
-                  ),
+                  child: ListTile(title: Text("Table No. : ${table.tableNo}")),
                 );
               },
             );
@@ -105,7 +104,7 @@ class Tables extends ConsumerWidget {
   void showWarningDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) => TablesWarningDialog(),
+      builder: (BuildContext context) => const TablesWarningDialog(),
     );
   }
 }

@@ -61,7 +61,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
     final typesRepo = ref.read(typeRepositoryProvider);
     final ordersRepo = ref.read(orderRepositoryProvider);
 
-    final item = await itemsRepo.getItem(order.getItemName());
+    final item = await itemsRepo.getItem(order.itemName);
     final type = await typesRepo.getType(order.getType(1));
     final int amount = (item!.price + (type?.price ?? 0)) * order.quantity;
 
@@ -127,10 +127,10 @@ class OrdersViewModel extends AsyncNotifier<void> {
         .getBillOrdersForTable(tableNo);
     Map<String, Order> orderMap = {};
 
-    await for (List<Order> orderList in orderStream) {
+    await for (final List<Order> orderList in orderStream) {
       orderMap.clear();
-      for (Order order in orderList) {
-        final key = '${order.getItemName()} ${order.getType(1)}';
+      for (final Order order in orderList) {
+        final key = '${order.itemName} ${order.getType(1)}';
         if (orderMap.containsKey(key)) {
           final existingOrder = orderMap[key]!;
           final updatedOrder = existingOrder.copyWith(

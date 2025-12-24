@@ -27,13 +27,11 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
   void initState() {
     super.initState();
     _editedType = widget.initialType;
-    _typeNameController = TextEditingController(
-      text: widget.initialType.getType(),
-    );
+    _typeNameController = TextEditingController(text: widget.initialType.type);
     _typePriceController = TextEditingController(
-      text: widget.initialType.getPrice() == 0
+      text: widget.initialType.price == 0
           ? ''
-          : widget.initialType.getPrice().toString(),
+          : widget.initialType.price.toString(),
     );
   }
 
@@ -47,7 +45,7 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text("Type Detail"),
+      title: const Text("Type Detail"),
       content: SizedBox(
         width: 200,
         height: 130,
@@ -78,7 +76,7 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
               Container(
                 width: 0.0,
                 height: 0.0,
-                margin: EdgeInsets.only(bottom: 10.0),
+                margin: const EdgeInsets.only(bottom: 10.0),
               ),
               TextFormField(
                 onChanged: (price) {
@@ -118,7 +116,7 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
               }
             }
           },
-          child: Text("Save Type"),
+          child: const Text("Save Type"),
         ),
       ],
     );

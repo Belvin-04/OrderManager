@@ -13,18 +13,16 @@ class Bills extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final billState = ref.watch(
-      billOrdersProvider(table.getTableNo().toString()),
-    );
+    final billState = ref.watch(billOrdersProvider(table.tableNo.toString()));
     double maxHeight = MediaQuery.of(context).size.height - 270;
     return Scaffold(
-      appBar: AppBar(title: Text("Table ${table.getTableNo()}: Bill")),
+      appBar: AppBar(title: Text("Table ${table.tableNo}: Bill")),
       body: ListView(
         children: [
-          Center(child: Text("Invoice", style: TextStyle(fontSize: 30))),
-          Divider(color: Colors.white),
-          BillItem("Name", "Quantity", "Total Price", "Single Price"),
-          Divider(color: Colors.white),
+          const Center(child: Text("Invoice", style: TextStyle(fontSize: 30))),
+          const Divider(color: Colors.white),
+          const BillItem("Name", "Quantity", "Total Price", "Single Price"),
+          const Divider(color: Colors.white),
           billState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text("Error: $e")),
@@ -44,15 +42,15 @@ class Bills extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final Order order = orders[index];
                         return BillItem(
-                          "${order.getItemName()} ${order.getType(0)}",
-                          "${order.getQuantity()}",
-                          "${order.getAmount()}",
-                          "${(order.getAmount() / order.getQuantity())}",
+                          "${order.itemName} ${order.getType(0)}",
+                          "${order.quantity}",
+                          "${order.amount}",
+                          "${order.amount / order.quantity}",
                         );
                       },
                     ),
                   ),
-                  Divider(color: Colors.white),
+                  const Divider(color: Colors.white),
                   BillFooter(table),
                 ],
               );
