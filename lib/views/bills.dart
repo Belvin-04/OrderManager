@@ -42,7 +42,7 @@ class Bills extends ConsumerWidget {
                       itemBuilder: (context, index) {
                         final Order order = orders[index];
                         return BillItem(
-                          "${order.itemName} ${order.getType(0)}",
+                          "${order.item.name} ${order.type.getType(0)}",
                           "${order.quantity}",
                           "${order.amount}",
                           "${order.amount / order.quantity}",

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/models/type.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -27,10 +29,10 @@ class PendingOrders extends ConsumerWidget {
             ref,
             Order(
               id: "",
-              itemName: "",
+              item: Item(name: "", price: 0, id: ""),
               amount: 0,
-              type: "",
-              tableNo: table.tableNo,
+              type: Type1(type: "", price: 0, id: ""),
+              table: table,
               note: "",
               status: "pending",
               quantity: 0,

@@ -22,4 +22,11 @@ class Table1 {
     String tableDetails = "Id: $id\nTable No: $tableNo";
     return tableDetails;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Table1 && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

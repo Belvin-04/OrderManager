@@ -82,16 +82,16 @@ class TablesViewmodel extends AsyncNotifier<void> {
 
   Future<SwapTableDecision> swapTable(String sourceTableKey) async {
     final tables = ref.read(tablesProvider).value ?? [];
-    final ordersOnSource = await _orderRepo.getOrdersForTable(sourceTableKey);
-
-    if (ordersOnSource.isEmpty) {
-      return SwapTableDecision(result: SwapTableResult.noOrdersOnSource);
-    }
-
     final occupiedTables = await _orderRepo.getOccupiedTableNos();
 
     if (occupiedTables.isEmpty) {
       return SwapTableDecision(result: SwapTableResult.noOrdersAtAll);
+    }
+
+    final ordersOnSource = await _orderRepo.getOrdersForTable(sourceTableKey);
+
+    if (ordersOnSource.isEmpty) {
+      return SwapTableDecision(result: SwapTableResult.noOrdersOnSource);
     }
 
     final allTableNos = tables.map((t) => t.tableNo).toSet();

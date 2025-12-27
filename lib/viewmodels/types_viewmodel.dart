@@ -38,13 +38,10 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
     final ordersRepo = ref.read(orderRepositoryProvider);
     final orders = await ordersRepo.getOrdersByType(oldType.type);
     for (final order in orders) {
-      final item = await ref
-          .read(itemRepositoryProvider)
-          .getItem(order.itemName);
-      final newAmount = (item!.price + type.price) * order.quantity;
-      final newName = type.type;
+      final item = order.item;
+      final newAmount = (item.price + type.price) * order.quantity;
 
-      final updated = order.copyWith(amount: newAmount, type: newName);
+      final updated = order.copyWith(amount: newAmount, type: type);
 
       await ordersRepo.saveOrder(updated);
     }

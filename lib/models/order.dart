@@ -1,9 +1,13 @@
+import 'package:order_manager/models/item.dart';
+import 'package:order_manager/models/table.dart';
+import 'package:order_manager/models/type.dart';
+
 class Order {
   final int quantity;
   final String id;
-  final String itemName;
-  final int tableNo;
-  final String type;
+  final Item item;
+  final Table1 table;
+  final Type1 type;
   final String status;
   final String note;
   final int amount;
@@ -11,28 +15,21 @@ class Order {
   Order({
     required this.quantity,
     required this.id,
-    required this.itemName,
-    required this.tableNo,
+    required this.item,
+    required this.table,
     required this.type,
     required this.status,
     required this.note,
     required this.amount,
   });
 
-  String getType(int flag) {
-    if (type == "None" && flag == 0) {
-      return "";
-    }
-    return type;
-  }
-
   Map<String, dynamic> toMap() {
     Map<String, dynamic> orderMap = {};
 
     orderMap['id'] = id;
-    orderMap['tableNo'] = tableNo;
-    orderMap['itemName'] = itemName;
-    orderMap['type'] = type;
+    orderMap['table'] = table.toMap();
+    orderMap['item'] = item.toMap();
+    orderMap['type'] = type.toMap();
     orderMap['quantity'] = quantity;
     orderMap['note'] = note;
     orderMap['status'] = status;
@@ -40,20 +37,20 @@ class Order {
     return orderMap;
   }
 
-  factory Order.fromMap(Map<String, dynamic> orderMap) {
+  factory Order.fromMap(Map<dynamic, dynamic> orderMap) {
     String id;
-    String itemName;
-    String type;
+    Item item;
+    Type1 type;
     String note;
     String status;
-    int tableNo;
+    Table1 table;
     int quantity;
     int amount;
 
     id = orderMap['id'];
-    tableNo = orderMap['tableNo'];
-    itemName = orderMap['itemName'];
-    type = orderMap['type'];
+    table = Table1.fromMap(Map<String, dynamic>.from(orderMap['table']));
+    item = Item.fromMap(Map<String, dynamic>.from(orderMap['item']));
+    type = Type1.fromMap(Map<String, dynamic>.from(orderMap['type']));
     quantity = orderMap['quantity'];
     note = orderMap['note'];
     status = orderMap['status'];
@@ -62,8 +59,8 @@ class Order {
     return Order(
       quantity: quantity,
       id: id,
-      itemName: itemName,
-      tableNo: tableNo,
+      item: item,
+      table: table,
       type: type,
       status: status,
       note: note,
@@ -74,14 +71,14 @@ class Order {
   @override
   String toString() {
     String orderDetails =
-        """Id: $id\nQuantity: $quantity\nItem Name: $itemName\nTable No: $tableNo\nType: $type\nNote: $note\nStatus: $status\nAmount: $amount""";
+        """Id: $id\nQuantity: $quantity\nItem Name: ${item.name}\nTable No: ${table.tableNo}\nType: ${type.type}\nNote: $note\nStatus: $status\nAmount: $amount""";
     return orderDetails;
   }
 
   String getData() {
-    String orderDetails = "Item Name: $itemName\n";
-    if (type != "None") {
-      orderDetails += "Type: $type\n";
+    String orderDetails = "Item Name: ${item.name}\n";
+    if (type.type != "None") {
+      orderDetails += "Type: ${type.type}\n";
     }
     orderDetails += "Quantity: $quantity\n";
     if (note != "") {
@@ -93,9 +90,9 @@ class Order {
   Order copyWith({
     int? quantity,
     String? id,
-    String? itemName,
-    int? tableNo,
-    String? type,
+    Item? item,
+    Table1? table,
+    Type1? type,
     String? status,
     String? note,
     int? amount,
@@ -103,12 +100,19 @@ class Order {
     return Order(
       quantity: quantity ?? this.quantity,
       id: id ?? this.id,
-      itemName: itemName ?? this.itemName,
-      tableNo: tableNo ?? this.tableNo,
+      item: item ?? this.item,
+      table: table ?? this.table,
       type: type ?? this.type,
       status: status ?? this.status,
       note: note ?? this.note,
       amount: amount ?? this.amount,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Order && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

@@ -5,6 +5,13 @@ class Type1 {
 
   Type1({required this.type, required this.price, required this.id});
 
+  String getType(int flag) {
+    if (type == "None" && flag == 0) {
+      return "";
+    }
+    return type;
+  }
+
   Map<String, dynamic> toMap() {
     Map<String, dynamic> typeMap = {};
     typeMap['type'] = type;
@@ -33,4 +40,11 @@ class Type1 {
       id: id ?? this.id,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Type1 && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

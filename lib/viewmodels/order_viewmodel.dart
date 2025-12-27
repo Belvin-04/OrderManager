@@ -57,13 +57,11 @@ final billTotalsProvider = Provider.family<Map<String, int>, String>((
 
 class OrdersViewModel extends AsyncNotifier<void> {
   Future<void> saveOrder(Order order) async {
-    final itemsRepo = ref.read(itemRepositoryProvider);
-    final typesRepo = ref.read(typeRepositoryProvider);
     final ordersRepo = ref.read(orderRepositoryProvider);
 
-    final item = await itemsRepo.getItem(order.itemName);
-    final type = await typesRepo.getType(order.getType(1));
-    final int amount = (item!.price + (type?.price ?? 0)) * order.quantity;
+    final item = order.item;
+    final type = order.type;
+    final int amount = (item.price + (type.price)) * order.quantity;
 
     final updated = order.copyWith(amount: amount);
 
@@ -130,7 +128,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
     await for (final List<Order> orderList in orderStream) {
       orderMap.clear();
       for (final Order order in orderList) {
-        final key = '${order.itemName} ${order.getType(1)}';
+        final key = '${order.item.name} ${order.type.getType(1)}';
         if (orderMap.containsKey(key)) {
           final existingOrder = orderMap[key]!;
           final updatedOrder = existingOrder.copyWith(

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
+import 'package:order_manager/models/type.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
 import 'package:order_manager/viewmodels/types_viewmodel.dart';
 
@@ -66,9 +68,9 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 error: (e, _) => const Text("Error loading items"),
                 data: (items) {
                   editedOrder = editedOrder.copyWith(
-                    itemName: editedOrder.itemName.isEmpty
-                        ? items.first.name
-                        : editedOrder.itemName,
+                    item: editedOrder.item.name.isEmpty
+                        ? items.first
+                        : editedOrder.item,
                   );
                   if (items.isEmpty) return const Text("No items found");
                   return Row(
@@ -79,7 +81,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                           isExpanded: true,
                           items: items.map((value) {
                             return DropdownMenuItem(
-                              value: value.name,
+                              value: value,
                               child: Text(
                                 value.name,
                                 maxLines: 2,
@@ -87,13 +89,13 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                               ),
                             );
                           }).toList(),
-                          value: editedOrder.itemName.isEmpty
-                              ? items.first.name
-                              : editedOrder.itemName,
+                          value: editedOrder.item.name.isEmpty
+                              ? items.first
+                              : editedOrder.item,
                           onChanged: (newValue) {
                             setState(() {
                               editedOrder = editedOrder.copyWith(
-                                itemName: newValue.toString(),
+                                item: newValue as Item,
                               );
                             });
                           },
@@ -108,10 +110,9 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => const Text("Error loading types"),
                 data: (types) {
-                  final typeNames = [...types.map((t) => t.type), "None"];
                   editedOrder = editedOrder.copyWith(
-                    type: editedOrder.type.isEmpty
-                        ? typeNames.first
+                    type: editedOrder.type.type.isEmpty
+                        ? types.first
                         : editedOrder.type,
                   );
                   return Row(
@@ -120,23 +121,23 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                       Expanded(
                         child: DropdownButton(
                           isExpanded: true,
-                          items: typeNames.map((value) {
+                          items: types.map((value) {
                             return DropdownMenuItem(
                               value: value,
                               child: Text(
-                                value,
+                                value.type,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             );
                           }).toList(),
-                          value: editedOrder.type.isEmpty
-                              ? typeNames.first
+                          value: editedOrder.type.type.isEmpty
+                              ? types.first
                               : editedOrder.type,
                           onChanged: (newValue) {
                             setState(() {
                               editedOrder = editedOrder.copyWith(
-                                type: newValue.toString(),
+                                type: newValue as Type1,
                               );
                             });
                           },

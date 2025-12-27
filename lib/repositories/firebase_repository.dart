@@ -159,7 +159,7 @@ class FirebaseTableRepository extends TableRepository {
 
   @override
   Future<Table1?> getLastTable() async {
-    final query = tablesReference.orderByChild('tableNo').limitToLast(1);
+    final query = tablesReference.orderByChild('table/tableNo').limitToLast(1);
     final event = await query.once();
 
     if (event.snapshot.value == null) return null;
@@ -196,15 +196,16 @@ class FirebaseOrderRepository extends OrderRepository {
     if (event.snapshot.value == null) return false;
 
     final orders = event.snapshot.value as Map;
-    return orders.values.any(
-      (order) => order['tableNo'].toString() == tableKey,
-    );
+    return orders.values.any((order) {
+      Order convertedOrder = Order.fromMap(Map.from(order));
+      return convertedOrder.table.tableNo.toString() == tableKey;
+    });
   }
 
   @override
   Future<bool> hasPendingOrdersForTable(String tableKey) async {
     final event = await orderReference
-        .orderByChild('tableNo')
+        .orderByChild('table/tableNo')
         .equalTo(int.parse(tableKey))
         .once();
 
@@ -217,7 +218,7 @@ class FirebaseOrderRepository extends OrderRepository {
   @override
   Future<void> deleteOrdersForTable(String tableKey) async {
     final event = await orderReference
-        .orderByChild('tableNo')
+        .orderByChild('table/tableNo')
         .equalTo(int.parse(tableKey))
         .once();
     if (event.snapshot.value == null) return;
@@ -237,7 +238,8 @@ class FirebaseOrderRepository extends OrderRepository {
       int total = 0;
 
       orders.forEach((key, value) {
-        if (value['tableNo'].toString() == tableKey &&
+        Order order = Order.fromMap(value as Map);
+        if (order.table.tableNo.toString() == tableKey &&
             value['status'] != 'canceled') {
           total += (value['amount'] as num).toInt();
         }
@@ -252,7 +254,10 @@ class FirebaseOrderRepository extends OrderRepository {
     if (event.snapshot.value == null) return {};
 
     final orders = event.snapshot.value as Map;
-    return orders.values.map((o) => o['tableNo'] as int).toSet();
+    return orders.values.map((o) {
+      Order convertedOrder = Order.fromMap(Map.from(o));
+      return convertedOrder.table.tableNo;
+    }).toSet();
   }
 
   @override
@@ -263,7 +268,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final orders = event.snapshot.value as Map;
     return orders.values
         .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
-        .where((o) => o.tableNo.toString() == tableKey)
+        .where((o) => o.table.tableNo.toString() == tableKey)
         .toList();
   }
 
@@ -274,9 +279,10 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final orders = event.snapshot.value as Map;
     for (final entry in orders.entries) {
-      if (entry.value['tableNo'].toString() == fromTableKey) {
+      Order order = Order.fromMap(entry.value as Map);
+      if (order.table.tableNo.toString() == fromTableKey) {
         await orderReference.child(entry.key).update({
-          'tableNo': int.parse(toTableKey),
+          'table/tableNo': int.parse(toTableKey),
         });
       }
     }
@@ -301,7 +307,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
     return map.values
         .map((raw) => Order.fromMap(Map<String, dynamic>.from(raw)))
-        .where((order) => order.getType(1) == typeName)
+        .where((order) => order.type.getType(1) == typeName)
         .toList();
   }
 
@@ -315,8 +321,8 @@ class FirebaseOrderRepository extends OrderRepository {
       final data = event.snapshot.value as Map;
 
       return data.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e)))
-          .where((o) => o.tableNo.toString() == tableNo)
+          .map((e) => Order.fromMap(e))
+          .where((o) => o.table.tableNo.toString() == tableNo)
           .toList();
     });
   }
@@ -324,7 +330,7 @@ class FirebaseOrderRepository extends OrderRepository {
   @override
   Stream<List<Order>> getBillOrdersForTable(String tableNo) {
     return orderReference
-        .orderByChild("tableNo")
+        .orderByChild("table/tableNo")
         .equalTo(int.parse(tableNo))
         .onValue
         .map((event) {

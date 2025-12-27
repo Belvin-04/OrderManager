@@ -33,4 +33,11 @@ class Item {
       id: id ?? this.id,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Item && other.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }
