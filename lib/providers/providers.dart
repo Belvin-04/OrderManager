@@ -45,7 +45,12 @@ final orderRefProvider = Provider<DatabaseReference>((ref) {
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   final ordersRef = ref.read(orderRefProvider);
-  return FirebaseOrderRepository(ordersRef);
+  final splitRef = ref.read(splitOrderRefProvider);
+  return FirebaseOrderRepository(ordersRef, splitOrderReference: splitRef);
+});
+
+final splitOrderRefProvider = Provider<DatabaseReference>((ref) {
+  return ref.read(firebaseDatabaseProvider).ref('split-orders');
 });
 
 final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(() {

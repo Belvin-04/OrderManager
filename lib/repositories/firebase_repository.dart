@@ -189,7 +189,11 @@ class FirebaseTableRepository extends TableRepository {
 
 class FirebaseOrderRepository extends OrderRepository {
   final DatabaseReference orderReference;
-  FirebaseOrderRepository(this.orderReference);
+  final DatabaseReference splitOrderReference;
+  FirebaseOrderRepository(
+    this.orderReference, {
+    required this.splitOrderReference,
+  });
   @override
   Future<bool> hasAnyOrdersForTable(String tableKey) async {
     final event = await orderReference.once();
@@ -230,8 +234,11 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
-  Stream<int> getTotalAmountForTable(String tableKey) {
-    return orderReference.onValue.map((event) {
+  Stream<int> getTotalAmountForTable(String tableKey, {String splitNo = "0"}) {
+    DatabaseReference reference = splitNo == "0"
+        ? orderReference
+        : splitOrderReference;
+    return reference.onValue.map((event) {
       if (event.snapshot.value == null) return 0;
 
       final orders = event.snapshot.value as Map;
@@ -240,6 +247,7 @@ class FirebaseOrderRepository extends OrderRepository {
       orders.forEach((key, value) {
         Order order = Order.fromMap(value as Map);
         if (order.table.tableNo.toString() == tableKey &&
+            order.table.splitNo.toString() == splitNo &&
             value['status'] != 'canceled') {
           total += (value['amount'] as num).toInt();
         }
@@ -289,12 +297,15 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
-  Future<void> saveOrder(Order order) async {
-    final id = order.id.isEmpty ? orderReference.push().key! : order.id;
+  Future<void> saveOrder(Order order, {bool isSplit = false}) async {
+    DatabaseReference reference = isSplit
+        ? splitOrderReference
+        : orderReference;
+    final id = order.id.isEmpty ? reference.push().key! : order.id;
 
     final updated = order.copyWith(id: id);
 
-    await orderReference.child(id).set(updated.toMap());
+    await reference.child(id).set(updated.toMap());
   }
 
   @override
@@ -359,5 +370,67 @@ class FirebaseOrderRepository extends OrderRepository {
     }
 
     return {"amount": totalAmount, "quantity": totalQuantity};
+  }
+
+  @override
+  Stream<List<Order>> watchSplitOrders(String tableNo) {
+    return splitOrderReference
+        .orderByChild("table/tableNo")
+        .equalTo(int.parse(tableNo))
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) return [];
+
+          final data = event.snapshot.value as Map;
+
+          return data.values
+              .map((e) => Order.fromMap(e))
+              .where((o) => o.table.splitNo == 0)
+              .toList();
+        });
+  }
+
+  @override
+  Stream<List<Order>> getSplitOrders(String tableNo) {
+    return splitOrderReference
+        .orderByChild("table/tableNo")
+        .equalTo(int.parse(tableNo))
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) return [];
+
+          final data = event.snapshot.value as Map;
+
+          return data.values.map((e) => Order.fromMap(e)).toList();
+        });
+  }
+
+  @override
+  Future<bool> removeSplitOrdersForTable(String tableNo) async {
+    final event = await splitOrderReference
+        .orderByChild("table/tableNo")
+        .equalTo(int.parse(tableNo))
+        .once();
+    if (event.snapshot.value == null) return true;
+
+    final map = event.snapshot.value as Map;
+
+    final List<Order> splitOrders = map.values
+        .map((raw) => Order.fromMap(Map<String, dynamic>.from(raw)))
+        .toList();
+    try {
+      for (final Order order in splitOrders) {
+        await deleteOrder(order);
+      }
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  Future<void> deleteOrder(Order order) async {
+    String id = order.id;
+    await splitOrderReference.child(id).remove();
   }
 }

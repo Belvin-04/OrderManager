@@ -28,6 +28,13 @@ final pendingOrdersProvider = StreamProvider.family<List<Order>, String>((
       .watchOrdersByStatus("pending", tableNo);
 });
 
+final splitOrdersProvider = StreamProvider.family<List<Order>, String>((
+  ref,
+  tableNo,
+) {
+  return ref.watch(orderRepositoryProvider).watchSplitOrders(tableNo);
+});
+
 final completedOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
   tableNo,
@@ -56,7 +63,7 @@ final billTotalsProvider = Provider.family<Map<String, int>, String>((
 });
 
 class OrdersViewModel extends AsyncNotifier<void> {
-  Future<void> saveOrder(Order order) async {
+  Future<void> saveOrder(Order order, {bool isSplitOrder = false}) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
 
     final item = order.item;
@@ -65,7 +72,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
 
     final updated = order.copyWith(amount: amount);
 
-    await ordersRepo.saveOrder(updated);
+    await ordersRepo.saveOrder(updated, isSplit: isSplitOrder);
   }
 
   Future<void> completeOrder(Order order) async =>
@@ -143,6 +150,64 @@ class OrdersViewModel extends AsyncNotifier<void> {
       List<Order> orders = orderMap.values.toList();
       yield orders;
     }
+  }
+
+  Future<bool> createSplitOrders(String tableNo) async {
+    Stream<List<Order>> orderStream = ref
+        .read(orderRepositoryProvider)
+        .getBillOrdersForTable(tableNo);
+
+    await for (final List<Order> orderList in orderStream) {
+      for (final Order order in orderList) {
+        if (order.quantity == 1) {
+          await saveOrder(order.copyWith(id: ""), isSplitOrder: true);
+        } else if (order.quantity > 1) {
+          try {
+            for (int i = 0; i < order.quantity; i++) {
+              Order newOrder = order.copyWith(quantity: 1, id: '');
+              await saveOrder(newOrder, isSplitOrder: true);
+            }
+          } catch (e) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> changeOrderSplitNo(Order order, int splitNo) async {
+    Order newOrder = order.copyWith(
+      table: order.table.copyWith(splitNo: splitNo),
+    );
+    try {
+      await saveOrder(newOrder, isSplitOrder: true);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> resetSplitNo(String tableKey, String splitNo) async {
+    List<Order> splitOrders = await ref
+        .read(orderRepositoryProvider)
+        .getSplitOrders(tableKey)
+        .first;
+
+    for (final Order order in splitOrders) {
+      try {
+        if (order.table.splitNo.toString() == splitNo) {
+          await saveOrder(
+            order.copyWith(table: order.table.copyWith(splitNo: 0)),
+            isSplitOrder: true,
+          );
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @override

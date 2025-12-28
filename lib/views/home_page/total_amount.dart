@@ -5,15 +5,18 @@ import 'package:order_manager/providers/providers.dart';
 
 class TotalAmount extends ConsumerWidget {
   final Table1 table;
-
-  const TotalAmount({super.key, required this.table});
+  final int splitNo;
+  const TotalAmount({super.key, required this.table, this.splitNo = 0});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return StreamBuilder<int>(
       stream: ref
           .read(orderRepositoryProvider)
-          .getTotalAmountForTable(table.tableNo.toString()),
+          .getTotalAmountForTable(
+            table.tableNo.toString(),
+            splitNo: splitNo.toString(),
+          ),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
 

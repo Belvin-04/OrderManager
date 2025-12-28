@@ -5,6 +5,8 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/utils/bill_footer.dart';
 import 'package:order_manager/utils/bill_item.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
+import 'package:order_manager/views/bills/bills_split.dart';
+import 'package:order_manager/views/bills/split_bill_dialog.dart';
 
 class Bills extends ConsumerWidget {
   final Table1 table;
@@ -16,7 +18,17 @@ class Bills extends ConsumerWidget {
     final billState = ref.watch(billOrdersProvider(table.tableNo.toString()));
     double maxHeight = MediaQuery.of(context).size.height - 270;
     return Scaffold(
-      appBar: AppBar(title: Text("Table ${table.tableNo}: Bill")),
+      appBar: AppBar(
+        title: Text("Table ${table.tableNo}: Bill"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.receipt_outlined),
+            onPressed: () {
+              showSplitBillDialog(context, ref, table);
+            },
+          ),
+        ],
+      ),
       body: ListView(
         children: [
           const Center(child: Text("Invoice", style: TextStyle(fontSize: 30))),
@@ -58,6 +70,33 @@ class Bills extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void showSplitBillDialog(BuildContext context, WidgetRef ref, Table1 table) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return SplitBillDialog(
+          table: table,
+          onSplit: (int value) async {
+            bool isSplit = await ref
+                .read(ordersViewModelProvider.notifier)
+                .createSplitOrders(table.tableNo.toString());
+            if (!context.mounted) return;
+            Navigator.pop(dialogContext);
+            if (isSplit) {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      BillsSplit(table: table, totalSplit: value),
+                ),
+              );
+            }
+          },
+        );
+      },
     );
   }
 }
