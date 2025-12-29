@@ -80,7 +80,7 @@ class Items extends ConsumerWidget {
       builder: (BuildContext context) => ItemEditDialog(
         initialItem: item,
         onSave: (item) async {
-          await ref.read(itemRepositoryProvider).saveItem(item);
+          await ref.read(itemsViewModelProvider.notifier).saveItem(item);
           if (!context.mounted) return;
           showSnackBar("Item Saved Successfully...", context);
         },

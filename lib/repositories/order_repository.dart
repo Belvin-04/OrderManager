@@ -7,6 +7,7 @@ abstract class OrderRepository {
   Stream<int> getTotalAmountForTable(String tableKey, {String splitNo});
   Future<List<Order>> getOrdersForTable(String tableKey);
   Future<List<Order>> getOrdersByType(String typeName);
+  Future<List<Order>> getOrdersByItem(String itemName);
   Future<Set<int>> getOccupiedTableNos();
   Future<void> moveOrders(String fromTableKey, String toTableKey);
   Future<void> saveOrder(Order order, {bool isSplit});

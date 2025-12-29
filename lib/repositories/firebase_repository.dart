@@ -325,6 +325,22 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
+  Future<List<Order>> getOrdersByItem(String itemName) async {
+    final event = await orderReference
+        .orderByChild("item/name")
+        .equalTo(itemName)
+        .once();
+
+    if (event.snapshot.value == null) return [];
+
+    final map = event.snapshot.value as Map;
+
+    return map.values
+        .map((raw) => Order.fromMap(Map<String, dynamic>.from(raw)))
+        .toList();
+  }
+
+  @override
   Stream<List<Order>> watchOrdersByStatus(String status, String tableNo) {
     return orderReference.orderByChild("status").equalTo(status).onValue.map((
       event,
