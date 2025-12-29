@@ -310,7 +310,10 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Future<List<Order>> getOrdersByType(String typeName) async {
-    final event = await orderReference.once();
+    final event = await orderReference
+        .orderByChild("type/type")
+        .equalTo(typeName)
+        .once();
 
     if (event.snapshot.value == null) return [];
 
@@ -318,7 +321,6 @@ class FirebaseOrderRepository extends OrderRepository {
 
     return map.values
         .map((raw) => Order.fromMap(Map<String, dynamic>.from(raw)))
-        .where((order) => order.type.getType(1) == typeName)
         .toList();
   }
 

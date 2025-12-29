@@ -19,7 +19,7 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
 
   Future<void> saveType(Type1 type) async {
     final typesRepo = ref.read(typeRepositoryProvider);
-    final oldTypes = state.value ?? [];
+    final oldTypes = await typesRepo.watchTypes().first;
     final oldType = oldTypes.firstWhere(
       (t) => t.id == type.id,
       orElse: () => type,
