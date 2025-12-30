@@ -20,9 +20,9 @@ class TypeDeleteDialog extends StatelessWidget {
         TextButton(
           child: const Text("OK"),
           onPressed: () async {
+            final NavigatorState navigator = Navigator.of(context);
             await onDelete(initialType);
-            if (!context.mounted) return;
-            Navigator.pop(context);
+            navigator.pop();
           },
         ),
       ],

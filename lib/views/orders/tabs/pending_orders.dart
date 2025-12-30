@@ -65,13 +65,14 @@ class PendingOrders extends ConsumerWidget {
                           child: Icon(Icons.check, color: Colors.green),
                         ),
                         onTap: () async {
+                          final ScaffoldMessengerState messenger =
+                              ScaffoldMessenger.of(context);
                           await ref
                               .read(ordersViewModelProvider.notifier)
                               .completeOrder(order);
-                          if (!context.mounted) return;
                           showSnackBar(
                             "Order Completed Successfully...",
-                            context,
+                            messenger,
                           );
                         },
                       ),
@@ -100,13 +101,14 @@ class PendingOrders extends ConsumerWidget {
                           child: Icon(Icons.cancel, color: Colors.red),
                         ),
                         onTap: () async {
+                          final ScaffoldMessengerState messenger =
+                              ScaffoldMessenger.of(context);
                           await ref
                               .read(ordersViewModelProvider.notifier)
                               .cancelOrder(order);
-                          if (!context.mounted) return;
                           showSnackBar(
                             "Order Canceled Successfully...",
-                            context,
+                            messenger,
                           );
                         },
                       ),
@@ -132,11 +134,13 @@ class PendingOrders extends ConsumerWidget {
       builder: (BuildContext context) => OrderSaveDialog(
         initialOrder: order,
         onSave: (editedOrder) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref
               .read(ordersViewModelProvider.notifier)
               .saveOrder(editedOrder);
-          if (!context.mounted) return;
-          showSnackBar("Order Saved Successfully...!", context);
+          showSnackBar("Order Saved Successfully...!", messenger);
         },
       ),
     );

@@ -42,40 +42,40 @@ class Orders extends ConsumerWidget {
                 switch (value) {
                   case "Repeat all":
                     {
+                      final ScaffoldMessengerState messenger =
+                          ScaffoldMessenger.of(context);
                       bool check = await ref
                           .read(ordersViewModelProvider.notifier)
                           .repeatAllOrders(table);
                       if (check) {
-                        if (!context.mounted) return;
                         showSnackBar(
                           "All orders repeated successfully...!",
-                          context,
+                          messenger,
                         );
                       } else {
-                        if (!context.mounted) return;
                         showSnackBar(
                           "There are no orders to repeat...!",
-                          context,
+                          messenger,
                         );
                       }
                       break;
                     }
                   case "Restore all":
                     {
+                      final ScaffoldMessengerState messenger =
+                          ScaffoldMessenger.of(context);
                       bool check = await ref
                           .read(ordersViewModelProvider.notifier)
                           .restoreAllOrders(table);
                       if (check) {
-                        if (!context.mounted) return;
                         showSnackBar(
                           "All orders restored successfully...!",
-                          context,
+                          messenger,
                         );
                       } else {
-                        if (!context.mounted) return;
                         showSnackBar(
                           "There are no canceled orders...!",
-                          context,
+                          messenger,
                         );
                       }
                       break;

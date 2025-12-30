@@ -110,9 +110,9 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
         TextButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
+              final NavigatorState navigator = Navigator.of(context);
               await widget.onSave(_editedItem);
-              if (!context.mounted) return;
-              Navigator.pop(context);
+              navigator.pop();
             }
           },
           child: const Text("Save Item"),

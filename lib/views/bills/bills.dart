@@ -80,14 +80,13 @@ class Bills extends ConsumerWidget {
         return SplitBillDialog(
           table: table,
           onSplit: (int value) async {
+            final NavigatorState navigator = Navigator.of(context);
             bool isSplit = await ref
                 .read(ordersViewModelProvider.notifier)
                 .createSplitOrders(table.tableNo.toString());
-            if (!context.mounted) return;
-            Navigator.pop(dialogContext);
+            navigator.pop();
             if (isSplit) {
-              await Navigator.push(
-                context,
+              await navigator.push(
                 MaterialPageRoute(
                   builder: (context) =>
                       BillsSplit(table: table, totalSplit: value),

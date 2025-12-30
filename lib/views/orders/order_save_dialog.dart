@@ -198,9 +198,9 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
         TextButton(
           onPressed: () async {
             if (_formStateKey.currentState!.validate()) {
+              final NavigatorState navigator = Navigator.of(context);
               await widget.onSave(editedOrder);
-              if (!context.mounted) return;
-              Navigator.pop(context);
+              navigator.pop();
             }
           },
           child: const Text("Save Order"),

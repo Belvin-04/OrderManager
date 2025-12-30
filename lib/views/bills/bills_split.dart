@@ -24,14 +24,17 @@ class BillsSplit extends ConsumerWidget {
         canPop: false,
         onPopInvokedWithResult: (didPop, result) async {
           if (didPop) return;
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
+          final NavigatorState navigator = Navigator.of(context);
           final bool isSplitOrdersRemoved = await ref
               .read(orderRepositoryProvider)
               .removeSplitOrdersForTable(table.tableNo.toString());
-          if (!context.mounted) return;
           if (!isSplitOrdersRemoved) {
-            showSnackBar("Problem removing split orders", context);
+            showSnackBar("Problem removing split orders", messenger);
           }
-          Navigator.pop(context);
+          navigator.pop();
         },
         child: SizedBox(
           height: double.infinity,

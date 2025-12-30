@@ -80,9 +80,11 @@ class Items extends ConsumerWidget {
       builder: (BuildContext context) => ItemEditDialog(
         initialItem: item,
         onSave: (item) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref.read(itemsViewModelProvider.notifier).saveItem(item);
-          if (!context.mounted) return;
-          showSnackBar("Item Saved Successfully...", context);
+          showSnackBar("Item Saved Successfully...", messenger);
         },
       ),
     );
@@ -94,9 +96,11 @@ class Items extends ConsumerWidget {
       builder: (BuildContext context) => ItemDeleteDialog(
         initialItem: item,
         onDelete: (item) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref.read(itemRepositoryProvider).deleteItem(item);
-          if (!context.mounted) return;
-          showSnackBar("Item Deleted Successfully", context);
+          showSnackBar("Item Deleted Successfully", messenger);
         },
       ),
     );

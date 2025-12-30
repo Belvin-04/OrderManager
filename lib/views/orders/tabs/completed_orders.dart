@@ -40,11 +40,15 @@ class CompletedOrders extends ConsumerWidget {
                         child: Icon(Icons.replay_rounded, color: Colors.green),
                       ),
                       onTap: () async {
+                        final ScaffoldMessengerState messenger =
+                            ScaffoldMessenger.of(context);
                         await ref
                             .read(ordersViewModelProvider.notifier)
                             .repeatOrder(order);
-                        if (!context.mounted) return;
-                        showSnackBar("Order Repeated Successfully...", context);
+                        showSnackBar(
+                          "Order Repeated Successfully...",
+                          messenger,
+                        );
                       },
                     ),
                   ],

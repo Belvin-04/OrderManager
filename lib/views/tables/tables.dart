@@ -21,17 +21,21 @@ class Tables extends ConsumerWidget {
             tooltip: "Delete Table",
             heroTag: "Delete Button",
             onPressed: () async {
+              final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                context,
+              );
+              final dialogContext = context;
               RemoveTableResult result = await ref
                   .read(tablesViewmodelProvider.notifier)
                   .removeTable();
               if (!context.mounted) return;
               switch (result) {
                 case RemoveTableResult.noTables:
-                  showSnackBar("No Tables found...", context);
+                  showSnackBar("No Tables found...", messenger);
                 case RemoveTableResult.hasOrders:
-                  showWarningDialog(context);
+                  showWarningDialog(dialogContext);
                 case RemoveTableResult.removed:
-                  showSnackBar("Table removed successfully...", context);
+                  showSnackBar("Table removed successfully...", messenger);
               }
             },
             backgroundColor: Colors.red,
@@ -46,9 +50,11 @@ class Tables extends ConsumerWidget {
             tooltip: "Add Table",
             heroTag: "Add Button",
             onPressed: () async {
+              final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                context,
+              );
               await ref.read(tablesViewmodelProvider.notifier).addTable();
-              if (!context.mounted) return;
-              showSnackBar("Table added successfully...", context);
+              showSnackBar("Table added successfully...", messenger);
             },
             backgroundColor: Colors.red,
             child: const Icon(Icons.add, color: Colors.white),

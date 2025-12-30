@@ -41,13 +41,14 @@ class CancelledOrders extends ConsumerWidget {
                           child: Icon(Icons.restore, color: Colors.green),
                         ),
                         onTap: () async {
+                          final ScaffoldMessengerState messenger =
+                              ScaffoldMessenger.of(context);
                           await ref
                               .read(ordersViewModelProvider.notifier)
                               .restoreOrder(order);
-                          if (!context.mounted) return;
                           showSnackBar(
                             "Order Restored Successfully...",
-                            context,
+                            messenger,
                           );
                         },
                       ),

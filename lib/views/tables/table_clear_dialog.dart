@@ -20,9 +20,9 @@ class TableClearDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () async {
+            final NavigatorState navigator = Navigator.of(context);
             await onClear(table.tableNo.toString());
-            if (!context.mounted) return;
-            Navigator.pop(context);
+            navigator.pop();
           },
           child: const Text("OK"),
         ),

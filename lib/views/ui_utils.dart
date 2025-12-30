@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-void showSnackBar(String message, BuildContext context) {
+void showSnackBar(String message, ScaffoldMessengerState messanger) {
   SnackBar snackBar = SnackBar(content: Text(message));
-  if (context.mounted) {
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
+  messanger.removeCurrentSnackBar();
+  messanger.showSnackBar(snackBar);
 }

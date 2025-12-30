@@ -75,6 +75,8 @@ class HomePage extends ConsumerWidget {
                             child: Icon(Icons.swap_vert, color: Colors.yellow),
                           ),
                           onTap: () async {
+                            final ScaffoldMessengerState messenger =
+                                ScaffoldMessenger.of(context);
                             final decision = await ref
                                 .read(tablesViewmodelProvider.notifier)
                                 .swapTable(table.tableNo.toString());
@@ -83,19 +85,19 @@ class HomePage extends ConsumerWidget {
                               case SwapTableResult.noFreeTables:
                                 showSnackBar(
                                   "There are no free tables....!",
-                                  context,
+                                  messenger,
                                 );
 
                               case SwapTableResult.noOrdersOnSource:
                                 showSnackBar(
                                   "There are no orders on the table...!",
-                                  context,
+                                  messenger,
                                 );
 
                               case SwapTableResult.noOrdersAtAll:
                                 showSnackBar(
                                   "All tables are free...!",
-                                  context,
+                                  messenger,
                                 );
 
                               case SwapTableResult.canSwap:
@@ -116,6 +118,8 @@ class HomePage extends ConsumerWidget {
                             child: Icon(Icons.clear, color: Colors.blue),
                           ),
                           onTap: () async {
+                            final ScaffoldMessengerState messenger =
+                                ScaffoldMessenger.of(context);
                             ClearTableResult result = await ref
                                 .read(tablesViewmodelProvider.notifier)
                                 .clearTable(table.tableNo.toString());
@@ -128,7 +132,7 @@ class HomePage extends ConsumerWidget {
                               case ClearTableResult.alreadyCleared:
                                 showSnackBar(
                                   "Table is already cleared ...",
-                                  context,
+                                  messenger,
                                 );
                             }
                           },
@@ -158,11 +162,13 @@ class HomePage extends ConsumerWidget {
       builder: (BuildContext context) => TableClearDialog(
         table: table,
         onClear: (tableKey) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref
               .read(tablesViewmodelProvider.notifier)
               .clearTableConfirm(tableKey);
-          if (!context.mounted) return;
-          showSnackBar("Table cleared Successfully...", context);
+          showSnackBar("Table cleared Successfully...", messenger);
         },
       ),
     );
@@ -179,16 +185,18 @@ class HomePage extends ConsumerWidget {
       builder: (BuildContext context) => TableSwapDialog(
         availableTables: availableTables,
         onSelect: (targetTableNo) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref
               .read(tablesViewmodelProvider.notifier)
               .confirmSwap(
                 fromTableKey: sourceTable.toString(),
                 toTableKey: targetTableNo.toString(),
               );
-          if (!context.mounted) return;
           showSnackBar(
             """Orders swapped from Table : $sourceTable to Table : $targetTableNo""",
-            context,
+            messenger,
           );
         },
       ),

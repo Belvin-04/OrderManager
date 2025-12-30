@@ -80,9 +80,11 @@ class Types extends ConsumerWidget {
       builder: (_) => TypeEditDialog(
         initialType: type,
         onSave: (updatedType) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref.read(typesViewModelProvider.notifier).saveType(updatedType);
-          if (!context.mounted) return;
-          showSnackBar("Type Saved Successfully...", context);
+          showSnackBar("Type Saved Successfully...", messenger);
         },
       ),
     );
@@ -98,9 +100,11 @@ class Types extends ConsumerWidget {
       builder: (BuildContext context) => TypeDeleteDialog(
         initialType: type,
         onDelete: (type) async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
           await ref.read(typeRepositoryProvider).deleteType(type);
-          if (!context.mounted) return;
-          showSnackBar("Type Deleted Successfully", context);
+          showSnackBar("Type Deleted Successfully", messenger);
         },
       ),
     );
