@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Offset;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
@@ -112,5 +113,9 @@ class TablesViewmodel extends AsyncNotifier<void> {
     required String toTableKey,
   }) async {
     await _orderRepo.moveOrders(fromTableKey, toTableKey);
+  }
+
+  Future<void> updateTablePosition(String id, Offset newPos) async {
+    await _tableRepo.updateTablePosition(id, newPos);
   }
 }

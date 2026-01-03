@@ -7,6 +7,7 @@ import 'package:order_manager/views/home_page/total_amount.dart';
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_clear_dialog.dart';
 import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
+import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_swap_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
 
@@ -21,7 +22,23 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       key: _scaffoldStateKey,
       drawer: const drawer.NavigationDrawer(),
-      appBar: AppBar(title: const Text("Home")),
+      appBar: AppBar(
+        title: const Text("Home"),
+        actions: [
+          GestureDetector(
+            child: const Tooltip(
+              message: "Table Layout Screen",
+              child: Icon(Icons.design_services),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TableLayoutScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {

@@ -1,3 +1,5 @@
+import 'dart:ui' show Offset;
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
@@ -184,6 +186,14 @@ class FirebaseTableRepository extends TableRepository {
   @override
   Future<void> deleteTableById(String tableId) async {
     await tablesReference.child(tableId).remove();
+  }
+
+  @override
+  Future<void> updateTablePosition(String id, Offset pos) async {
+    await tablesReference.child(id).child('position').update({
+      "x": pos.dx,
+      "y": pos.dy,
+    });
   }
 }
 
