@@ -82,7 +82,7 @@ class TablesViewmodel extends AsyncNotifier<void> {
   }
 
   Future<SwapTableDecision> swapTable(String sourceTableKey) async {
-    final tables = ref.read(tablesProvider).value ?? [];
+    final tables = await _tableRepo.watchTables().first;
     final occupiedTables = await _orderRepo.getOccupiedTableNos();
 
     if (occupiedTables.isEmpty) {
