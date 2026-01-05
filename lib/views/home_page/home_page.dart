@@ -198,6 +198,7 @@ class HomePage extends ConsumerWidget {
     int sourceTable,
     List<int> availableTables,
   ) {
+    availableTables.sort();
     showDialog(
       context: context,
       builder: (BuildContext context) => TableSwapDialog(
