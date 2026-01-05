@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/viewmodels/items_viewmodel.dart';
-import 'package:order_manager/viewmodels/types_viewmodel.dart';
+import 'package:order_manager/providers/providers.dart';
 
 class OrderSaveDialog extends ConsumerStatefulWidget {
   final Order initialOrder;

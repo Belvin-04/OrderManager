@@ -5,7 +5,6 @@ import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/order_viewmodel.dart';
 
 import 'fake_repositories/fake_orders_repository.dart';
 
@@ -23,6 +22,7 @@ Order baseOrder({
   String status = 'pending',
   int amount = 100,
   int splitNo = 0,
+  Table1? table,
   Type1? type,
 }) {
   return Order(
@@ -30,7 +30,9 @@ Order baseOrder({
     quantity: quantity,
     item: Item(id: 'i', name: 'Burger', price: 100),
     type: type ?? Type1(id: 't', type: 'None', price: 0),
-    table: testTable.copyWith(splitNo: splitNo),
+    table:
+        table?.copyWith(splitNo: splitNo) ??
+        testTable.copyWith(splitNo: splitNo),
     status: status,
     note: '',
     amount: amount,
@@ -321,5 +323,35 @@ void main() {
     expect(repo.splitOrdersSaved.any((o) => o.table.splitNo == 0), true);
     expect(repo.splitOrdersSaved.where((o) => o.table.splitNo == 0).length, 1);
     expect(repo.splitOrdersSaved.every((o) => o.table.splitNo == 0), true);
+  });
+
+  test('removeSplitOrdersForTable removes orders for given table', () async {
+    final repo = FakeOrdersRepository()
+      ..splitOrders.add(
+        baseOrder(table: Table1(id: 't1', tableNo: 1, splitNo: 1)),
+      )
+      ..splitOrders.add(
+        baseOrder(table: Table1(id: 't2', tableNo: 2, splitNo: 1)),
+      );
+
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    final result = await vm.removeSplitOrdersForTable('1');
+
+    expect(result, true);
+    expect(repo.splitOrders.any((o) => o.table.tableNo == 1), false);
+    expect(repo.splitOrders.any((o) => o.table.tableNo == 2), true);
+  });
+
+  test('getTotalAmountForTable delegates stream to repository', () async {
+    final repo = FakeOrdersRepository();
+
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    final value = await vm.getTotalAmountForTable('1').first;
+
+    expect(value, 250);
   });
 }

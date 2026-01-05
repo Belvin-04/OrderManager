@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/bill_footer.dart';
 import 'package:order_manager/utils/bill_item.dart';
-import 'package:order_manager/viewmodels/order_viewmodel.dart';
 import 'package:order_manager/views/bills/bills_split.dart';
 import 'package:order_manager/views/bills/split_bill_dialog.dart';
 

@@ -2,15 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 
-final typesViewModelProvider =
-    AsyncNotifierProvider<TypesViewModel, List<Type1>>(() {
-      return TypesViewModel();
-    });
-
-final typesProvider = StreamProvider<List<Type1>>((ref) {
-  return ref.read(typeRepositoryProvider).watchTypes();
-});
-
 class TypesViewModel extends AsyncNotifier<List<Type1>> {
   @override
   Future<List<Type1>> build() async {

@@ -25,7 +25,6 @@ class FakeOrdersRepository implements OrderRepository {
 
   @override
   Future<void> deleteOrder(Order order) {
-    // TODO: implement deleteOrder
     throw UnimplementedError();
   }
 
@@ -77,8 +76,7 @@ class FakeOrdersRepository implements OrderRepository {
 
   @override
   Stream<int> getTotalAmountForTable(String tableKey, {String splitNo = "0"}) {
-    // TODO: implement getTotalAmountForTable
-    throw UnimplementedError();
+    return Stream.value(250);
   }
 
   @override
@@ -101,7 +99,7 @@ class FakeOrdersRepository implements OrderRepository {
   @override
   Future<bool> removeSplitOrdersForTable(String tableNo) async {
     try {
-      orders.removeWhere((o) => o.table.tableNo.toString() == tableNo);
+      splitOrders.removeWhere((o) => o.table.tableNo.toString() == tableNo);
       return true;
     } catch (_) {
       return false;
@@ -122,7 +120,8 @@ class FakeOrdersRepository implements OrderRepository {
 
   @override
   Stream<List<Order>> watchSplitOrders(String tableNo) {
-    // TODO: implement watchSplitOrders
-    throw UnimplementedError();
+    return Stream.value(
+      splitOrders.where((o) => o.table.tableNo.toString() == tableNo).toList(),
+    );
   }
 }

@@ -3,6 +3,7 @@ import 'package:order_manager/repositories/items_repository.dart';
 
 class FakeItemsRepository implements ItemsRepository {
   List<Item> items = [];
+  final List<Item> deletedItems = [];
   Item? lastSavedItem;
 
   @override
@@ -27,8 +28,8 @@ class FakeItemsRepository implements ItemsRepository {
   }
 
   @override
-  Future<void> deleteItem(Item item) {
-    // TODO: implement deleteItem
-    throw UnimplementedError();
+  Future<void> deleteItem(Item item) async {
+    deletedItems.add(item);
+    items.removeWhere((i) => i.id == item.id);
   }
 }

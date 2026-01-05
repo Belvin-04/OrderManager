@@ -5,7 +5,6 @@ import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/items_viewmodel.dart';
 
 import 'fake_repositories/fake_items_repository.dart';
 import 'fake_repositories/fake_orders_repository.dart';
@@ -197,5 +196,22 @@ void main() {
     await vm.saveItem(updatedItem);
 
     expect(ordersRepo.savedOrders, isEmpty);
+  });
+
+  test('deleteItem delegates to repository', () async {
+    final item = Item(id: 'i1', name: 'Burger', price: 100);
+
+    final itemsRepo = FakeItemsRepository()..items.add(item);
+    final ordersRepo = FakeOrdersRepository();
+
+    final container = createContainer(
+      itemsRepo: itemsRepo,
+      ordersRepo: ordersRepo,
+    );
+    final vm = container.read(itemsViewModelProvider.notifier);
+
+    await vm.deleteItem(item);
+
+    expect(itemsRepo.deletedItems, contains(item));
   });
 }

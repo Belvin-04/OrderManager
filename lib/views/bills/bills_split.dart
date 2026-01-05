@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/order_viewmodel.dart';
 import 'package:order_manager/views/bills/split_tables_dialog.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -29,7 +28,7 @@ class BillsSplit extends ConsumerWidget {
           );
           final NavigatorState navigator = Navigator.of(context);
           final bool isSplitOrdersRemoved = await ref
-              .read(orderRepositoryProvider)
+              .read(ordersViewModelProvider.notifier)
               .removeSplitOrdersForTable(table.tableNo.toString());
           if (!isSplitOrdersRemoved) {
             showSnackBar("Problem removing split orders", messenger);

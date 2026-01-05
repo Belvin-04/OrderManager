@@ -4,14 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/providers/providers.dart';
 
-final itemsProvider = StreamProvider<List<Item>>((ref) {
-  return ref.read(itemRepositoryProvider).watchItems();
-});
-
-final itemsViewModelProvider = AsyncNotifierProvider<ItemsViewmodel, void>(() {
-  return ItemsViewmodel();
-});
-
 class ItemsViewmodel extends AsyncNotifier<void> {
   Future<void> saveItem(Item item) async {
     final itemsRepo = ref.read(itemRepositoryProvider);
@@ -36,6 +28,10 @@ class ItemsViewmodel extends AsyncNotifier<void> {
 
       await ordersRepo.saveOrder(updated);
     }
+  }
+
+  Future<void> deleteItem(Item item) {
+    return ref.read(itemRepositoryProvider).deleteItem(item);
   }
 
   @override

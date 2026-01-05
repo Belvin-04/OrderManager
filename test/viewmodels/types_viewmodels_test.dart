@@ -5,7 +5,6 @@ import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/types_viewmodel.dart';
 
 import 'fake_repositories/fake_orders_repository.dart';
 import 'fake_repositories/fake_type_repository.dart';
@@ -177,6 +176,23 @@ void main() {
       ordersRepo: ordersRepo,
     );
 
+    final vm = container.read(typesViewModelProvider.notifier);
+
+    await vm.deleteType(type);
+
+    expect(typeRepo.lastDeletedType, type);
+  });
+
+  test('deleteType delegates to repository', () async {
+    final type = Type1(id: 't1', type: 'Extra', price: 20);
+
+    final typeRepo = FakeTypeRepository()..types.add(type);
+    final ordersRepo = FakeOrdersRepository();
+
+    final container = createContainer(
+      typeRepo: typeRepo,
+      ordersRepo: ordersRepo,
+    );
     final vm = container.read(typesViewModelProvider.notifier);
 
     await vm.deleteType(type);

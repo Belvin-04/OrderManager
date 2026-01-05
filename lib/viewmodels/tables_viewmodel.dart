@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui' show Offset;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/order_repository.dart';
 import 'package:order_manager/repositories/table_repository.dart';
@@ -12,14 +11,6 @@ enum RemoveTableResult { noTables, hasOrders, removed }
 enum ClearTableResult { hasPendingOrders, alreadyCleared, canClear }
 
 enum SwapTableResult { canSwap, noFreeTables, noOrdersOnSource, noOrdersAtAll }
-
-final tablesProvider = StreamProvider<List<Table1>>((ref) {
-  return ref.read(tableRepositoryProvider).watchTables();
-});
-
-final tablesViewmodelProvider = AsyncNotifierProvider<TablesViewmodel, void>(
-  TablesViewmodel.new,
-);
 
 class SwapTableDecision {
   final SwapTableResult result;

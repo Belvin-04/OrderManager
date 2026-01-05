@@ -4,64 +4,6 @@ import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 
-final ordersViewModelProvider = AsyncNotifierProvider<OrdersViewModel, void>(
-  () {
-    return OrdersViewModel();
-  },
-);
-
-final cancelledOrdersProvider = StreamProvider.family<List<Order>, String>((
-  ref,
-  tableNo,
-) {
-  return ref
-      .watch(orderRepositoryProvider)
-      .watchOrdersByStatus("canceled", tableNo);
-});
-
-final pendingOrdersProvider = StreamProvider.family<List<Order>, String>((
-  ref,
-  tableNo,
-) {
-  return ref
-      .watch(orderRepositoryProvider)
-      .watchOrdersByStatus("pending", tableNo);
-});
-
-final splitOrdersProvider = StreamProvider.family<List<Order>, String>((
-  ref,
-  tableNo,
-) {
-  return ref.watch(orderRepositoryProvider).watchSplitOrders(tableNo);
-});
-
-final completedOrdersProvider = StreamProvider.family<List<Order>, String>((
-  ref,
-  tableNo,
-) {
-  return ref
-      .watch(orderRepositoryProvider)
-      .watchOrdersByStatus("completed", tableNo);
-});
-
-final billOrdersProvider = StreamProvider.family<List<Order>, String>((
-  ref,
-  tableNo,
-) {
-  return ref
-      .read(ordersViewModelProvider.notifier)
-      .getBillOrdersForTable(tableNo);
-});
-
-final billTotalsProvider = Provider.family<Map<String, int>, String>((
-  ref,
-  tableNo,
-) {
-  final repo = ref.watch(orderRepositoryProvider);
-  final orders = ref.watch(billOrdersProvider(tableNo)).value ?? [];
-  return repo.getBillTotals(orders);
-});
-
 class OrdersViewModel extends AsyncNotifier<void> {
   Future<void> saveOrder(Order order, {bool isSplitOrder = false}) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
@@ -208,6 +150,16 @@ class OrdersViewModel extends AsyncNotifier<void> {
       }
     }
     return true;
+  }
+
+  Future<bool> removeSplitOrdersForTable(String tableNo) {
+    return ref.read(orderRepositoryProvider).removeSplitOrdersForTable(tableNo);
+  }
+
+  Stream<int> getTotalAmountForTable(String tableKey, {String splitNo = "0"}) {
+    return ref
+        .read(orderRepositoryProvider)
+        .getTotalAmountForTable(tableKey, splitNo: splitNo);
   }
 
   @override

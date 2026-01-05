@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/items_viewmodel.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -99,7 +98,7 @@ class Items extends ConsumerWidget {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,
           );
-          await ref.read(itemRepositoryProvider).deleteItem(item);
+          await ref.read(itemsViewModelProvider.notifier).deleteItem(item);
           showSnackBar("Item Deleted Successfully", messenger);
         },
       ),

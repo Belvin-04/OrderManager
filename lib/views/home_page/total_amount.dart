@@ -12,7 +12,7 @@ class TotalAmount extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return StreamBuilder<int>(
       stream: ref
-          .read(orderRepositoryProvider)
+          .read(ordersViewModelProvider.notifier)
           .getTotalAmountForTable(
             table.tableNo.toString(),
             splitNo: splitNo.toString(),
