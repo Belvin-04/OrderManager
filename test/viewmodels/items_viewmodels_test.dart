@@ -7,8 +7,8 @@ import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
 
-import '../fake_items_repository.dart';
-import '../fake_orders_repository.dart';
+import 'fake_repositories/fake_items_repository.dart';
+import 'fake_repositories/fake_orders_repository.dart';
 
 ProviderContainer createContainer({
   required FakeItemsRepository itemsRepo,
