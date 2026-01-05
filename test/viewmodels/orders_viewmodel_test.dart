@@ -7,10 +7,23 @@ import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 
 import 'fake_repositories/fake_orders_repository.dart';
+import 'fake_repositories/fake_table_repository.dart';
 
 ProviderContainer createContainer(FakeOrdersRepository repo) {
   return ProviderContainer(
     overrides: [orderRepositoryProvider.overrideWithValue(repo)],
+  );
+}
+
+ProviderContainer createTableContainer(
+  FakeOrdersRepository repo,
+  FakeTableRepository tableRepo,
+) {
+  return ProviderContainer(
+    overrides: [
+      orderRepositoryProvider.overrideWithValue(repo),
+      tableRepositoryProvider.overrideWithValue(tableRepo),
+    ],
   );
 }
 
@@ -353,5 +366,23 @@ void main() {
     final value = await vm.getTotalAmountForTable('1').first;
 
     expect(value, 250);
+  });
+
+  test('clearTableConfirm deletes orders for the given table', () async {
+    final repo = FakeOrdersRepository()
+      ..orders.add(baseOrder(table: Table1(id: 't1', tableNo: 1)))
+      ..orders.add(baseOrder(table: Table1(id: 't2', tableNo: 2)));
+
+    final tableRepo = FakeTableRepository();
+
+    final container = createTableContainer(repo, tableRepo);
+    final vm = container.read(tablesViewmodelProvider.notifier);
+
+    await vm.clearTableConfirm('1');
+
+    expect(repo.deletedOrdersForTable, '1');
+
+    expect(repo.orders.any((o) => o.table.tableNo == 1), false);
+    expect(repo.orders.any((o) => o.table.tableNo == 2), true);
   });
 }

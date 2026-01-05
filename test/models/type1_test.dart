@@ -1,7 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/type.dart';
 
+Type1 buildType({String id = 'ty1', String type = 'Extra', int price = 20}) {
+  return Type1(id: id, type: type, price: price);
+}
+
 void main() {
+  test('Type1 toMap converts type to correct map structure', () {
+    final type = buildType();
+
+    final map = type.toMap();
+
+    expect(map['id'], 'ty1');
+    expect(map['type'], 'Extra');
+    expect(map['price'], 20);
+  });
+
+  test('Type1 fromMap creates Type1 from map', () {
+    final map = {'id': 'ty1', 'type': 'Extra', 'price': 20};
+
+    final type = Type1.fromMap(map);
+
+    expect(type.id, 'ty1');
+    expect(type.type, 'Extra');
+    expect(type.price, 20);
+  });
+
   test('Type1 serializes and deserializes correctly', () {
     final type = Type1(id: 't1', type: 'Extra', price: 20);
 

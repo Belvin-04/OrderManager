@@ -67,7 +67,7 @@ class Table1 {
   }
 }
 
-extension on Offset {
+extension OffsetToMap on Offset {
   Map<String, double> toMap() {
     Map<String, double> position = {};
     position["x"] = dx;
