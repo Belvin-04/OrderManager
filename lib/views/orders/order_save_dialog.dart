@@ -88,9 +88,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                               ),
                             );
                           }).toList(),
-                          value: editedOrder.item.name.isEmpty
-                              ? items.first
-                              : editedOrder.item,
+                          value: editedOrder.item,
                           onChanged: (newValue) {
                             setState(() {
                               editedOrder = editedOrder.copyWith(
@@ -130,9 +128,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                               ),
                             );
                           }).toList(),
-                          value: editedOrder.type.type.isEmpty
-                              ? types.first
-                              : editedOrder.type,
+                          value: editedOrder.type,
                           onChanged: (newValue) {
                             setState(() {
                               editedOrder = editedOrder.copyWith(
@@ -158,6 +154,9 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                     return "Please Enter Quantity";
                   }
                   if (int.tryParse(value) == null) return "Invalid number";
+                  if (int.parse(value) <= 0) {
+                    return "Please Enter Valid Quantity";
+                  }
                   return null;
                 },
                 decoration: InputDecoration(
