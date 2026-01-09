@@ -198,11 +198,11 @@ class HomePage extends ConsumerWidget {
     int sourceTable,
     List<int> availableTables,
   ) {
-    availableTables.sort();
+    final sortedTables = [...availableTables]..sort();
     showDialog(
       context: context,
       builder: (BuildContext context) => TableSwapDialog(
-        availableTables: availableTables,
+        availableTables: sortedTables,
         onSelect: (targetTableNo) async {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,

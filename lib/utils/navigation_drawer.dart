@@ -48,10 +48,9 @@ class NavigationDrawer extends StatelessWidget {
               title: const Text("Types"),
             ),
             const Divider(color: Colors.white24),
-            ListTile(
-              onTap: () {},
-              title: const Text("Dark Theme"),
-              trailing: const ChangeThemeSwitch(),
+            const ListTile(
+              title: Text("Dark Theme"),
+              trailing: ChangeThemeSwitch(),
             ),
           ],
         ),
