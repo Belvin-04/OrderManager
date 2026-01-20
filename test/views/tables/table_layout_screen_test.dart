@@ -4,11 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
+import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 
 import '../fake_viewmodel/fake_tables_viewmodel.dart';
 
-Future<void> pumpLayout(
+Future<void> pumpTableLayoutScreen(
   WidgetTester tester, {
   required AsyncValue<List<Table1>> tables,
   FakeTablesViewModel? fakeVm,
@@ -24,15 +25,33 @@ Future<void> pumpLayout(
   );
 }
 
+Future<void> pumpLayoutWidget(
+  WidgetTester tester,
+  List<Widget> children,
+) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(
+          body: Stack(children: [Stack(children: children)]),
+        ),
+      ),
+    ),
+  );
+}
+
 void main() {
   testWidgets('shows loading indicator', (tester) async {
-    await pumpLayout(tester, tables: const AsyncLoading());
+    await pumpTableLayoutScreen(tester, tables: const AsyncLoading());
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('shows error message', (tester) async {
-    await pumpLayout(tester, tables: AsyncError('error', StackTrace.current));
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncError('error', StackTrace.current),
+    );
 
     expect(find.textContaining('Error:'), findsOneWidget);
   });
@@ -40,7 +59,7 @@ void main() {
   testWidgets('renders tables at their positions', (tester) async {
     final table = Table1(id: 't1', tableNo: 1, position: const Offset(50, 100));
 
-    await pumpLayout(tester, tables: AsyncData([table]));
+    await pumpTableLayoutScreen(tester, tables: AsyncData([table]));
 
     final positioned = tester.widget<Positioned>(find.byType(Positioned).last);
 
@@ -53,7 +72,11 @@ void main() {
 
     final fakeVm = FakeTablesViewModel();
 
-    await pumpLayout(tester, tables: AsyncData([table]), fakeVm: fakeVm);
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData([table]),
+      fakeVm: fakeVm,
+    );
 
     final icon = find.byIcon(Icons.table_restaurant);
     final start = tester.getCenter(icon);
@@ -80,7 +103,7 @@ void main() {
 
     final t2 = Table1(id: 't2', tableNo: 2, position: const Offset(50, 50));
 
-    await pumpLayout(tester, tables: AsyncData([t1, t2]));
+    await pumpTableLayoutScreen(tester, tables: AsyncData([t1, t2]));
 
     final stackFinder = find.byWidgetPredicate(
       (w) => w is Stack && w.children.any((c) => c is Positioned),
@@ -104,7 +127,11 @@ void main() {
 
     final fakeVm = FakeTablesViewModel();
 
-    await pumpLayout(tester, tables: AsyncData([t1, t2]), fakeVm: fakeVm);
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData([t1, t2]),
+      fakeVm: fakeVm,
+    );
 
     final icons = find.byIcon(Icons.table_restaurant);
     final secondTable = icons.at(1);
@@ -130,7 +157,11 @@ void main() {
 
     final fakeVm = FakeTablesViewModel();
 
-    await pumpLayout(tester, tables: AsyncData([t1, t2]), fakeVm: fakeVm);
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData([t1, t2]),
+      fakeVm: fakeVm,
+    );
 
     final icons = find.byIcon(Icons.table_restaurant);
     final secondTable = icons.at(1);
@@ -145,5 +176,59 @@ void main() {
     await tester.pump();
 
     expect(fakeVm.movedId, 't2');
+  });
+
+  testWidgets('popup menu is always on top of all the tables - 1', (
+    tester,
+  ) async {
+    await pumpLayoutWidget(tester, [
+      Positioned(
+        left: 0,
+        top: 0,
+        child: TableWidget(table: Table1(id: 'T1', tableNo: 1)),
+      ),
+      Positioned(
+        left: 0,
+        top: 50,
+        child: TableWidget(table: Table1(id: 'T2', tableNo: 2)),
+      ),
+    ]);
+    await tester.tap(find.text('T2'));
+    await tester.pumpAndSettle();
+
+    final popupFinder = find.byType(TablePopupMenu);
+    expect(popupFinder, findsOneWidget);
+
+    final popupRect = tester.getRect(popupFinder);
+    final otherTableRect = tester.getRect(find.text('T1'));
+
+    expect(popupRect.overlaps(otherTableRect), isTrue);
+  });
+
+  testWidgets('popup menu is always on top of all the tables - 2', (
+    tester,
+  ) async {
+    await pumpLayoutWidget(tester, [
+      Positioned(
+        left: 0,
+        top: 0,
+        child: TableWidget(table: Table1(id: 'T2', tableNo: 2)),
+      ),
+      Positioned(
+        left: 0,
+        top: 50,
+        child: TableWidget(table: Table1(id: 'T1', tableNo: 1)),
+      ),
+    ]);
+    await tester.tap(find.text('T1'));
+    await tester.pumpAndSettle();
+
+    final popupFinder = find.byType(TablePopupMenu);
+    expect(popupFinder, findsOneWidget);
+
+    final popupRect = tester.getRect(popupFinder);
+    final otherTableRect = tester.getRect(find.text('T2'));
+
+    expect(popupRect.overlaps(otherTableRect), isTrue);
   });
 }

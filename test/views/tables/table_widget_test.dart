@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/views/orders/orders.dart';
+import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 
 Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
@@ -16,15 +16,31 @@ Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
 }
 
 void main() {
-  testWidgets('tapping table opens Orders screen', (tester) async {
-    final table = Table1(id: 't1', tableNo: 5);
+  testWidgets('tapping table opens popup menu', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await pumpTableWidget(tester, table);
+
+    expect(find.byType(TablePopupMenu), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+  });
+
+  testWidgets('tapping table twice closes popup menu', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
 
     await pumpTableWidget(tester, table);
 
     await tester.tap(find.byIcon(Icons.table_restaurant));
     await tester.pumpAndSettle();
 
-    expect(find.byType(Orders), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsNothing);
   });
 
   testWidgets('long press starts drag and shows feedback', (tester) async {

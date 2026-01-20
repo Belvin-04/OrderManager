@@ -3,14 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
-import 'package:order_manager/viewmodels/tables_viewmodel.dart';
+import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
-import 'package:order_manager/views/orders/orders.dart';
-import 'package:order_manager/views/tables/table_clear_dialog.dart';
-import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
-import 'package:order_manager/views/tables/table_swap_dialog.dart';
-import 'package:order_manager/views/ui_utils.dart';
 
 class HomePage extends ConsumerWidget {
   final _scaffoldStateKey = GlobalKey<ScaffoldState>();
@@ -78,12 +73,7 @@ class HomePage extends ConsumerWidget {
                             ),
                           ),
                           onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Orders(table),
-                              ),
-                            );
+                            takeOrder(context, table);
                           },
                         ),
                         Container(margin: const EdgeInsets.only(right: 10.0)),
@@ -93,39 +83,7 @@ class HomePage extends ConsumerWidget {
                             child: Icon(Icons.swap_vert, color: Colors.yellow),
                           ),
                           onTap: () async {
-                            final ScaffoldMessengerState messenger =
-                                ScaffoldMessenger.of(context);
-                            final decision = await ref
-                                .read(tablesViewmodelProvider.notifier)
-                                .swapTable(table.tableNo.toString());
-                            if (!context.mounted) return;
-                            switch (decision.result) {
-                              case SwapTableResult.noFreeTables:
-                                showSnackBar(
-                                  "There are no free tables....!",
-                                  messenger,
-                                );
-
-                              case SwapTableResult.noOrdersOnSource:
-                                showSnackBar(
-                                  "There are no orders on the table...!",
-                                  messenger,
-                                );
-
-                              case SwapTableResult.noOrdersAtAll:
-                                showSnackBar(
-                                  "All tables are free...!",
-                                  messenger,
-                                );
-
-                              case SwapTableResult.canSwap:
-                                showSwapDialog(
-                                  context,
-                                  ref,
-                                  table.tableNo,
-                                  decision.availableTables,
-                                );
-                            }
+                            await swapTableOrder(context, ref, table);
                           },
                         ),
 
@@ -136,23 +94,7 @@ class HomePage extends ConsumerWidget {
                             child: Icon(Icons.clear, color: Colors.blue),
                           ),
                           onTap: () async {
-                            final ScaffoldMessengerState messenger =
-                                ScaffoldMessenger.of(context);
-                            ClearTableResult result = await ref
-                                .read(tablesViewmodelProvider.notifier)
-                                .clearTable(table.tableNo.toString());
-                            if (!context.mounted) return;
-                            switch (result) {
-                              case ClearTableResult.hasPendingOrders:
-                                showClearTableWarningDialog(context);
-                              case ClearTableResult.canClear:
-                                showClearTableDialog(context, ref, table);
-                              case ClearTableResult.alreadyCleared:
-                                showSnackBar(
-                                  "Table is already cleared ...",
-                                  messenger,
-                                );
-                            }
+                            await clearTable(context, ref, table);
                           },
                         ),
                       ],
@@ -163,61 +105,6 @@ class HomePage extends ConsumerWidget {
             );
           },
         ),
-      ),
-    );
-  }
-
-  void showClearTableWarningDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => const TableClearWarningDialog(),
-    );
-  }
-
-  void showClearTableDialog(BuildContext context, WidgetRef ref, Table1 table) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => TableClearDialog(
-        table: table,
-        onClear: (tableKey) async {
-          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
-            context,
-          );
-          await ref
-              .read(tablesViewmodelProvider.notifier)
-              .clearTableConfirm(tableKey);
-          showSnackBar("Table cleared Successfully...", messenger);
-        },
-      ),
-    );
-  }
-
-  void showSwapDialog(
-    BuildContext context,
-    WidgetRef ref,
-    int sourceTable,
-    List<int> availableTables,
-  ) {
-    final sortedTables = [...availableTables]..sort();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => TableSwapDialog(
-        availableTables: sortedTables,
-        onSelect: (targetTableNo) async {
-          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
-            context,
-          );
-          await ref
-              .read(tablesViewmodelProvider.notifier)
-              .confirmSwap(
-                fromTableKey: sourceTable.toString(),
-                toTableKey: targetTableNo.toString(),
-              );
-          showSnackBar(
-            """Orders swapped from Table : $sourceTable to Table : $targetTableNo""",
-            messenger,
-          );
-        },
       ),
     );
   }
