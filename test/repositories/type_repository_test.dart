@@ -1,63 +1,113 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/type.dart';
-import 'in_memory/in_memory_type_repository.dart';
+import 'package:order_manager/repositories/abstract_files/remote_data_source/type_remote_data_source.dart';
+import 'package:order_manager/repositories/firebase_type_repository.dart';
+
+class MockTypeRemoteDataSource extends Mock implements TypeRemoteDataSource {}
 
 void main() {
-  late InMemoryTypeRepository repo;
+  late MockTypeRemoteDataSource remote;
+  late FirebaseTypeRepository repository;
 
   setUp(() {
-    repo = InMemoryTypeRepository();
+    remote = MockTypeRemoteDataSource();
+    repository = FirebaseTypeRepository(remote);
+  });
+  test('watchTypes returns empty list when data is null', () async {
+    when(
+      () => remote.watchTypes(),
+    ).thenAnswer((_) => Stream<Object?>.value(null));
+
+    final result = await repository.watchTypes().first;
+
+    expect(result, isEmpty);
   });
 
-  tearDown(() {
-    repo.dispose();
+  test('watchTypes maps firebase data to Type1 list', () async {
+    when(() => remote.watchTypes()).thenAnswer(
+      (_) => Stream.value({
+        '1': {'id': '1', 'type': 'A', 'price': 10},
+        '2': {'id': '2', 'type': 'B', 'price': 20},
+      }),
+    );
+
+    final result = await repository.watchTypes().first;
+
+    expect(result.length, 2);
+    expect(result.first.type, 'A');
   });
 
-  test('saveType and getType work', () async {
-    final type = Type1(id: '1', type: 'Extra', price: 20);
+  test('getType returns null when no data found', () async {
+    when(() => remote.queryByType('X')).thenAnswer((_) async => null);
 
-    await repo.saveType(type);
+    final result = await repository.getType('X');
 
-    final fetched = await repo.getType('Extra');
-
-    expect(fetched, equals(type));
+    expect(result, isNull);
   });
 
-  test('saveType overwrites existing type with same name', () async {
-    await repo.saveType(Type1(id: '1', type: 'Extra', price: 20));
-    await repo.saveType(Type1(id: '', type: 'Extra', price: 30));
+  test('getType returns first matching Type1', () async {
+    when(() => remote.queryByType('A')).thenAnswer(
+      (_) async => {
+        'k1': {'id': '1', 'type': 'A', 'price': 10},
+      },
+    );
 
-    final fetched = await repo.getType('Extra');
+    final result = await repository.getType('A');
 
-    expect(fetched!.price, 30);
-    expect(fetched.id, '1');
+    expect(result!.id, '1');
   });
 
-  test('deleteType removes type', () async {
-    final type = Type1(id: '1', type: 'Extra', price: 20);
-    await repo.saveType(type);
+  test('saveType generates id when id is empty', () async {
+    when(() => remote.queryByType('A')).thenAnswer((_) async => null);
+    when(() => remote.generateId()).thenAnswer((_) async => 'newId');
+    when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
-    await repo.deleteType(type);
+    final type = Type1(id: '', type: 'A', price: 10);
 
-    final fetched = await repo.getType('Extra');
+    await repository.saveType(type);
 
-    expect(fetched, isNull);
+    verify(() => remote.save('newId', any())).called(1);
   });
 
-  test('watchTypes emits values when data changes', () async {
-    final stream = repo.watchTypes();
+  test('saveType reuses existing id when type exists', () async {
+    when(() => remote.queryByType('A')).thenAnswer(
+      (_) async => {
+        'k1': {'id': 'existingId', 'type': 'A', 'price': 10},
+      },
+    );
 
-    await repo.saveType(Type1(id: '1', type: 'Extra', price: 20));
+    when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
-    final types = await stream.first;
+    final type = Type1(id: '', type: 'A', price: 10);
 
-    expect(types.length, 1);
-    expect(types.first.type, 'Extra');
+    await repository.saveType(type);
+    verifyNever(() => remote.generateId());
+    verify(() => remote.save('existingId', any())).called(1);
   });
 
-  test('empty repository returns empty list', () async {
-    final types = await repo.watchTypes().first;
+  test('saveType reuses provided id when present', () async {
+    when(() => remote.queryByType('A')).thenAnswer(
+      (_) async => {
+        'k1': {'id': 'existingId', 'type': 'A', 'price': 10},
+      },
+    );
 
-    expect(types, isEmpty);
+    when(() => remote.save(any(), any())).thenAnswer((_) async {});
+
+    final type = Type1(id: 'existingId', type: 'A', price: 10);
+
+    await repository.saveType(type);
+
+    verifyNever(() => remote.generateId());
+    verify(() => remote.save('existingId', any())).called(1);
+  });
+
+  test('deleteType deletes by id', () async {
+    when(() => remote.delete('1')).thenAnswer((_) async {});
+
+    await repository.deleteType(Type1(id: '1', type: 'A', price: 10));
+
+    verify(() => remote.delete('1')).called(1);
   });
 }

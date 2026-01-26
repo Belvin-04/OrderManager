@@ -11,7 +11,7 @@ abstract class OrderRepository {
   Future<Set<int>> getOccupiedTableNos();
   Future<void> moveOrders(String fromTableKey, String toTableKey);
   Future<void> saveOrder(Order order, {bool isSplit});
-  Future<void> deleteOrder(Order order);
+  Future<void> deleteOrder(Order order, {required bool isSplit});
   Stream<List<Order>> watchOrdersByStatus(String status, String tableNo);
   Stream<List<Order>> getBillOrdersForTable(String tableNo);
   Stream<List<Order>> watchSplitOrders(String tableNo);

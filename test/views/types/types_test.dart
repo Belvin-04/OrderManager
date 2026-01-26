@@ -7,7 +7,7 @@ import 'package:order_manager/views/types/type_delete_dialog.dart';
 import 'package:order_manager/views/types/type_edit_dialog.dart';
 import 'package:order_manager/views/types/types.dart';
 
-import '../../repositories/in_memory/in_memory_type_repository.dart';
+import '../../repositories/contract_tests/in_memory/in_memory_type_repository.dart';
 import '../fake_viewmodel/fake_types_viewmodel.dart';
 
 Future<void> pumpTypesScreen(

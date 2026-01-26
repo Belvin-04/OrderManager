@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:order_manager/models/item.dart';
-import 'package:order_manager/repositories/items_repository.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
 
 class InMemoryItemRepository implements ItemsRepository {
   final Map<String, Item> _byId = {};

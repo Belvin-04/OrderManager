@@ -1,5 +1,5 @@
 import 'package:order_manager/models/item.dart';
-import 'package:order_manager/repositories/items_repository.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
 
 class FakeItemsRepository implements ItemsRepository {
   List<Item> items = [];

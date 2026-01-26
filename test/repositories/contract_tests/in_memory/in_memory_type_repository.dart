@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/repositories/type_repository.dart';
+import 'package:order_manager/repositories/abstract_files/type_repository.dart';
 
 class InMemoryTypeRepository implements TypeRepository {
   final Map<String, Type1> _byId = {};

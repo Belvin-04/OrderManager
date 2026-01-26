@@ -5,11 +5,18 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/repositories/firebase_repository.dart';
-import 'package:order_manager/repositories/items_repository.dart';
-import 'package:order_manager/repositories/order_repository.dart';
-import 'package:order_manager/repositories/table_repository.dart';
-import 'package:order_manager/repositories/type_repository.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/repositories/abstract_files/type_repository.dart';
+import 'package:order_manager/repositories/firebase_item_repository.dart';
+import 'package:order_manager/repositories/firebase_order_repository.dart';
+import 'package:order_manager/repositories/firebase_table_repository.dart';
+import 'package:order_manager/repositories/firebase_type_repository.dart';
+import 'package:order_manager/repositories/remote_data_source/firebase_item_remote_data_source.dart';
+import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
+import 'package:order_manager/repositories/remote_data_source/firebase_table_remote_data_source.dart';
+import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
@@ -26,7 +33,8 @@ final typesRefProvider = Provider<DatabaseReference>((ref) {
 
 final typeRepositoryProvider = Provider<TypeRepository>((ref) {
   final typesRef = ref.read(typesRefProvider);
-  return FirebaseTypeRepository(typesRef);
+  final remote = FirebaseTypeRemoteDataSource(typesRef);
+  return FirebaseTypeRepository(remote);
 });
 
 final itemsRefProvider = Provider<DatabaseReference>((ref) {
@@ -35,7 +43,8 @@ final itemsRefProvider = Provider<DatabaseReference>((ref) {
 
 final itemRepositoryProvider = Provider<ItemsRepository>((ref) {
   final itemsRef = ref.read(itemsRefProvider);
-  return FirebaseItemRepository(itemsRef);
+  final remote = FirebaseItemRemoteDataSource(itemsRef);
+  return FirebaseItemRepository(remote);
 });
 
 final tablesRefProvider = Provider<DatabaseReference>((ref) {
@@ -44,7 +53,8 @@ final tablesRefProvider = Provider<DatabaseReference>((ref) {
 
 final tableRepositoryProvider = Provider<TableRepository>((ref) {
   final tablesRef = ref.read(tablesRefProvider);
-  return FirebaseTableRepository(tablesRef);
+  final remote = FirebaseTableRemoteDataSource(tablesRef);
+  return FirebaseTableRepository(remote);
 });
 
 final orderRefProvider = Provider<DatabaseReference>((ref) {
@@ -54,7 +64,8 @@ final orderRefProvider = Provider<DatabaseReference>((ref) {
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   final ordersRef = ref.read(orderRefProvider);
   final splitRef = ref.read(splitOrderRefProvider);
-  return FirebaseOrderRepository(ordersRef, splitOrderReference: splitRef);
+  final remote = FirebaseOrderRemoteDataSource(ordersRef, splitRef);
+  return FirebaseOrderRepository(remote);
 });
 
 final splitOrderRefProvider = Provider<DatabaseReference>((ref) {

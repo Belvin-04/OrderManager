@@ -1,7 +1,7 @@
 import 'dart:ui' show Offset;
 
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/repositories/table_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 
 class FakeTableRepository implements TableRepository {
   List<Table1> tables = [];

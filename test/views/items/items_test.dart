@@ -7,7 +7,7 @@ import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/items/items.dart';
 
-import '../../repositories/in_memory/in_memory_item_repository.dart';
+import '../../repositories/contract_tests/in_memory/in_memory_item_repository.dart';
 import '../fake_viewmodel/fake_items_viewmodel.dart';
 
 Future<void> pumpItemsScreen(

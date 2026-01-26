@@ -3,8 +3,8 @@ import 'dart:ui' show Offset;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/repositories/order_repository.dart';
-import 'package:order_manager/repositories/table_repository.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 
 enum RemoveTableResult { noTables, hasOrders, removed }
 

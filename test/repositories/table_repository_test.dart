@@ -1,72 +1,94 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'in_memory/in_memory_table_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/repositories/abstract_files/remote_data_source/table_remote_data_source.dart';
+import 'package:order_manager/repositories/firebase_table_repository.dart';
+
+class MockTableRemoteDataSource extends Mock implements TableRemoteDataSource {}
 
 void main() {
-  late InMemoryTableRepository repo;
+  late MockTableRemoteDataSource remote;
+  late FirebaseTableRepository repository;
 
   setUp(() {
-    repo = InMemoryTableRepository();
+    remote = MockTableRemoteDataSource();
+    repository = FirebaseTableRepository(remote);
   });
 
-  tearDown(() {
-    repo.dispose();
+  test('watchTables returns empty list when no data', () async {
+    when(
+      () => remote.watchTables(),
+    ).thenAnswer((_) => Stream<Object?>.value(null));
+
+    final result = await repository.watchTables().first;
+
+    expect(result, isEmpty);
   });
 
-  test('watchTables emits empty list immediately', () async {
-    final tables = await repo.watchTables().first;
-    expect(tables, isEmpty);
-  });
+  test('watchTables maps raw data to Table1 list', () async {
+    when(() => remote.watchTables()).thenAnswer(
+      (_) => Stream<Object?>.value({
+        '1': {
+          'id': '1',
+          'tableNo': 1,
+          'splitNo': 0,
+          'position': {'x': 10, 'y': 20},
+        },
+      }),
+    );
 
-  test('addTable adds a table', () async {
-    await repo.addTable(1);
+    final result = await repository.watchTables().first;
 
-    final tables = await repo.watchTables().first;
-    expect(tables.length, 1);
-    expect(tables.first.tableNo, 1);
+    expect(result.single.tableNo, 1);
+    expect(result.single.position.dx, 10);
   });
 
   test('getLastTable returns null when no tables exist', () async {
-    final table = await repo.getLastTable();
-    expect(table, isNull);
+    when(() => remote.getLastTable()).thenAnswer((_) async => null);
+
+    final result = await repository.getLastTable();
+
+    expect(result, isNull);
   });
 
-  test('getLastTable returns table with highest tableNo', () async {
-    await repo.addTable(1);
-    await repo.addTable(3);
-    await repo.addTable(2);
+  test('getLastTable returns last table by tableNo', () async {
+    when(() => remote.getLastTable()).thenAnswer(
+      (_) async => {
+        'k1': {
+          'id': '3',
+          'tableNo': 3,
+          'splitNo': 0,
+          'position': {'x': 100, 'y': 100},
+        },
+      },
+    );
 
-    final last = await repo.getLastTable();
-    expect(last!.tableNo, 3);
+    final result = await repository.getLastTable();
+
+    expect(result!.tableNo, 3);
   });
 
-  test('deleteTableById removes table and emits', () async {
-    await repo.addTable(1);
-    final table = (await repo.watchTables().first).first;
+  test('addTable generates id and saves table', () async {
+    when(() => remote.generateId()).thenAnswer((_) async => 'new-id');
+    when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
-    await repo.deleteTableById(table.id);
+    await repository.addTable(5);
 
-    final tables = await repo.watchTables().first;
-    expect(tables, isEmpty);
+    verify(() => remote.save('new-id', any())).called(1);
   });
 
-  test('updateTablePosition updates only position', () async {
-    await repo.addTable(1);
-    final table = (await repo.watchTables().first).first;
+  test('deleteTableById deletes table by id', () async {
+    when(() => remote.delete('1')).thenAnswer((_) async {});
 
-    const newPos = Offset(200, 300);
-    await repo.updateTablePosition(table.id, newPos);
+    await repository.deleteTableById('1');
 
-    final updated = (await repo.watchTables().first).first;
-    expect(updated.position, newPos);
-    expect(updated.tableNo, table.tableNo);
+    verify(() => remote.delete('1')).called(1);
   });
 
-  test('watchTables emits on changes', () async {
-    final future = repo.watchTables().skip(1).first;
+  test('updateTablePosition updates only position fields', () async {
+    when(() => remote.updatePosition(any(), any())).thenAnswer((_) async {});
 
-    await repo.addTable(1);
+    await repository.updateTablePosition('1', const Offset(50, 75));
 
-    final tables = await future;
-    expect(tables.length, 1);
+    verify(() => remote.updatePosition('1', {'x': 50.0, 'y': 75.0})).called(1);
   });
 }

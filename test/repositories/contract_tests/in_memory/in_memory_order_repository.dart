@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:order_manager/models/order.dart';
-import 'package:order_manager/repositories/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 
 class InMemoryOrderRepository implements OrderRepository {
   final Map<String, Order> _orders = {};
@@ -38,7 +38,7 @@ class InMemoryOrderRepository implements OrderRepository {
   }
 
   @override
-  Future<void> deleteOrder(Order order) async {
+  Future<void> deleteOrder(Order order, {required bool isSplit}) async {
     _splitOrders.remove(order.id);
     _emitSplitOrders();
   }

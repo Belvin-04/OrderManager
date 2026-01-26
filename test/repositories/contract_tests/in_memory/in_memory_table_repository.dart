@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui' show Offset;
 
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/repositories/table_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 
 class InMemoryTableRepository implements TableRepository {
   final Map<String, Table1> _byId = {};
