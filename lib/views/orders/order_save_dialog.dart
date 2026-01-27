@@ -66,6 +66,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => const Text("Error loading items"),
                 data: (items) {
+                  items.sort((a, b) => a.name.compareTo(b.name));
                   editedOrder = editedOrder.copyWith(
                     item: editedOrder.item.name.isEmpty
                         ? items.first
@@ -107,6 +108,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => const Text("Error loading types"),
                 data: (types) {
+                  types.sort((a, b) => a.type.compareTo(b.type));
                   editedOrder = editedOrder.copyWith(
                     type: editedOrder.type.type.isEmpty
                         ? types.first

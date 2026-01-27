@@ -96,6 +96,28 @@ void main() {
     expect(find.text('Save Order'), findsOneWidget);
   });
 
+  testWidgets("""renders sorted items and types in order save dialog""", (
+    tester,
+  ) async {
+    await pumpOrderSaveDialog(
+      tester,
+      initialOrder: baseOrder(),
+      onSave: (_) async {},
+    );
+
+    final itemDropdownButton = tester.widget<DropdownButton<Item>>(
+      find.byType(DropdownButton<Item>),
+    );
+    final typeDropdownButton = tester.widget<DropdownButton<Type1>>(
+      find.byType(DropdownButton<Type1>),
+    );
+
+    expect(itemDropdownButton.items![0].value!.name, "Burger");
+    expect(itemDropdownButton.items![1].value!.name, "Pizza");
+    expect(typeDropdownButton.items![0].value!.type, "Extra");
+    expect(typeDropdownButton.items![1].value!.type, "None");
+  });
+
   testWidgets('shows error when quantity is empty', (tester) async {
     await pumpOrderSaveDialog(
       tester,
@@ -164,10 +186,10 @@ void main() {
     await tester.tap(find.text('Pizza').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('None'));
+    await tester.tap(find.text('Extra'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Extra').last);
+    await tester.tap(find.text('None').last);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '1');
@@ -176,7 +198,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(savedOrder!.item.name, 'Pizza');
-    expect(savedOrder!.type.type, 'Extra');
+    expect(savedOrder!.type.type, 'None');
   });
 
   testWidgets('shows loading indicator while types and items are loading', (
@@ -247,7 +269,7 @@ void main() {
       await tester.tap(find.text('Save Order'));
       await tester.pumpAndSettle();
 
-      expect(savedOrder!.type.type, 'None');
+      expect(savedOrder!.type.type, 'Extra');
       expect(savedOrder!.item.name, 'Burger');
     },
   );
