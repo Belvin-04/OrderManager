@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/views/bills/bills.dart';
-import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/orders/tabs/cancelled_orders.dart';
 import 'package:order_manager/views/orders/tabs/completed_orders.dart';
 import 'package:order_manager/views/orders/tabs/pending_orders.dart';
@@ -19,15 +18,6 @@ class Orders extends ConsumerWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          leading: GestureDetector(
-            child: const Icon(Icons.arrow_back),
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => HomePage()),
-              );
-            },
-          ),
           bottom: const TabBar(
             tabs: [
               Tab(child: Text("Pending Orders")),
@@ -98,22 +88,12 @@ class Orders extends ConsumerWidget {
             ),
           ],
         ),
-        body: PopScope(
-          canPop: false,
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-          },
-          child: TabBarView(
-            children: [
-              PendingOrders(table: table),
-              CompletedOrders(table: table),
-              CancelledOrders(table: table),
-            ],
-          ),
+        body: TabBarView(
+          children: [
+            PendingOrders(table: table),
+            CompletedOrders(table: table),
+            CancelledOrders(table: table),
+          ],
         ),
       ),
     );

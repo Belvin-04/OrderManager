@@ -8,6 +8,7 @@ import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/tables/tables_warning_dialog.dart';
 
+import '../fake_viewmodel/fake_orders_viewmodel.dart';
 import '../fake_viewmodel/fake_tables_viewmodel.dart';
 
 Future<void> pumpTablesScreen(
@@ -19,16 +20,29 @@ Future<void> pumpTablesScreen(
     ProviderScope(
       overrides: [
         tablesProvider.overrideWithValue(tablesState),
+        ordersViewModelProvider.overrideWith(
+          () => FakeOrdersViewModel(stream: const Stream.empty()),
+        ),
         if (fakeVm != null) tablesViewmodelProvider.overrideWith(() => fakeVm),
       ],
-      child: const MaterialApp(home: Tables()),
+      child: MaterialApp(home: HomePage()),
     ),
   );
+
+  await tester.tap(find.byTooltip('Open navigation menu'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text("Tables"));
+  await tester.pumpAndSettle();
 }
 
 void main() {
   testWidgets('shows loading indicator', (tester) async {
-    await pumpTablesScreen(tester, tablesState: const AsyncLoading());
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [tablesProvider.overrideWithValue(const AsyncLoading())],
+        child: const MaterialApp(home: Tables()),
+      ),
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });

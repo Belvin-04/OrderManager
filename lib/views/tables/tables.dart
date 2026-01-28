@@ -6,8 +6,6 @@ import 'package:order_manager/viewmodels/tables_viewmodel.dart';
 import 'package:order_manager/views/tables/tables_warning_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
 
-import '../home_page/home_page.dart';
-
 class Tables extends ConsumerWidget {
   const Tables({super.key});
 
@@ -62,48 +60,27 @@ class Tables extends ConsumerWidget {
           ),
         ],
       ),
-      appBar: AppBar(
-        leading: GestureDetector(
-          child: const Icon(Icons.arrow_back),
-          onTap: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage()),
-            );
-          },
-        ),
-        title: const Text("Manage Tables"),
-      ),
-      body: PopScope(
-        canPop: false,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+      appBar: AppBar(title: const Text("Manage Tables")),
+      body: tableState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text("Error: $e")),
+        data: (tables) {
+          if (tables.isEmpty) {
+            return const Center(child: Text("No Items"));
+          }
+          final sortedTables = [...tables]
+            ..sort((a, b) => a.tableNo.compareTo(b.tableNo));
+
+          return ListView.builder(
+            itemCount: sortedTables.length,
+            itemBuilder: (BuildContext context, int index) {
+              final Table1 table = sortedTables[index];
+              return Card(
+                child: ListTile(title: Text("Table No. : ${table.tableNo}")),
+              );
+            },
           );
         },
-        child: tableState.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text("Error: $e")),
-          data: (tables) {
-            if (tables.isEmpty) {
-              return const Center(child: Text("No Items"));
-            }
-            final sortedTables = [...tables]
-              ..sort((a, b) => a.tableNo.compareTo(b.tableNo));
-
-            return ListView.builder(
-              itemCount: sortedTables.length,
-              itemBuilder: (BuildContext context, int index) {
-                final Table1 table = sortedTables[index];
-                return Card(
-                  child: ListTile(title: Text("Table No. : ${table.tableNo}")),
-                );
-              },
-            );
-          },
-        ),
       ),
     );
   }

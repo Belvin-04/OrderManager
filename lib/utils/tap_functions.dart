@@ -62,7 +62,7 @@ Future<void> _swapTableOrderImpl(
 }
 
 void takeOrder(BuildContext context, Table1 table) {
-  Navigator.pushReplacement(
+  Navigator.push(
     context,
     MaterialPageRoute(builder: (context) => Orders(table)),
   );

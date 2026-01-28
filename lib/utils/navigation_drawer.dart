@@ -29,7 +29,7 @@ class NavigationDrawer extends StatelessWidget {
             ListTile(
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const Tables()),
                 );
