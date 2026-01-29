@@ -7,6 +7,7 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/views/bills/bills_split.dart';
+import 'package:order_manager/views/bills/split_orders_dialog.dart';
 import 'package:order_manager/views/bills/split_tables_dialog.dart';
 
 import '../fake_viewmodel/fake_orders_viewmodel.dart';
@@ -241,4 +242,54 @@ void main() {
 
     expect(find.text('Problem removing split orders'), findsOneWidget);
   });
+
+  testWidgets("tapping split table shows snackbar when no order", (
+    WidgetTester tester,
+  ) async {
+    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    await pumpBillsSplitScreen(
+      tester,
+      splitOrders: AsyncData([baseOrder(id: '1')]),
+      fakeVm: fakeVm,
+    );
+
+    await tester.tap(find.text("Split No. : 1"));
+    await tester.pumpAndSettle();
+    expect(find.text("No orders on the split table"), findsOneWidget);
+  });
+
+  testWidgets("tapping split table shows split orders dialog", (
+    WidgetTester tester,
+  ) async {
+    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    fakeVm.ordersForSplitTable = [baseOrder(id: "1", splitNo: 1)];
+    await pumpBillsSplitScreen(
+      tester,
+      splitOrders: AsyncData([baseOrder(id: '1')]),
+      fakeVm: fakeVm,
+    );
+
+    await tester.tap(find.text("Split No. : 1"));
+    await tester.pumpAndSettle();
+    expect(find.byType(SplitOrdersDialog), findsOneWidget);
+  });
+
+  testWidgets(
+    """tapping a split order inside the split order dialog calls the change split order method""",
+    (WidgetTester tester) async {
+      final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+      fakeVm.ordersForSplitTable = [baseOrder(id: "1", splitNo: 1)];
+      await pumpBillsSplitScreen(
+        tester,
+        splitOrders: const AsyncData([]),
+        fakeVm: fakeVm,
+      );
+
+      await tester.tap(find.text("Split No. : 1"));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining("Burger"));
+      expect(fakeVm.splitChanged[0].item.name, "Burger");
+      expect(fakeVm.splitChanged[0].table.splitNo, 0);
+    },
+  );
 }

@@ -27,6 +27,8 @@ class FakeOrdersViewModel extends OrdersViewModel {
   bool splitRemovedresult;
   String? removedSplitTableOrders;
 
+  List<Order> ordersForSplitTable = [];
+
   FakeOrdersViewModel({this.stream, this.splitRemovedresult = true});
 
   @override
@@ -92,7 +94,14 @@ class FakeOrdersViewModel extends OrdersViewModel {
 
   @override
   Future<bool> changeOrderSplitNo(Order order, int splitNo) async {
-    splitChanged.add(order);
+    splitChanged.add(
+      order.copyWith(table: order.table.copyWith(splitNo: splitNo)),
+    );
     return true;
+  }
+
+  @override
+  Future<List<Order>> getOrdersForSplitTable(int tableNo, int splitNo) async {
+    return ordersForSplitTable;
   }
 }

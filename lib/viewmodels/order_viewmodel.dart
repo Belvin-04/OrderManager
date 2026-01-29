@@ -162,6 +162,12 @@ class OrdersViewModel extends AsyncNotifier<void> {
         .getTotalAmountForTable(tableKey, splitNo: splitNo);
   }
 
+  Future<List<Order>> getOrdersForSplitTable(int tableNo, int splitNo) async {
+    return ref
+        .read(orderRepositoryProvider)
+        .getOrdersForSplitTable(tableNo.toString(), splitNo.toString());
+  }
+
   @override
   FutureOr<void> build() {}
 }

@@ -124,4 +124,18 @@ class FakeOrdersRepository implements OrderRepository {
       splitOrders.where((o) => o.table.tableNo.toString() == tableNo).toList(),
     );
   }
+
+  @override
+  Future<List<Order>> getOrdersForSplitTable(
+    String tableKey,
+    String splitNo,
+  ) async {
+    return splitOrders
+        .where(
+          (o) =>
+              o.table.tableNo.toString() == tableKey &&
+              o.table.splitNo.toString() == splitNo,
+        )
+        .toList();
+  }
 }

@@ -395,4 +395,33 @@ void main() {
 
     expect(result.length, 2);
   });
+
+  test(
+    'getOrdersForSplitTable returns empty list when remote returns null',
+    () async {
+      when(() => remote.getSplitOrdersByTable(1)).thenAnswer((_) async => null);
+
+      final result = await repo.getOrdersForSplitTable('1', '1');
+
+      expect(result, isEmpty);
+    },
+  );
+
+  test('getOrdersForSplitTable filters by tableNo and splitNo', () async {
+    when(() => remote.getSplitOrdersByTable(1)).thenAnswer(
+      (_) async => {
+        '1': fakeOrderMap(splitNo: 1),
+        '2': fakeOrderMap(id: '2', splitNo: 1),
+        '3': fakeOrderMap(id: '3', splitNo: 2),
+        '4': fakeOrderMap(id: '4', tableNo: 2, splitNo: 1),
+        '5': fakeOrderMap(id: '5'),
+      },
+    );
+
+    final result = await repo.getOrdersForSplitTable('1', '1');
+
+    expect(result.length, 2);
+    expect(result.map((e) => e.id), {'1', '2'});
+    verify(() => remote.getSplitOrdersByTable(1)).called(1);
+  });
 }

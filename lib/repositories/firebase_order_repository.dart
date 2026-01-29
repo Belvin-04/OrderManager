@@ -87,6 +87,25 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
+  Future<List<Order>> getOrdersForSplitTable(
+    String tableKey,
+    String splitNo,
+  ) async {
+    final raw = await remote.getSplitOrdersByTable(int.parse(tableKey));
+    if (raw == null) return [];
+
+    final map = raw as Map;
+    return map.values
+        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
+        .where(
+          (o) =>
+              o.table.tableNo.toString() == tableKey &&
+              o.table.splitNo.toString() == splitNo,
+        )
+        .toList();
+  }
+
+  @override
   Future<void> moveOrders(String fromTableKey, String toTableKey) async {
     final raw = await remote.getAllOrders();
     if (raw == null) return;

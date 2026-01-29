@@ -385,4 +385,32 @@ void main() {
     expect(repo.orders.any((o) => o.table.tableNo == 1), false);
     expect(repo.orders.any((o) => o.table.tableNo == 2), true);
   });
+
+  test(
+    "getOrdersForSplitTable returns the correct split orders for a table",
+    () async {
+      final repo = FakeOrdersRepository()
+        ..splitOrders.add(baseOrder(table: Table1(id: 't1', tableNo: 1)))
+        ..splitOrders.add(
+          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 1),
+        )
+        ..splitOrders.add(
+          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 1),
+        )
+        ..splitOrders.add(
+          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 2),
+        )
+        ..splitOrders.add(baseOrder(table: Table1(id: 't2', tableNo: 2)));
+
+      final container = createContainer(repo);
+      final vm = container.read(ordersViewModelProvider.notifier);
+
+      final orders = await vm.getOrdersForSplitTable(1, 1);
+
+      expect(orders.length, 2);
+      expect(orders.any((o) => o.table.splitNo == 0), false);
+      expect(orders.any((o) => o.table.splitNo == 1), true);
+      expect(orders.any((o) => o.table.splitNo == 2), false);
+    },
+  );
 }

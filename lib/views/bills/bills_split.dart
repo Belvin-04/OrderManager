@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/views/bills/split_orders_dialog.dart';
 import 'package:order_manager/views/bills/split_tables_dialog.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -75,30 +76,47 @@ class BillsSplit extends ConsumerWidget {
                   itemCount: totalSplit,
                   itemBuilder: (BuildContext context, int index) {
                     return Card(
-                      child: ListTile(
-                        title: Text("Split No. : ${index + 1}"),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TotalAmount(table: table, splitNo: index + 1),
-                            GestureDetector(
-                              child: const Tooltip(
-                                message: "Clear Split Orders",
-                                child: Icon(
-                                  Icons.cancel_outlined,
-                                  color: Colors.red,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final messanger = ScaffoldMessenger.of(context);
+                          List<Order> orders = await ref
+                              .read(ordersViewModelProvider.notifier)
+                              .getOrdersForSplitTable(table.tableNo, index + 1);
+                          if (!context.mounted) return;
+                          if (orders.isEmpty) {
+                            showSnackBar(
+                              "No orders on the split table",
+                              messanger,
+                            );
+                          } else {
+                            showSplitOrderDialog(context, ref, orders, index);
+                          }
+                        },
+                        child: ListTile(
+                          title: Text("Split No. : ${index + 1}"),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TotalAmount(table: table, splitNo: index + 1),
+                              GestureDetector(
+                                child: const Tooltip(
+                                  message: "Clear Split Orders",
+                                  child: Icon(
+                                    Icons.cancel_outlined,
+                                    color: Colors.red,
+                                  ),
                                 ),
+                                onTap: () async {
+                                  await ref
+                                      .read(ordersViewModelProvider.notifier)
+                                      .resetSplitNo(
+                                        table.tableNo.toString(),
+                                        (index + 1).toString(),
+                                      );
+                                },
                               ),
-                              onTap: () async {
-                                await ref
-                                    .read(ordersViewModelProvider.notifier)
-                                    .resetSplitNo(
-                                      table.tableNo.toString(),
-                                      (index + 1).toString(),
-                                    );
-                              },
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -122,6 +140,27 @@ class BillsSplit extends ConsumerWidget {
             ref
                 .read(ordersViewModelProvider.notifier)
                 .changeOrderSplitNo(order, splitNo);
+          },
+        );
+      },
+    );
+  }
+
+  void showSplitOrderDialog(
+    BuildContext context,
+    WidgetRef ref,
+    List<Order> orders,
+    int splitNo,
+  ) {
+    showDialog(
+      context: context,
+      builder: (_) {
+        return SplitOrdersDialog(
+          orders: orders,
+          onSelect: (Order order) {
+            ref
+                .read(ordersViewModelProvider.notifier)
+                .changeOrderSplitNo(order, 0);
           },
         );
       },

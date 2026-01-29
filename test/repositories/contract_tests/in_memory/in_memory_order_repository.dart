@@ -205,4 +205,9 @@ class InMemoryOrderRepository implements OrderRepository {
   void dispose() {
     _ordersController.close();
   }
+
+  @override
+  Future<List<Order>> getOrdersForSplitTable(String tableKey, String splitNo) {
+    throw UnimplementedError();
+  }
 }

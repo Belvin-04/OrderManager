@@ -6,6 +6,7 @@ abstract class OrderRepository {
   Future<void> deleteOrdersForTable(String tableKey);
   Stream<int> getTotalAmountForTable(String tableKey, {String splitNo});
   Future<List<Order>> getOrdersForTable(String tableKey);
+  Future<List<Order>> getOrdersForSplitTable(String tableKey, String splitNo);
   Future<List<Order>> getOrdersByType(String typeName);
   Future<List<Order>> getOrdersByItem(String itemName);
   Future<Set<int>> getOccupiedTableNos();
