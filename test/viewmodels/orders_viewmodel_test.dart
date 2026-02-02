@@ -1,13 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 
 import 'fake_repositories/fake_orders_repository.dart';
-import 'fake_repositories/fake_table_repository.dart';
+
+class MockTableRepository extends Mock implements TableRepository {}
 
 ProviderContainer createContainer(FakeOrdersRepository repo) {
   return ProviderContainer(
@@ -17,7 +20,7 @@ ProviderContainer createContainer(FakeOrdersRepository repo) {
 
 ProviderContainer createTableContainer(
   FakeOrdersRepository repo,
-  FakeTableRepository tableRepo,
+  MockTableRepository tableRepo,
 ) {
   return ProviderContainer(
     overrides: [
@@ -373,7 +376,7 @@ void main() {
       ..orders.add(baseOrder(table: Table1(id: 't1', tableNo: 1)))
       ..orders.add(baseOrder(table: Table1(id: 't2', tableNo: 2)));
 
-    final tableRepo = FakeTableRepository();
+    final tableRepo = MockTableRepository();
 
     final container = createTableContainer(repo, tableRepo);
     final vm = container.read(tablesViewmodelProvider.notifier);
