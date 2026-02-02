@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/items/items.dart';
 
-import '../../repositories/contract_tests/in_memory/in_memory_item_repository.dart';
 import '../fake_viewmodel/fake_items_viewmodel.dart';
+
+class MockItemsRepository extends Mock implements ItemsRepository {}
+
+class FakeItem extends Fake implements Item {}
 
 Future<void> pumpItemsScreen(
   WidgetTester tester, {
-  required InMemoryItemRepository repo,
+  required List<Item> items,
 }) async {
+  final repo = MockItemsRepository();
+  when(repo.watchItems).thenAnswer((_) => Stream.value(items));
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [itemRepositoryProvider.overrideWithValue(repo)],
@@ -25,8 +33,13 @@ Future<void> pumpItemsScreen(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeItem());
+  });
+
   testWidgets('shows loading indicator initially', (tester) async {
-    final repo = InMemoryItemRepository();
+    final repo = MockItemsRepository();
+    when(repo.watchItems).thenAnswer((_) => const Stream.empty());
 
     await tester.pumpWidget(
       ProviderScope(
@@ -56,20 +69,19 @@ void main() {
   });
 
   testWidgets('shows No Items when list is empty', (tester) async {
-    final repo = InMemoryItemRepository();
-
-    await pumpItemsScreen(tester, repo: repo);
+    await pumpItemsScreen(tester, items: []);
 
     expect(find.text('No Items'), findsOneWidget);
   });
 
   testWidgets('renders list of items', (tester) async {
-    final repo = InMemoryItemRepository();
-
-    await repo.saveItem(Item(id: '1', name: 'Burger', price: 100));
-    await repo.saveItem(Item(id: '2', name: 'Pizza', price: 200));
-
-    await pumpItemsScreen(tester, repo: repo);
+    await pumpItemsScreen(
+      tester,
+      items: [
+        Item(id: '1', name: 'Burger', price: 100),
+        Item(id: '2', name: 'Pizza', price: 200),
+      ],
+    );
 
     expect(find.text('Name: Burger'), findsOneWidget);
     expect(find.text('Price: 100'), findsOneWidget);
@@ -78,9 +90,7 @@ void main() {
   });
 
   testWidgets('FAB opens add item dialog', (tester) async {
-    final repo = InMemoryItemRepository();
-
-    await pumpItemsScreen(tester, repo: repo);
+    await pumpItemsScreen(tester, items: []);
 
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
@@ -89,11 +99,10 @@ void main() {
   });
 
   testWidgets('edit icon opens edit dialog with item data', (tester) async {
-    final repo = InMemoryItemRepository();
-    final item = Item(id: '1', name: 'Burger', price: 100);
-
-    await repo.saveItem(item);
-    await pumpItemsScreen(tester, repo: repo);
+    await pumpItemsScreen(
+      tester,
+      items: [Item(id: '1', name: 'Burger', price: 100)],
+    );
 
     await tester.tap(find.byIcon(Icons.edit));
     await tester.pumpAndSettle();
@@ -103,11 +112,10 @@ void main() {
   });
 
   testWidgets('delete icon opens delete dialog', (tester) async {
-    final repo = InMemoryItemRepository();
-    final item = Item(id: '1', name: 'Burger', price: 100);
-
-    await repo.saveItem(item);
-    await pumpItemsScreen(tester, repo: repo);
+    await pumpItemsScreen(
+      tester,
+      items: [Item(id: '1', name: 'Burger', price: 100)],
+    );
 
     await tester.tap(find.byIcon(Icons.delete));
     await tester.pumpAndSettle();
@@ -118,12 +126,12 @@ void main() {
   testWidgets('confirm delete calls deleteItem and shows snackbar', (
     tester,
   ) async {
-    final repo = InMemoryItemRepository();
+    final repo = MockItemsRepository();
     final item = Item(id: '1', name: 'Burger', price: 100);
+    when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => repo.deleteItem(any())).thenAnswer((_) async {});
 
     final fakeViewModelProvider = FakeItemsViewmodel();
-
-    await repo.saveItem(item);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -144,12 +152,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Item Deleted Successfully'), findsOneWidget);
+    expect(fakeViewModelProvider.deletedItem, item);
   });
 
   testWidgets('saving item saves item and shows snackbar', (tester) async {
-    final repo = InMemoryItemRepository();
+    final repo = MockItemsRepository();
     final item = Item(id: '1', name: 'Burger', price: 100);
-    await repo.saveItem(item);
+
+    when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => repo.saveItem(any())).thenAnswer((_) async {});
 
     final fakeViewModel = FakeItemsViewmodel();
 

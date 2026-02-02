@@ -1,28 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/type_repository.dart';
 import 'package:order_manager/views/types/type_delete_dialog.dart';
 import 'package:order_manager/views/types/type_edit_dialog.dart';
 import 'package:order_manager/views/types/types.dart';
 
-import '../../repositories/contract_tests/in_memory/in_memory_type_repository.dart';
 import '../fake_viewmodel/fake_types_viewmodel.dart';
+
+class MockTypeRepository extends Mock implements TypeRepository {}
+
+class FakeType1 extends Fake implements Type1 {}
 
 Future<void> pumpTypesScreen(
   WidgetTester tester, {
   required List<Type1> types,
 }) async {
-  final fakeRepo = InMemoryTypeRepository();
-
-  for (final type in types) {
-    await fakeRepo.saveType(type);
-  }
+  final repo = MockTypeRepository();
+  when(repo.watchTypes).thenAnswer((_) => Stream.value(types));
 
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [typeRepositoryProvider.overrideWithValue(fakeRepo)],
+      overrides: [typeRepositoryProvider.overrideWithValue(repo)],
       child: const MaterialApp(home: Types()),
     ),
   );
@@ -31,8 +33,12 @@ Future<void> pumpTypesScreen(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeType1());
+  });
   testWidgets('shows loading indicator initially', (tester) async {
-    final repo = InMemoryTypeRepository();
+    final repo = MockTypeRepository();
+    when(repo.watchTypes).thenAnswer((_) => const Stream.empty());
 
     await tester.pumpWidget(
       ProviderScope(
@@ -119,9 +125,9 @@ void main() {
   testWidgets('confirming delete deletes type and shows snackbar', (
     tester,
   ) async {
-    final repo = InMemoryTypeRepository();
+    final repo = MockTypeRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
-    await repo.saveType(type);
+    when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
 
     final fakeViewModel = FakeTypesViewModel();
 
@@ -148,9 +154,9 @@ void main() {
   });
 
   testWidgets('saving type saves type and shows snackbar', (tester) async {
-    final repo = InMemoryTypeRepository();
+    final repo = MockTypeRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
-    await repo.saveType(type);
+    when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
 
     final fakeViewModel = FakeTypesViewModel();
 
