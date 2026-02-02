@@ -1,17 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 
-import 'fake_repositories/fake_items_repository.dart';
-import 'fake_repositories/fake_orders_repository.dart';
+class MockItemsRepository extends Mock implements ItemsRepository {}
+
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeItem extends Fake implements Item {}
+
+class FakeOrder extends Fake implements Order {}
 
 ProviderContainer createContainer({
-  required FakeItemsRepository itemsRepo,
-  required FakeOrdersRepository ordersRepo,
+  required MockItemsRepository itemsRepo,
+  required MockOrderRepository ordersRepo,
 }) {
   return ProviderContainer(
     overrides: [
@@ -22,9 +30,19 @@ ProviderContainer createContainer({
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeItem());
+    registerFallbackValue(FakeOrder());
+  });
+
   test('saving new item does not update orders', () async {
-    final itemsRepo = FakeItemsRepository();
-    final ordersRepo = FakeOrdersRepository();
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
+
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([]));
+    when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
+    when(() => itemsRepo.getItem(any())).thenAnswer((_) async => null);
+    when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -37,14 +55,19 @@ void main() {
 
     await vm.saveItem(newItem);
 
-    expect(ordersRepo.savedOrders, isEmpty);
+    verify(() => itemsRepo.saveItem(newItem)).called(1);
+    verifyNever(() => ordersRepo.saveOrder(any()));
   });
 
   test('updating existing item updates related orders', () async {
     final oldItem = Item(id: 'i1', name: 'Burger', price: 100);
     final newItem = Item(id: 'i1', name: 'Burger', price: 150);
 
-    final itemsRepo = FakeItemsRepository()..items = [oldItem];
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
+
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
     final type = Type1(id: 'ty1', type: 'Extra', price: 20);
@@ -60,7 +83,10 @@ void main() {
       amount: 240,
     );
 
-    final ordersRepo = FakeOrdersRepository()..orders.add(order);
+    when(
+      () => ordersRepo.getOrdersByItem(any()),
+    ).thenAnswer((_) async => [order]);
+    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -71,14 +97,18 @@ void main() {
 
     await vm.saveItem(newItem);
 
-    expect(ordersRepo.savedOrders.length, 1);
+    verify(() => ordersRepo.saveOrder(any())).called(1);
   });
 
   test('order amount is recalculated correctly', () async {
     final oldItem = Item(id: 'i1', name: 'Burger', price: 100);
     final newItem = Item(id: 'i1', name: 'Burger', price: 200);
 
-    final itemsRepo = FakeItemsRepository()..items = [oldItem];
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
+
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
     final type = Type1(id: 'ty1', type: 'Extra', price: 30);
@@ -94,7 +124,10 @@ void main() {
       amount: 0,
     );
 
-    final ordersRepo = FakeOrdersRepository()..orders.add(order);
+    when(
+      () => ordersRepo.getOrdersByItem(any()),
+    ).thenAnswer((_) async => [order]);
+    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -105,17 +138,24 @@ void main() {
 
     await vm.saveItem(newItem);
 
-    final updated = ordersRepo.savedOrders.first;
+    final captured =
+        verify(() => ordersRepo.saveOrder(captureAny())).captured.single
+            as Order;
+
     final expected = (newItem.price + type.price) * order.quantity;
 
-    expect(updated.amount, expected);
+    expect(captured.amount, expected);
   });
 
   test('updated orders reference new item', () async {
     final oldItem = Item(id: 'i1', name: 'Burger', price: 100);
     final newItem = Item(id: 'i1', name: 'Burger', price: 180);
 
-    final itemsRepo = FakeItemsRepository()..items = [oldItem];
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
+
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
     final type = Type1(id: 'ty1', type: 'None', price: 0);
@@ -131,7 +171,10 @@ void main() {
       amount: 100,
     );
 
-    final ordersRepo = FakeOrdersRepository()..orders.add(order);
+    when(
+      () => ordersRepo.getOrdersByItem(any()),
+    ).thenAnswer((_) async => [order]);
+    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -142,8 +185,10 @@ void main() {
 
     await vm.saveItem(newItem);
 
-    final updated = ordersRepo.savedOrders.first;
-    expect(updated.item, newItem);
+    final captured =
+        verify(() => ordersRepo.saveOrder(captureAny())).captured.single
+            as Order;
+    expect(captured.item, newItem);
   });
 
   test(
@@ -151,40 +196,35 @@ void main() {
     () async {
       final item = Item(id: 'i1', name: 'Burger', price: 100);
       final newItem = Item(id: 'i1', name: 'Burger New', price: 100);
-      final itemsRepo = FakeItemsRepository()..items = [item];
-      final ordersRepo = FakeOrdersRepository();
+
+      final itemsRepo = MockItemsRepository();
+      final ordersRepo = MockOrderRepository();
+
+      when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
+      when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
+      when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
+
       final container = createContainer(
         itemsRepo: itemsRepo,
         ordersRepo: ordersRepo,
       );
       final vm = container.read(itemsViewModelProvider.notifier);
       await vm.saveItem(newItem);
-      expect(ordersRepo.savedOrders, isEmpty);
+      verifyNever(() => ordersRepo.saveOrder(any()));
     },
   );
 
   test('no related orders results in no updates', () async {
     final item = Item(id: 'i1', name: 'Burger', price: 100);
     final updatedItem = Item(id: 'i1', name: 'Burger', price: 150);
-    final differentItem = Item(id: 'i2', name: 'Burger New', price: 100);
 
-    final itemsRepo = FakeItemsRepository()..items = [item];
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
 
-    final table = Table1(id: 't1', tableNo: 1);
-    final type = Type1(id: 'ty1', type: 'None', price: 0);
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
-    final order = Order(
-      id: 'o1',
-      quantity: 1,
-      item: differentItem,
-      table: table,
-      type: type,
-      status: 'open',
-      note: '',
-      amount: 100,
-    );
-
-    final ordersRepo = FakeOrdersRepository()..orders.add(order);
+    when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -195,14 +235,17 @@ void main() {
 
     await vm.saveItem(updatedItem);
 
-    expect(ordersRepo.savedOrders, isEmpty);
+    verifyNever(() => ordersRepo.saveOrder(any()));
   });
 
   test('deleteItem delegates to repository', () async {
     final item = Item(id: 'i1', name: 'Burger', price: 100);
 
-    final itemsRepo = FakeItemsRepository()..items.add(item);
-    final ordersRepo = FakeOrdersRepository();
+    final itemsRepo = MockItemsRepository();
+    final ordersRepo = MockOrderRepository();
+
+    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => itemsRepo.deleteItem(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -212,6 +255,6 @@ void main() {
 
     await vm.deleteItem(item);
 
-    expect(itemsRepo.deletedItems, contains(item));
+    verify(() => itemsRepo.deleteItem(item)).called(1);
   });
 }
