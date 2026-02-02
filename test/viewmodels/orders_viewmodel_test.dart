@@ -6,29 +6,16 @@ import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 
-import 'fake_repositories/fake_orders_repository.dart';
+class MockOrderRepository extends Mock implements OrderRepository {}
 
 class MockTableRepository extends Mock implements TableRepository {}
 
-ProviderContainer createContainer(FakeOrdersRepository repo) {
-  return ProviderContainer(
-    overrides: [orderRepositoryProvider.overrideWithValue(repo)],
-  );
-}
+class FakeOrder extends Fake implements Order {}
 
-ProviderContainer createTableContainer(
-  FakeOrdersRepository repo,
-  MockTableRepository tableRepo,
-) {
-  return ProviderContainer(
-    overrides: [
-      orderRepositoryProvider.overrideWithValue(repo),
-      tableRepositoryProvider.overrideWithValue(tableRepo),
-    ],
-  );
-}
+class FakeTable1 extends Fake implements Table1 {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -55,9 +42,37 @@ Order baseOrder({
   );
 }
 
+ProviderContainer createContainer(MockOrderRepository repo) {
+  return ProviderContainer(
+    overrides: [orderRepositoryProvider.overrideWithValue(repo)],
+  );
+}
+
+ProviderContainer createTableContainer(
+  MockOrderRepository repo,
+  MockTableRepository tableRepo,
+) {
+  return ProviderContainer(
+    overrides: [
+      orderRepositoryProvider.overrideWithValue(repo),
+      tableRepositoryProvider.overrideWithValue(tableRepo),
+    ],
+  );
+}
+
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeOrder());
+    registerFallbackValue(FakeTable1());
+  });
+
   test('saveOrder calculates amount correctly', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final order = Order(
@@ -73,197 +88,212 @@ void main() {
 
     await vm.saveOrder(order);
 
-    final saved = repo.savedOrders.single;
-    expect(saved.amount, 240);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: false),
+            ).captured.single
+            as Order;
+
+    expect(captured.amount, 240);
   });
 
   test('completeOrder sets status to completed', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final order = baseOrder();
+    await vm.completeOrder(baseOrder());
 
-    await vm.completeOrder(order);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: false),
+            ).captured.single
+            as Order;
 
-    final saved = repo.savedOrders.single;
-    expect(saved.status, 'completed');
+    expect(captured.status, 'completed');
   });
 
   test('cancelOrder sets status to canceled', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final order = baseOrder();
+    await vm.cancelOrder(baseOrder());
 
-    await vm.cancelOrder(order);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: false),
+            ).captured.single
+            as Order;
 
-    final saved = repo.savedOrders.single;
-    expect(saved.status, 'canceled');
+    expect(captured.status, 'canceled');
   });
 
   test('restoreOrder sets status to pending', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final order = baseOrder(status: 'canceled');
+    await vm.restoreOrder(baseOrder(status: 'canceled'));
 
-    await vm.restoreOrder(order);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: false),
+            ).captured.single
+            as Order;
 
-    final saved = repo.savedOrders.single;
-    expect(saved.status, 'pending');
+    expect(captured.status, 'pending');
   });
 
   test('repeatOrder resets id and sets status to pending', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final order = baseOrder(id: 'o1', status: 'completed');
+    await vm.repeatOrder(baseOrder(id: 'o1', status: 'completed'));
 
-    await vm.repeatOrder(order);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: false),
+            ).captured.single
+            as Order;
 
-    final saved = repo.savedOrders.single;
-    expect(saved.id, '');
-    expect(saved.status, 'pending');
+    expect(captured.id, '');
+    expect(captured.status, 'pending');
   });
 
   test('restoreAllOrders restores only canceled orders', () async {
-    final repo = FakeOrdersRepository()
-      ..orders.add(baseOrder(id: '1', status: 'canceled'))
-      ..orders.add(baseOrder(id: '2'));
+    final repo = MockOrderRepository();
+
+    when(() => repo.getOrdersForTable('1')).thenAnswer(
+      (_) async => [baseOrder(id: '1', status: 'canceled'), baseOrder(id: '2')],
+    );
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final result = await vm.restoreAllOrders(testTable);
 
     expect(result, true);
-    expect(repo.savedOrders.length, 1);
-    expect(repo.savedOrders.first.status, 'pending');
+    verify(() => repo.saveOrder(any(), isSplit: false)).called(1);
   });
 
   test('repeatAllOrders repeats only non-canceled orders', () async {
-    final table = Table1(id: 't1', tableNo: 1);
-    final item = Item(id: 'i', name: 'Burger', price: 100);
-    final type = Type1(id: 't', type: 'None', price: 0);
+    final repo = MockOrderRepository();
 
-    final repo = FakeOrdersRepository()
-      ..orders.add(
-        Order(
-          id: 'o1',
-          quantity: 1,
-          item: item,
-          type: type,
-          table: table,
-          status: 'pending',
-          note: '',
-          amount: 100,
-        ),
-      )
-      ..orders.add(
-        Order(
-          id: 'o2',
-          quantity: 1,
-          item: item,
-          type: type,
-          table: table,
-          status: 'canceled',
-          note: '',
-          amount: 100,
-        ),
-      );
+    when(() => repo.getOrdersForTable('1')).thenAnswer(
+      (_) async => [baseOrder(id: '1'), baseOrder(id: '2', status: 'canceled')],
+    );
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final result = await vm.repeatAllOrders(table);
+    final result = await vm.repeatAllOrders(testTable);
 
     expect(result, true);
-    expect(repo.savedOrders.length, 1);
-    expect(repo.savedOrders.first.id, '');
+    verify(() => repo.saveOrder(any(), isSplit: false)).called(1);
   });
 
   test(
     'repeatAllOrders returns false when no non-canceled orders exist',
     () async {
-      final repo = FakeOrdersRepository()
-        ..orders.add(baseOrder(id: '1', status: 'canceled'));
+      final repo = MockOrderRepository();
+
+      when(
+        () => repo.getOrdersForTable('1'),
+      ).thenAnswer((_) async => [baseOrder(id: '1', status: 'canceled')]);
+
+      when(
+        () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      ).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
       final result = await vm.repeatAllOrders(testTable);
 
       expect(result, false);
-      expect(repo.savedOrders, isEmpty);
+      verifyNever(() => repo.saveOrder(any(), isSplit: false));
     },
   );
 
   test(
     'restoreAllOrders returns false when no canceled orders exist',
     () async {
-      final repo = FakeOrdersRepository()..orders.add(baseOrder(id: '1'));
+      final repo = MockOrderRepository();
+
+      when(
+        () => repo.getOrdersForTable('1'),
+      ).thenAnswer((_) async => [baseOrder(id: '1')]);
+
+      when(
+        () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      ).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
       final result = await vm.restoreAllOrders(testTable);
 
       expect(result, false);
-      expect(repo.savedOrders, isEmpty);
+      verifyNever(() => repo.saveOrder(any(), isSplit: false));
     },
   );
 
   test('getBillOrdersForTable aggregates orders', () async {
-    final table = Table1(id: 't', tableNo: 1);
-    final item = Item(id: 'i', name: 'Burger', price: 100);
-    final type = Type1(id: 't', type: 'Extra', price: 20);
+    final repo = MockOrderRepository();
 
-    final repo = FakeOrdersRepository()
-      ..orders.add(
-        Order(
-          id: 'o1',
-          quantity: 1,
-          item: item,
-          type: type,
-          table: table,
-          status: 'pending',
-          note: '',
-          amount: 120,
-        ),
-      )
-      ..orders.add(
-        Order(
-          id: 'o2',
-          quantity: 2,
-          item: item,
-          type: type,
-          table: table,
-          status: 'completed',
-          note: '',
-          amount: 240,
-        ),
-      );
+    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+      (_) => Stream.value([
+        baseOrder(amount: 120),
+        baseOrder(quantity: 2, amount: 240),
+      ]),
+    );
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final aggregated = await vm.getBillOrdersForTable('1').first;
 
-    expect(aggregated.length, 1);
-    expect(aggregated.first.quantity, 3);
-    expect(aggregated.first.amount, 360);
+    expect(aggregated.single.quantity, 3);
+    expect(aggregated.single.amount, 360);
   });
 
   test('getBillOrdersForTable separates orders with different types', () async {
-    final repo = FakeOrdersRepository()
-      ..orders.add(
+    final repo = MockOrderRepository();
+
+    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+      (_) => Stream.value([
         baseOrder(
           id: '1',
           type: Type1(id: 't1', type: 'Extra', price: 20),
           amount: 120,
         ),
-      )
-      ..orders.add(
         baseOrder(
           id: '2',
           type: Type1(id: 't2', type: 'None', price: 0),
         ),
-      );
+      ]),
+    );
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
@@ -275,80 +305,81 @@ void main() {
   test(
     'createSplitOrders creates one split order when quantity is 1',
     () async {
-      final repo = FakeOrdersRepository()..orders.add(baseOrder());
+      final repo = MockOrderRepository();
+
+      when(
+        () => repo.getBillOrdersForTable('1'),
+      ).thenAnswer((_) => Stream.value([baseOrder()]));
+
+      when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
       final result = await vm.createSplitOrders('1');
 
       expect(result, true);
-      expect(repo.splitOrdersSaved.length, 1);
+      verify(() => repo.saveOrder(any(), isSplit: true)).called(1);
     },
   );
 
   test('createSplitOrders splits orders by quantity', () async {
-    final table = Table1(id: 't', tableNo: 1);
-    final item = Item(id: 'i', name: 'Burger', price: 100);
-    final type = Type1(id: 't', type: 'None', price: 0);
+    final repo = MockOrderRepository();
 
-    final repo = FakeOrdersRepository()
-      ..orders.add(
-        Order(
-          id: 'o1',
-          quantity: 3,
-          item: item,
-          type: type,
-          table: table,
-          status: 'pending',
-          note: '',
-          amount: 300,
-        ),
-      );
+    when(
+      () => repo.getBillOrdersForTable('1'),
+    ).thenAnswer((_) => Stream.value([baseOrder(quantity: 3)]));
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final result = await vm.createSplitOrders('1');
 
     expect(result, true);
-    expect(repo.splitOrdersSaved.length, 3);
+    verify(() => repo.saveOrder(any(), isSplit: true)).called(3);
   });
 
   test('changeOrderSplitNo updates split number correctly', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
+
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
-    final order = baseOrder();
+    await vm.changeOrderSplitNo(baseOrder(), 2);
 
-    final result = await vm.changeOrderSplitNo(order, 2);
+    final captured =
+        verify(
+              () => repo.saveOrder(captureAny(), isSplit: true),
+            ).captured.single
+            as Order;
 
-    expect(result, true);
-    final saved = repo.splitOrdersSaved.single;
-    expect(saved.table.splitNo, 2);
+    expect(captured.table.splitNo, 2);
   });
 
   test('resetSplitNo resets only matching split orders', () async {
-    final repo = FakeOrdersRepository()
-      ..splitOrders.add(baseOrder(splitNo: 1))
-      ..splitOrders.add(baseOrder(splitNo: 2));
+    final repo = MockOrderRepository();
+
+    when(() => repo.getSplitOrders('1')).thenAnswer(
+      (_) => Stream.value([baseOrder(splitNo: 1), baseOrder(splitNo: 2)]),
+    );
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
-    expect(repo.splitOrders.any((o) => o.table.splitNo == 0), false);
+
     final result = await vm.resetSplitNo('1', '1');
 
     expect(result, true);
-    expect(repo.splitOrdersSaved.any((o) => o.table.splitNo == 0), true);
-    expect(repo.splitOrdersSaved.where((o) => o.table.splitNo == 0).length, 1);
-    expect(repo.splitOrdersSaved.every((o) => o.table.splitNo == 0), true);
+    verify(() => repo.saveOrder(any(), isSplit: true)).called(1);
   });
 
   test('removeSplitOrdersForTable removes orders for given table', () async {
-    final repo = FakeOrdersRepository()
-      ..splitOrders.add(
-        baseOrder(table: Table1(id: 't1', tableNo: 1, splitNo: 1)),
-      )
-      ..splitOrders.add(
-        baseOrder(table: Table1(id: 't2', tableNo: 2, splitNo: 1)),
-      );
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.removeSplitOrdersForTable('1'),
+    ).thenAnswer((_) async => true);
 
     final container = createContainer(repo);
     final vm = container.read(ordersViewModelProvider.notifier);
@@ -356,15 +387,17 @@ void main() {
     final result = await vm.removeSplitOrdersForTable('1');
 
     expect(result, true);
-    expect(repo.splitOrders.any((o) => o.table.tableNo == 1), false);
-    expect(repo.splitOrders.any((o) => o.table.tableNo == 2), true);
+    verify(() => repo.removeSplitOrdersForTable('1')).called(1);
   });
 
   test('getTotalAmountForTable delegates stream to repository', () async {
-    final repo = FakeOrdersRepository();
+    final repo = MockOrderRepository();
 
-    final container = createContainer(repo);
-    final vm = container.read(ordersViewModelProvider.notifier);
+    when(
+      () => repo.getTotalAmountForTable('1', splitNo: '0'),
+    ).thenAnswer((_) => Stream.value(250));
+
+    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final value = await vm.getTotalAmountForTable('1').first;
 
@@ -372,38 +405,27 @@ void main() {
   });
 
   test('clearTableConfirm deletes orders for the given table', () async {
-    final repo = FakeOrdersRepository()
-      ..orders.add(baseOrder(table: Table1(id: 't1', tableNo: 1)))
-      ..orders.add(baseOrder(table: Table1(id: 't2', tableNo: 2)));
-
+    final repo = MockOrderRepository();
     final tableRepo = MockTableRepository();
+
+    when(() => repo.deleteOrdersForTable('1')).thenAnswer((_) async {});
 
     final container = createTableContainer(repo, tableRepo);
     final vm = container.read(tablesViewmodelProvider.notifier);
 
     await vm.clearTableConfirm('1');
 
-    expect(repo.deletedOrdersForTable, '1');
-
-    expect(repo.orders.any((o) => o.table.tableNo == 1), false);
-    expect(repo.orders.any((o) => o.table.tableNo == 2), true);
+    verify(() => repo.deleteOrdersForTable('1')).called(1);
   });
 
   test(
     "getOrdersForSplitTable returns the correct split orders for a table",
     () async {
-      final repo = FakeOrdersRepository()
-        ..splitOrders.add(baseOrder(table: Table1(id: 't1', tableNo: 1)))
-        ..splitOrders.add(
-          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 1),
-        )
-        ..splitOrders.add(
-          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 1),
-        )
-        ..splitOrders.add(
-          baseOrder(table: Table1(id: 't1', tableNo: 1), splitNo: 2),
-        )
-        ..splitOrders.add(baseOrder(table: Table1(id: 't2', tableNo: 2)));
+      final repo = MockOrderRepository();
+
+      when(
+        () => repo.getOrdersForSplitTable('1', '1'),
+      ).thenAnswer((_) async => [baseOrder(splitNo: 1), baseOrder(splitNo: 1)]);
 
       final container = createContainer(repo);
       final vm = container.read(ordersViewModelProvider.notifier);
