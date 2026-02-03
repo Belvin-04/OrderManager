@@ -1,24 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 
-import '../fake_viewmodel/fake_tables_viewmodel.dart';
+class MockTableRepository extends Mock implements TableRepository {}
+
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeTable1 extends Fake implements Table1 {}
 
 Future<void> pumpTableLayoutScreen(
   WidgetTester tester, {
   required AsyncValue<List<Table1>> tables,
-  FakeTablesViewModel? fakeVm,
+  required MockTableRepository tableRepo,
+  required MockOrderRepository orderRepo,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         tablesProvider.overrideWithValue(tables),
-        if (fakeVm != null) tablesViewmodelProvider.overrideWith(() => fakeVm),
+
+        tableRepositoryProvider.overrideWithValue(tableRepo),
+
+        orderRepositoryProvider.overrideWithValue(orderRepo),
       ],
       child: MaterialApp(home: TableLayoutScreen()),
     ),
@@ -41,25 +52,49 @@ Future<void> pumpLayoutWidget(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(Offset.zero);
+  });
   testWidgets('shows loading indicator', (tester) async {
-    await pumpTableLayoutScreen(tester, tables: const AsyncLoading());
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    await pumpTableLayoutScreen(
+      tester,
+      tables: const AsyncLoading(),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('shows error message', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpTableLayoutScreen(
       tester,
       tables: AsyncError('error', StackTrace.current),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     expect(find.textContaining('Error:'), findsOneWidget);
   });
 
   testWidgets('renders tables at their positions', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     final table = Table1(id: 't1', tableNo: 1, position: const Offset(50, 100));
 
-    await pumpTableLayoutScreen(tester, tables: AsyncData([table]));
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData([table]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
 
     final positioned = tester.widget<Positioned>(find.byType(Positioned).last);
 
@@ -70,12 +105,18 @@ void main() {
   testWidgets('dragging table updates its position', (tester) async {
     final table = Table1(id: 't1', tableNo: 1, position: const Offset(10, 10));
 
-    final fakeVm = FakeTablesViewModel();
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => tableRepo.updateTablePosition(any(), any()),
+    ).thenAnswer((_) async {});
 
     await pumpTableLayoutScreen(
       tester,
       tables: AsyncData([table]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     final icon = find.byIcon(Icons.table_restaurant);
@@ -88,22 +129,30 @@ void main() {
     await gesture.up();
     await tester.pump();
 
-    expect(fakeVm.movedId, 't1');
-    expect(fakeVm.movedOffset, isNotNull);
+    final captured =
+        verify(
+              () => tableRepo.updateTablePosition('t1', captureAny()),
+            ).captured.single
+            as Offset;
 
-    expect(fakeVm.movedOffset!.dx, greaterThan(50));
-    expect(fakeVm.movedOffset!.dy, greaterThan(50));
-
-    expect(fakeVm.movedOffset!.dx, 90);
-    expect(fakeVm.movedOffset!.dy, 130);
+    expect(captured.dx, 90);
+    expect(captured.dy, 130);
   });
 
   testWidgets('last table is painted on top (z-order)', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     final t1 = Table1(id: 't1', tableNo: 1, position: const Offset(50, 50));
 
     final t2 = Table1(id: 't2', tableNo: 2, position: const Offset(50, 50));
 
-    await pumpTableLayoutScreen(tester, tables: AsyncData([t1, t2]));
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData([t1, t2]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
 
     final stackFinder = find.byWidgetPredicate(
       (w) => w is Stack && w.children.any((c) => c is Positioned),
@@ -125,12 +174,18 @@ void main() {
 
     final t2 = Table1(id: 't2', tableNo: 2, position: const Offset(200, 200));
 
-    final fakeVm = FakeTablesViewModel();
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => tableRepo.updateTablePosition(any(), any()),
+    ).thenAnswer((_) async {});
 
     await pumpTableLayoutScreen(
       tester,
       tables: AsyncData([t1, t2]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     final icons = find.byIcon(Icons.table_restaurant);
@@ -145,7 +200,8 @@ void main() {
     await gesture.up();
     await tester.pump();
 
-    expect(fakeVm.movedId, 't2');
+    verify(() => tableRepo.updateTablePosition('t2', any())).called(1);
+    verifyNever(() => tableRepo.updateTablePosition('t1', any()));
   });
 
   testWidgets('dragging one table does not move the other while overlapped', (
@@ -155,12 +211,18 @@ void main() {
 
     final t2 = Table1(id: 't2', tableNo: 2, position: const Offset(10, 10));
 
-    final fakeVm = FakeTablesViewModel();
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => tableRepo.updateTablePosition(any(), any()),
+    ).thenAnswer((_) async {});
 
     await pumpTableLayoutScreen(
       tester,
       tables: AsyncData([t1, t2]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     final icons = find.byIcon(Icons.table_restaurant);
@@ -175,7 +237,8 @@ void main() {
     await gesture.up();
     await tester.pump();
 
-    expect(fakeVm.movedId, 't2');
+    verify(() => tableRepo.updateTablePosition('t2', any())).called(1);
+    verifyNever(() => tableRepo.updateTablePosition('t1', any()));
   });
 
   testWidgets('popup menu is always on top of all the tables - 1', (

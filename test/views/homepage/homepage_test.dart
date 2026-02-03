@@ -3,9 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/models/item.dart';
+import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
-import 'package:order_manager/viewmodels/tables_viewmodel.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_clear_dialog.dart';
@@ -14,19 +19,26 @@ import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_swap_dialog.dart';
 
 import '../fake_viewmodel/fake_orders_viewmodel.dart';
-import '../fake_viewmodel/fake_tables_viewmodel.dart';
+
+class MockTableRepository extends Mock implements TableRepository {}
+
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeTable1 extends Fake implements Table1 {}
 
 Future<void> pumpHomePageScreen(
   WidgetTester tester, {
   required AsyncValue<List<Table1>> tablesState,
-  FakeTablesViewModel? fakeVm,
+  required MockTableRepository tableRepo,
+  required MockOrderRepository orderRepo,
   Stream<int>? stream,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         tablesProvider.overrideWithValue(tablesState),
-        if (fakeVm != null) tablesViewmodelProvider.overrideWith(() => fakeVm),
+        tableRepositoryProvider.overrideWithValue(tableRepo),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
         ordersViewModelProvider.overrideWith(
           () => FakeOrdersViewModel(stream: stream),
         ),
@@ -37,38 +49,66 @@ Future<void> pumpHomePageScreen(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(Offset.zero);
+    registerFallbackValue(FakeTable1());
+  });
+
   testWidgets('shows loading indicator while tables load', (tester) async {
-    await pumpHomePageScreen(tester, tablesState: const AsyncLoading());
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: const AsyncLoading(),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('shows error message when tables fail to load', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncError('boom', StackTrace.current),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     expect(find.textContaining('Error:'), findsOneWidget);
   });
 
   testWidgets('shows No Items when tables list is empty', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: const AsyncData([]),
       stream: Stream.value(10),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     expect(find.text('No Items'), findsOneWidget);
   });
 
   testWidgets('renders tables sorted by table number', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([
         Table1(id: 't2', tableNo: 2),
         Table1(id: 't1', tableNo: 1),
       ]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -79,10 +119,15 @@ void main() {
   });
 
   testWidgets('tapping Take Order navigates to Orders screen', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       stream: Stream.value(0),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.event_note_outlined));
@@ -94,13 +139,26 @@ void main() {
   testWidgets(
     """clear table icon opens confirm dialog and confirm clear calls clearTableConfirm and shows snackbar""",
     (tester) async {
-      final fakeVm = FakeTablesViewModel();
-      fakeVm.clearTableResult = ClearTableResult.canClear;
+      final tableRepo = MockTableRepository();
+      final orderRepo = MockOrderRepository();
+
+      when(
+        () => orderRepo.hasAnyOrdersForTable(any()),
+      ).thenAnswer((_) async => true);
+
+      when(
+        () => orderRepo.hasPendingOrdersForTable(any()),
+      ).thenAnswer((_) async => false);
+
+      when(
+        () => orderRepo.deleteOrdersForTable(any()),
+      ).thenAnswer((_) async {});
 
       await pumpHomePageScreen(
         tester,
         tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-        fakeVm: fakeVm,
+        tableRepo: tableRepo,
+        orderRepo: orderRepo,
         stream: const Stream.empty(),
       );
 
@@ -112,7 +170,7 @@ void main() {
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
 
-      expect(fakeVm.confirmedClearKey, '1');
+      verify(() => orderRepo.deleteOrdersForTable('1')).called(1);
       expect(find.text("Table cleared Successfully..."), findsOneWidget);
     },
   );
@@ -120,13 +178,18 @@ void main() {
   testWidgets('clear table icon shows already cleared snackbar', (
     tester,
   ) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.clearTableResult = ClearTableResult.alreadyCleared;
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.hasAnyOrdersForTable(any()),
+    ).thenAnswer((_) async => false);
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -139,13 +202,21 @@ void main() {
   testWidgets('clear table icon shows has pending order warning', (
     tester,
   ) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.clearTableResult = ClearTableResult.hasPendingOrders;
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.hasAnyOrdersForTable(any()),
+    ).thenAnswer((_) async => true);
+
+    when(
+      () => orderRepo.hasPendingOrdersForTable(any()),
+    ).thenAnswer((_) async => true);
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -158,16 +229,39 @@ void main() {
   testWidgets("""swap table icon opens dialog and shows snackbar on swap""", (
     tester,
   ) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.lastSwapDecision = SwapTableDecision(
-      result: SwapTableResult.canSwap,
-      availableTables: const [2],
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+    when(tableRepo.watchTables).thenAnswer(
+      (_) => Stream.value([
+        Table1(id: 't1', tableNo: 1),
+        Table1(id: 't2', tableNo: 2),
+      ]),
     );
+
+    when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
+
+    when(() => orderRepo.getOrdersForTable('1')).thenAnswer(
+      (_) async => [
+        Order(
+          quantity: 1,
+          id: 'o1',
+          item: Item(name: 'name', price: 10, id: 'i1'),
+          table: Table1(id: 't1', tableNo: 1),
+          type: Type1(type: 'type', price: 10, id: 'ty1'),
+          status: 'pending',
+          note: '',
+          amount: 20,
+        ),
+      ],
+    );
+
+    when(() => orderRepo.moveOrders(any(), any())).thenAnswer((_) async {});
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -179,8 +273,7 @@ void main() {
     await tester.tap(find.text('Table No. : 2'));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.from, '1');
-    expect(fakeVm.to, '2');
+    verify(() => orderRepo.moveOrders('1', '2')).called(1);
     expect(
       find.textContaining('Orders swapped from Table : 1 to Table : 2'),
       findsOneWidget,
@@ -188,15 +281,34 @@ void main() {
   });
 
   testWidgets('swap table shows no free tables snackbar', (tester) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.lastSwapDecision = SwapTableDecision(
-      result: SwapTableResult.noFreeTables,
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+    when(
+      tableRepo.watchTables,
+    ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
+
+    when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
+
+    when(() => orderRepo.getOrdersForTable(any())).thenAnswer(
+      (_) async => [
+        Order(
+          quantity: 1,
+          id: 'o1',
+          item: Item(name: 'name', price: 10, id: 'i1'),
+          table: Table1(id: 't1', tableNo: 1),
+          type: Type1(type: 'type', price: 10, id: 'ty1'),
+          status: 'pending',
+          note: '',
+          amount: 20,
+        ),
+      ],
     );
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -210,15 +322,19 @@ void main() {
   });
 
   testWidgets('swap table shows no orders snackbar', (tester) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.lastSwapDecision = SwapTableDecision(
-      result: SwapTableResult.noOrdersAtAll,
-    );
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      tableRepo.watchTables,
+    ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
+    when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {});
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -231,15 +347,20 @@ void main() {
   testWidgets("""swap table shows no order on source table snackbar""", (
     tester,
   ) async {
-    final fakeVm = FakeTablesViewModel();
-    fakeVm.lastSwapDecision = SwapTableDecision(
-      result: SwapTableResult.noOrdersOnSource,
-    );
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      tableRepo.watchTables,
+    ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
+    when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
+    when(() => orderRepo.getOrdersForTable(any())).thenAnswer((_) async => []);
 
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      fakeVm: fakeVm,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
       stream: const Stream.empty(),
     );
 
@@ -255,10 +376,15 @@ void main() {
   testWidgets('tapping layout icon navigates to TableLayoutScreen', (
     tester,
   ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       stream: const Stream.empty(),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.design_services));
@@ -268,10 +394,15 @@ void main() {
   });
 
   testWidgets('open navigation drawer', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       stream: const Stream.empty(),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byTooltip('Open navigation menu'));
@@ -281,10 +412,15 @@ void main() {
   });
 
   testWidgets('back button closes drawer when open', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       stream: const Stream.empty(),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byTooltip('Open navigation menu'));
