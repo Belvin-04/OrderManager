@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/type_repository.dart';
+import 'package:order_manager/viewmodels/types_viewmodel.dart';
 import 'package:order_manager/views/types/type_delete_dialog.dart';
 import 'package:order_manager/views/types/type_edit_dialog.dart';
 import 'package:order_manager/views/types/types.dart';
 
-import '../fake_viewmodel/fake_types_viewmodel.dart';
+class MockTypesViewModel extends Mock implements TypesViewModel {}
 
 class MockTypeRepository extends Mock implements TypeRepository {}
 
+class MockOrderRepository extends Mock implements OrderRepository {}
+
 class FakeType1 extends Fake implements Type1 {}
+
+class FakeOrder extends Fake implements Order {}
 
 Future<void> pumpTypesScreen(
   WidgetTester tester, {
@@ -35,6 +42,7 @@ Future<void> pumpTypesScreen(
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeType1());
+    registerFallbackValue(FakeOrder());
   });
   testWidgets('shows loading indicator initially', (tester) async {
     final repo = MockTypeRepository();
@@ -128,15 +136,11 @@ void main() {
     final repo = MockTypeRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
     when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
-
-    final fakeViewModel = FakeTypesViewModel();
+    when(() => repo.deleteType(any())).thenAnswer((_) async {});
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          typeRepositoryProvider.overrideWithValue(repo),
-          typesViewModelProvider.overrideWith(() => fakeViewModel),
-        ],
+        overrides: [typeRepositoryProvider.overrideWithValue(repo)],
         child: const MaterialApp(home: Types()),
       ),
     );
@@ -149,22 +153,24 @@ void main() {
     expect(find.byType(TypeDeleteDialog), findsOneWidget);
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
-    expect(fakeViewModel.deletedType, type);
+    verify(() => repo.deleteType(type)).called(1);
     expect(find.text('Type Deleted Successfully'), findsOneWidget);
   });
 
   testWidgets('saving type saves type and shows snackbar', (tester) async {
     final repo = MockTypeRepository();
+    final orderRepo = MockOrderRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
     when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
-
-    final fakeViewModel = FakeTypesViewModel();
+    when(() => repo.saveType(any())).thenAnswer((_) async {});
+    when(() => orderRepo.getOrdersByType(any())).thenAnswer((_) async => []);
+    when(() => orderRepo.saveOrder(any())).thenAnswer((_) async {});
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           typeRepositoryProvider.overrideWithValue(repo),
-          typesViewModelProvider.overrideWith(() => fakeViewModel),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
         child: const MaterialApp(home: Types()),
       ),
@@ -178,7 +184,7 @@ void main() {
     expect(find.byType(TypeEditDialog), findsOneWidget);
     await tester.tap(find.text('Save Type'));
     await tester.pumpAndSettle();
-    expect(fakeViewModel.savedType, type);
+    verify(() => repo.saveType(type)).called(1);
     expect(find.text('Type Saved Successfully...'), findsOneWidget);
   });
 }
