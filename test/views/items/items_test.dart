@@ -3,17 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
+import 'package:order_manager/models/order.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/items_repository.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/items/items.dart';
 
-import '../fake_viewmodel/fake_items_viewmodel.dart';
-
 class MockItemsRepository extends Mock implements ItemsRepository {}
 
+class MockOrderRepository extends Mock implements OrderRepository {}
+
 class FakeItem extends Fake implements Item {}
+
+class FakeOrder extends Fake implements Order {}
 
 Future<void> pumpItemsScreen(
   WidgetTester tester, {
@@ -35,6 +39,7 @@ Future<void> pumpItemsScreen(
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeItem());
+    registerFallbackValue(FakeOrder());
   });
 
   testWidgets('shows loading indicator initially', (tester) async {
@@ -131,14 +136,9 @@ void main() {
     when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
     when(() => repo.deleteItem(any())).thenAnswer((_) async {});
 
-    final fakeViewModelProvider = FakeItemsViewmodel();
-
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          itemRepositoryProvider.overrideWithValue(repo),
-          itemsViewModelProvider.overrideWith(() => fakeViewModelProvider),
-        ],
+        overrides: [itemRepositoryProvider.overrideWithValue(repo)],
         child: const MaterialApp(home: Items()),
       ),
     );
@@ -152,23 +152,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Item Deleted Successfully'), findsOneWidget);
-    expect(fakeViewModelProvider.deletedItem, item);
+    verify(() => repo.deleteItem(item)).called(1);
   });
 
   testWidgets('saving item saves item and shows snackbar', (tester) async {
     final repo = MockItemsRepository();
+    final orderRepo = MockOrderRepository();
     final item = Item(id: '1', name: 'Burger', price: 100);
 
     when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
     when(() => repo.saveItem(any())).thenAnswer((_) async {});
-
-    final fakeViewModel = FakeItemsViewmodel();
+    when(() => orderRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
+    when(() => orderRepo.saveOrder(any())).thenAnswer((_) async {});
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           itemRepositoryProvider.overrideWithValue(repo),
-          itemsViewModelProvider.overrideWith(() => fakeViewModel),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
         child: const MaterialApp(home: Items()),
       ),
@@ -182,7 +183,7 @@ void main() {
     expect(find.byType(ItemEditDialog), findsOneWidget);
     await tester.tap(find.text('Save Item'));
     await tester.pumpAndSettle();
-    expect(fakeViewModel.savedItem, item);
+    verify(() => repo.saveItem(item)).called(1);
     expect(find.text('Item Saved Successfully...'), findsOneWidget);
   });
 }
