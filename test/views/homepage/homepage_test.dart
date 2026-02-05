@@ -18,8 +18,6 @@ import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_swap_dialog.dart';
 
-import '../fake_viewmodel/fake_orders_viewmodel.dart';
-
 class MockTableRepository extends Mock implements TableRepository {}
 
 class MockOrderRepository extends Mock implements OrderRepository {}
@@ -31,7 +29,6 @@ Future<void> pumpHomePageScreen(
   required AsyncValue<List<Table1>> tablesState,
   required MockTableRepository tableRepo,
   required MockOrderRepository orderRepo,
-  Stream<int>? stream,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -39,9 +36,6 @@ Future<void> pumpHomePageScreen(
         tablesProvider.overrideWithValue(tablesState),
         tableRepositoryProvider.overrideWithValue(tableRepo),
         orderRepositoryProvider.overrideWithValue(orderRepo),
-        ordersViewModelProvider.overrideWith(
-          () => FakeOrdersViewModel(stream: stream),
-        ),
       ],
       child: MaterialApp(home: HomePage()),
     ),
@@ -86,10 +80,16 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await pumpHomePageScreen(
       tester,
       tablesState: const AsyncData([]),
-      stream: Stream.value(10),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
@@ -101,6 +101,13 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([
@@ -109,7 +116,6 @@ void main() {
       ]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
@@ -122,10 +128,16 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => Stream.value(0));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      stream: Stream.value(0),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
@@ -141,6 +153,13 @@ void main() {
     (tester) async {
       final tableRepo = MockTableRepository();
       final orderRepo = MockOrderRepository();
+
+      when(
+        () => orderRepo.getTotalAmountForTable(
+          any(),
+          splitNo: any(named: 'splitNo'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
 
       when(
         () => orderRepo.hasAnyOrdersForTable(any()),
@@ -159,7 +178,6 @@ void main() {
         tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
         tableRepo: tableRepo,
         orderRepo: orderRepo,
-        stream: const Stream.empty(),
       );
 
       await tester.tap(find.byIcon(Icons.clear));
@@ -182,6 +200,13 @@ void main() {
     final orderRepo = MockOrderRepository();
 
     when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
       () => orderRepo.hasAnyOrdersForTable(any()),
     ).thenAnswer((_) async => false);
 
@@ -190,7 +215,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.clear));
@@ -204,6 +228,14 @@ void main() {
   ) async {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     when(
       () => orderRepo.hasAnyOrdersForTable(any()),
     ).thenAnswer((_) async => true);
@@ -217,7 +249,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.clear));
@@ -231,6 +262,13 @@ void main() {
   ) async {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     when(tableRepo.watchTables).thenAnswer(
       (_) => Stream.value([
         Table1(id: 't1', tableNo: 1),
@@ -262,7 +300,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.swap_vert));
@@ -283,6 +320,13 @@ void main() {
   testWidgets('swap table shows no free tables snackbar', (tester) async {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     when(
       tableRepo.watchTables,
     ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
@@ -309,7 +353,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.swap_vert));
@@ -326,6 +369,13 @@ void main() {
     final orderRepo = MockOrderRepository();
 
     when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
       tableRepo.watchTables,
     ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {});
@@ -335,7 +385,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.swap_vert));
@@ -351,6 +400,13 @@ void main() {
     final orderRepo = MockOrderRepository();
 
     when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
       tableRepo.watchTables,
     ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
@@ -361,7 +417,6 @@ void main() {
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
-      stream: const Stream.empty(),
     );
 
     await tester.tap(find.byIcon(Icons.swap_vert));
@@ -379,10 +434,16 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      stream: const Stream.empty(),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
@@ -397,10 +458,16 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      stream: const Stream.empty(),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
@@ -415,10 +482,16 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
-      stream: const Stream.empty(),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );

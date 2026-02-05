@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/orders/tabs/completed_orders.dart';
 
-import '../../fake_viewmodel/fake_orders_viewmodel.dart';
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeOrder extends Fake implements Order {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -39,13 +43,13 @@ Order baseOrder({
 Future<void> pumpCompletedOrders(
   WidgetTester tester, {
   required AsyncValue<List<Order>> ordersState,
-  FakeOrdersViewModel? fakeVm,
+  required MockOrderRepository orderRepo,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         completedOrdersProvider('1').overrideWithValue(ordersState),
-        if (fakeVm != null) ordersViewModelProvider.overrideWith(() => fakeVm),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
       ],
       child: MaterialApp(
         home: CompletedOrders(table: Table1(id: 't1', tableNo: 1)),
@@ -55,10 +59,19 @@ Future<void> pumpCompletedOrders(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeOrder());
+  });
   testWidgets('shows loading indicator while completed orders load', (
     tester,
   ) async {
-    await pumpCompletedOrders(tester, ordersState: const AsyncLoading());
+    final orderRepo = MockOrderRepository();
+
+    await pumpCompletedOrders(
+      tester,
+      ordersState: const AsyncLoading(),
+      orderRepo: orderRepo,
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
@@ -66,9 +79,12 @@ void main() {
   testWidgets('shows error message when completedOrdersProvider errors', (
     tester,
   ) async {
+    final orderRepo = MockOrderRepository();
+
     await pumpCompletedOrders(
       tester,
       ordersState: AsyncError(Exception('Failed to load'), StackTrace.empty),
+      orderRepo: orderRepo,
     );
 
     await tester.pumpAndSettle();
@@ -80,7 +96,13 @@ void main() {
   testWidgets('shows empty message when no completed orders exist', (
     tester,
   ) async {
-    await pumpCompletedOrders(tester, ordersState: const AsyncData([]));
+    final orderRepo = MockOrderRepository();
+
+    await pumpCompletedOrders(
+      tester,
+      ordersState: const AsyncData([]),
+      orderRepo: orderRepo,
+    );
 
     await tester.pumpAndSettle();
 
@@ -88,8 +110,13 @@ void main() {
   });
 
   testWidgets('renders list of completed orders', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder(status: 'completed');
-    await pumpCompletedOrders(tester, ordersState: AsyncData([order]));
+    await pumpCompletedOrders(
+      tester,
+      ordersState: AsyncData([order]),
+      orderRepo: orderRepo,
+    );
 
     await tester.pumpAndSettle();
 
@@ -98,13 +125,17 @@ void main() {
   });
 
   testWidgets('repeat icon repeats order and shows snackbar', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder(status: 'completed');
-    final fakeVm = FakeOrdersViewModel();
+
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
 
     await pumpCompletedOrders(
       tester,
       ordersState: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.pumpAndSettle();
@@ -112,7 +143,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.replay_rounded));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.repeatedOrder, order);
+    verify(() => orderRepo.saveOrder(any(), isSplit: false)).called(1);
     expect(find.text('Order Repeated Successfully...'), findsOneWidget);
   });
 }

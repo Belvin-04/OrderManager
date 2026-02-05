@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
 import 'package:order_manager/views/orders/tabs/pending_orders.dart';
 
-import '../../fake_viewmodel/fake_orders_viewmodel.dart';
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeOrder extends Fake implements Order {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -40,13 +44,13 @@ Order baseOrder({
 Future<void> pumpPendingOrders(
   WidgetTester tester, {
   required AsyncValue<List<Order>> ordersState,
-  FakeOrdersViewModel? fakeVm,
+  required MockOrderRepository orderRepo,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         pendingOrdersProvider('1').overrideWithValue(ordersState),
-        if (fakeVm != null) ordersViewModelProvider.overrideWith(() => fakeVm),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -58,37 +62,62 @@ Future<void> pumpPendingOrders(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeOrder());
+  });
   testWidgets('shows loading indicator', (tester) async {
-    await pumpPendingOrders(tester, ordersState: const AsyncLoading());
+    final orderRepo = MockOrderRepository();
+    await pumpPendingOrders(
+      tester,
+      ordersState: const AsyncLoading(),
+      orderRepo: orderRepo,
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('shows error message', (tester) async {
+    final orderRepo = MockOrderRepository();
     await pumpPendingOrders(
       tester,
       ordersState: AsyncError('boom', StackTrace.current),
+      orderRepo: orderRepo,
     );
 
     expect(find.textContaining('Error:'), findsOneWidget);
   });
 
   testWidgets('shows no pending orders message', (tester) async {
-    await pumpPendingOrders(tester, ordersState: const AsyncData([]));
+    final orderRepo = MockOrderRepository();
+    await pumpPendingOrders(
+      tester,
+      ordersState: const AsyncData([]),
+      orderRepo: orderRepo,
+    );
 
     expect(find.text('No pending orders'), findsOneWidget);
   });
 
   testWidgets('renders pending orders list', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
 
-    await pumpPendingOrders(tester, ordersState: AsyncData([order]));
+    await pumpPendingOrders(
+      tester,
+      ordersState: AsyncData([order]),
+      orderRepo: orderRepo,
+    );
 
     expect(find.text(order.getData()), findsOneWidget);
   });
 
   testWidgets('FAB opens order save dialog', (tester) async {
-    await pumpPendingOrders(tester, ordersState: const AsyncData([]));
+    final orderRepo = MockOrderRepository();
+    await pumpPendingOrders(
+      tester,
+      ordersState: const AsyncData([]),
+      orderRepo: orderRepo,
+    );
 
     await tester.tap(find.byIcon(Icons.add));
     await tester.pumpAndSettle();
@@ -99,26 +128,34 @@ void main() {
   testWidgets('complete icon completes order and shows snackbar', (
     tester,
   ) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
-    final fakeVm = FakeOrdersViewModel();
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async => {});
 
     await pumpPendingOrders(
       tester,
       ordersState: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.check));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.completedOrder, order);
+    verify(() => orderRepo.saveOrder(any(), isSplit: false)).called(1);
     expect(find.text('Order Completed Successfully...'), findsOneWidget);
   });
 
   testWidgets('edit icon opens order save dialog', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
 
-    await pumpPendingOrders(tester, ordersState: AsyncData([order]));
+    await pumpPendingOrders(
+      tester,
+      ordersState: AsyncData([order]),
+      orderRepo: orderRepo,
+    );
 
     await tester.tap(find.byIcon(Icons.edit));
     await tester.pumpAndSettle();
@@ -127,31 +164,37 @@ void main() {
   });
 
   testWidgets('cancel icon cancels order and shows snackbar', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
-    final fakeVm = FakeOrdersViewModel();
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async => {});
 
     await pumpPendingOrders(
       tester,
       ordersState: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.cancel));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.canceledOrder, order);
+    verify(() => orderRepo.saveOrder(any(), isSplit: false)).called(1);
     expect(find.text('Order Canceled Successfully...'), findsOneWidget);
   });
 
   testWidgets('saving order saves order and shows snackbar', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
 
-    final fakeVM = FakeOrdersViewModel();
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async => {});
 
     await pumpPendingOrders(
       tester,
       ordersState: AsyncData([order]),
-      fakeVm: fakeVM,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.edit));
@@ -160,6 +203,7 @@ void main() {
     expect(find.byType(OrderSaveDialog), findsOneWidget);
     await tester.tap(find.text("Save Order"));
     await tester.pumpAndSettle();
+    verify(() => orderRepo.saveOrder(any(), isSplit: false)).called(1);
     expect(find.text("Order Saved Successfully...!"), findsOneWidget);
   });
 }

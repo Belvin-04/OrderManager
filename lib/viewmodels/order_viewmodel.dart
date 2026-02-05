@@ -5,7 +5,7 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 
 class OrdersViewModel extends AsyncNotifier<void> {
-  Future<void> saveOrder(Order order, {bool isSplitOrder = false}) async {
+  Future<void> saveOrder(Order order, {bool isSplit = false}) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
 
     final item = order.item;
@@ -14,7 +14,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
 
     final updated = order.copyWith(amount: amount);
 
-    await ordersRepo.saveOrder(updated, isSplit: isSplitOrder);
+    await ordersRepo.saveOrder(updated, isSplit: isSplit);
   }
 
   Future<void> completeOrder(Order order) async =>
@@ -102,12 +102,12 @@ class OrdersViewModel extends AsyncNotifier<void> {
     await for (final List<Order> orderList in orderStream) {
       for (final Order order in orderList) {
         if (order.quantity == 1) {
-          await saveOrder(order.copyWith(id: ""), isSplitOrder: true);
+          await saveOrder(order.copyWith(id: ""), isSplit: true);
         } else if (order.quantity > 1) {
           try {
             for (int i = 0; i < order.quantity; i++) {
               Order newOrder = order.copyWith(quantity: 1, id: '');
-              await saveOrder(newOrder, isSplitOrder: true);
+              await saveOrder(newOrder, isSplit: true);
             }
           } catch (e) {
             return false;
@@ -124,7 +124,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
       table: order.table.copyWith(splitNo: splitNo),
     );
     try {
-      await saveOrder(newOrder, isSplitOrder: true);
+      await saveOrder(newOrder, isSplit: true);
     } catch (e) {
       return false;
     }
@@ -142,7 +142,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
         if (order.table.splitNo.toString() == splitNo) {
           await saveOrder(
             order.copyWith(table: order.table.copyWith(splitNo: 0)),
-            isSplitOrder: true,
+            isSplit: true,
           );
         }
       } catch (e) {

@@ -10,8 +10,6 @@ import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/tables/tables_warning_dialog.dart';
 
-import '../fake_viewmodel/fake_orders_viewmodel.dart';
-
 class MockTableRepository extends Mock implements TableRepository {}
 
 class MockOrderRepository extends Mock implements OrderRepository {}
@@ -24,15 +22,17 @@ Future<void> pumpTablesScreen(
   required MockTableRepository tableRepo,
   required MockOrderRepository orderRepo,
 }) async {
+  when(
+    () =>
+        orderRepo.getTotalAmountForTable(any(), splitNo: any(named: 'splitNo')),
+  ).thenAnswer((_) => const Stream<int>.empty());
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         tablesProvider.overrideWithValue(tablesState),
         tableRepositoryProvider.overrideWithValue(tableRepo),
         orderRepositoryProvider.overrideWithValue(orderRepo),
-        ordersViewModelProvider.overrideWith(
-          () => FakeOrdersViewModel(stream: const Stream.empty()),
-        ),
       ],
       child: MaterialApp(home: HomePage()),
     ),

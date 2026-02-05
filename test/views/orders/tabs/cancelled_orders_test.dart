@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/orders/tabs/cancelled_orders.dart';
 
-import '../../fake_viewmodel/fake_orders_viewmodel.dart';
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeOrder extends Fake implements Order {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -39,13 +43,13 @@ Order baseOrder({
 Future<void> pumpCancelledOrders(
   WidgetTester tester, {
   required AsyncValue<List<Order>> ordersState,
-  FakeOrdersViewModel? fakeVm,
+  required MockOrderRepository orderRepo,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         cancelledOrdersProvider('1').overrideWithValue(ordersState),
-        if (fakeVm != null) ordersViewModelProvider.overrideWith(() => fakeVm),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
       ],
       child: MaterialApp(
         home: CancelledOrders(table: Table1(id: 't1', tableNo: 1)),
@@ -55,8 +59,16 @@ Future<void> pumpCancelledOrders(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeOrder());
+  });
   testWidgets('shows loading indicator while loading', (tester) async {
-    await pumpCancelledOrders(tester, ordersState: const AsyncLoading());
+    final orderRepo = MockOrderRepository();
+    await pumpCancelledOrders(
+      tester,
+      ordersState: const AsyncLoading(),
+      orderRepo: orderRepo,
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
@@ -84,15 +96,25 @@ void main() {
   });
 
   testWidgets('shows empty message when no cancelled orders', (tester) async {
-    await pumpCancelledOrders(tester, ordersState: const AsyncData([]));
+    final orderRepo = MockOrderRepository();
+    await pumpCancelledOrders(
+      tester,
+      ordersState: const AsyncData([]),
+      orderRepo: orderRepo,
+    );
 
     expect(find.text('No cancelled orders'), findsOneWidget);
   });
 
   testWidgets('renders cancelled orders list', (tester) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder(status: 'canceled');
 
-    await pumpCancelledOrders(tester, ordersState: AsyncData([order]));
+    await pumpCancelledOrders(
+      tester,
+      ordersState: AsyncData([order]),
+      orderRepo: orderRepo,
+    );
 
     expect(find.textContaining('Item Name'), findsOneWidget);
     expect(find.byIcon(Icons.restore), findsOneWidget);
@@ -101,19 +123,23 @@ void main() {
   testWidgets('restore button calls restoreOrder and shows snackbar', (
     tester,
   ) async {
+    final orderRepo = MockOrderRepository();
     final order = baseOrder(status: 'canceled');
-    final fakeVm = FakeOrdersViewModel();
+
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenAnswer((_) async {});
 
     await pumpCancelledOrders(
       tester,
       ordersState: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.restore));
     await tester.pumpAndSettle();
 
-    expect(fakeVm.restoredOrder, order);
+    verify(() => orderRepo.saveOrder(any(), isSplit: false)).called(1);
     expect(find.text('Order Restored Successfully...'), findsOneWidget);
   });
 }

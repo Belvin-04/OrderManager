@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/bills/bills_split.dart';
 import 'package:order_manager/views/bills/split_orders_dialog.dart';
 import 'package:order_manager/views/bills/split_tables_dialog.dart';
 
-import '../fake_viewmodel/fake_orders_viewmodel.dart';
+class MockOrderRepository extends Mock implements OrderRepository {}
+
+class FakeOrder extends Fake implements Order {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -41,13 +45,18 @@ Order baseOrder({
 Future<void> pumpBillsSplitScreen(
   WidgetTester tester, {
   required AsyncValue<List<Order>> splitOrders,
-  required FakeOrdersViewModel fakeVm,
+  required MockOrderRepository orderRepo,
 }) async {
+  when(
+    () =>
+        orderRepo.getTotalAmountForTable(any(), splitNo: any(named: 'splitNo')),
+  ).thenAnswer((_) => const Stream.empty());
+
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         splitOrdersProvider('1').overrideWithValue(splitOrders),
-        ordersViewModelProvider.overrideWith(() => fakeVm),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
       ],
       child: MaterialApp(
         home: Builder(
@@ -77,16 +86,25 @@ Future<void> pumpBillsSplitScreen(
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeOrder());
+  });
   testWidgets('BillsSplit shows loader while split orders are loading', (
     tester,
   ) async {
+    final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           splitOrdersProvider('1').overrideWithValue(const AsyncLoading()),
-          ordersViewModelProvider.overrideWith(
-            () => FakeOrdersViewModel(stream: const Stream.empty()),
-          ),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
         child: MaterialApp(
           home: BillsSplit(table: Table1(id: 't1', tableNo: 1), totalSplit: 2),
@@ -100,26 +118,26 @@ void main() {
   });
 
   testWidgets('shows split orders', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
 
     await pumpBillsSplitScreen(
       tester,
       splitOrders: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     expect(find.textContaining(order.item.name), findsOneWidget);
   });
 
   testWidgets('tapping order opens split dialog', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
 
     await pumpBillsSplitScreen(
       tester,
       splitOrders: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byType(ListTile).first);
@@ -129,13 +147,17 @@ void main() {
   });
 
   testWidgets('selecting split assigns order', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
     final order = baseOrder();
+
+    when(
+      () => orderRepo.saveOrder(order, isSplit: true),
+    ).thenAnswer((_) async => {});
 
     await pumpBillsSplitScreen(
       tester,
       splitOrders: AsyncData([order]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byType(ListTile).first);
@@ -144,41 +166,69 @@ void main() {
     await tester.tap(find.text('Split No.: 1'));
     await tester.pump();
 
-    expect(fakeVm.splitChanged, contains(order));
+    final captured =
+        verify(
+              () => orderRepo.saveOrder(captureAny(), isSplit: true),
+            ).captured.first
+            as Order;
+    expect(captured.table.splitNo, 1);
   });
 
   testWidgets('clear split calls resetSplitNo', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
+
+    when(() => orderRepo.getSplitOrders('1')).thenAnswer(
+      (_) => Stream.value([baseOrder(splitNo: 1), baseOrder(splitNo: 2)]),
+    );
+
+    when(
+      () => orderRepo.saveOrder(any(), isSplit: true),
+    ).thenAnswer((_) async => {});
 
     await pumpBillsSplitScreen(
       tester,
       splitOrders: const AsyncData([]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.byIcon(Icons.cancel_outlined).first);
     await tester.pump();
 
-    expect(fakeVm.clearedSplits, contains('1'));
+    verify(() => orderRepo.saveOrder(any(), isSplit: true)).called(1);
   });
 
   testWidgets('back removes split orders', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.removeSplitOrdersForTable('1'),
+    ).thenAnswer((_) async => true);
 
     await pumpBillsSplitScreen(
       tester,
       splitOrders: const AsyncData([]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    expect(fakeVm.removeSplitCalled, true);
+    verify(() => orderRepo.removeSplitOrdersForTable('1')).called(1);
   });
 
   testWidgets('back removes split orders and pops screen', (tester) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.removeSplitOrdersForTable('1'),
+    ).thenAnswer((_) async => true);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -186,7 +236,7 @@ void main() {
           splitOrdersProvider(
             '1',
           ).overrideWithValue(const AsyncData(<Order>[])),
-          ordersViewModelProvider.overrideWith(() => fakeVm),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
         child: MaterialApp(
           home: BillsSplit(table: Table1(id: 't1', tableNo: 1), totalSplit: 2),
@@ -199,22 +249,30 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pump();
 
-    expect(fakeVm.removedSplitTableOrders, '1');
+    verify(() => orderRepo.removeSplitOrdersForTable('1')).called(1);
   });
 
   testWidgets('shows error when split orders cannot be removed', (
     tester,
   ) async {
-    final fakeVm = FakeOrdersViewModel(
-      splitRemovedresult: false,
-      stream: const Stream.empty(),
-    );
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.removeSplitOrdersForTable(any()),
+    ).thenAnswer((_) async => false);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           splitOrdersProvider('1').overrideWithValue(const AsyncData([])),
-          ordersViewModelProvider.overrideWith(() => fakeVm),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
         child: MaterialApp(
           home: Navigator(
@@ -241,16 +299,20 @@ void main() {
     await tester.pump();
 
     expect(find.text('Problem removing split orders'), findsOneWidget);
+    verify(() => orderRepo.removeSplitOrdersForTable('1')).called(1);
   });
 
   testWidgets("tapping split table shows snackbar when no order", (
     WidgetTester tester,
   ) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
+    final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.getOrdersForSplitTable('1', '1'),
+    ).thenAnswer((_) async => []);
     await pumpBillsSplitScreen(
       tester,
       splitOrders: AsyncData([baseOrder(id: '1')]),
-      fakeVm: fakeVm,
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.text("Split No. : 1"));
@@ -261,35 +323,54 @@ void main() {
   testWidgets("tapping split table shows split orders dialog", (
     WidgetTester tester,
   ) async {
-    final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
-    fakeVm.ordersForSplitTable = [baseOrder(id: "1", splitNo: 1)];
+    final orderRepo = MockOrderRepository();
+    when(
+      () => orderRepo.getOrdersForSplitTable('1', "1"),
+    ).thenAnswer((_) async => [baseOrder(id: "1", splitNo: 1)]);
+
     await pumpBillsSplitScreen(
       tester,
-      splitOrders: AsyncData([baseOrder(id: '1')]),
-      fakeVm: fakeVm,
+      splitOrders: const AsyncData([]),
+      orderRepo: orderRepo,
     );
 
     await tester.tap(find.text("Split No. : 1"));
     await tester.pumpAndSettle();
+
+    verify(() => orderRepo.getOrdersForSplitTable("1", "1")).called(1);
     expect(find.byType(SplitOrdersDialog), findsOneWidget);
   });
 
   testWidgets(
     """tapping a split order inside the split order dialog calls the change split order method""",
     (WidgetTester tester) async {
-      final fakeVm = FakeOrdersViewModel(stream: const Stream.empty());
-      fakeVm.ordersForSplitTable = [baseOrder(id: "1", splitNo: 1)];
+      final orderRepo = MockOrderRepository();
+
+      when(
+        () => orderRepo.getOrdersForSplitTable(any(), any()),
+      ).thenAnswer((_) async => [baseOrder(id: "1", splitNo: 1)]);
+
+      when(
+        () => orderRepo.saveOrder(any(), isSplit: true),
+      ).thenAnswer((_) async => {});
+
       await pumpBillsSplitScreen(
         tester,
         splitOrders: const AsyncData([]),
-        fakeVm: fakeVm,
+        orderRepo: orderRepo,
       );
 
       await tester.tap(find.text("Split No. : 1"));
       await tester.pumpAndSettle();
       await tester.tap(find.textContaining("Burger"));
-      expect(fakeVm.splitChanged[0].item.name, "Burger");
-      expect(fakeVm.splitChanged[0].table.splitNo, 0);
+
+      final captured =
+          verify(
+                () => orderRepo.saveOrder(captureAny(), isSplit: true),
+              ).captured.first
+              as Order;
+      expect(captured.item.name, "Burger");
+      expect(captured.table.splitNo, 0);
     },
   );
 }
