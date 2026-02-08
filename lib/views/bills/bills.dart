@@ -76,23 +76,19 @@ class Bills extends ConsumerWidget {
   void showSplitBillDialog(BuildContext context, WidgetRef ref, Table1 table) {
     showDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (_) {
         return SplitBillDialog(
           table: table,
-          onSplit: (int value) async {
-            final NavigatorState navigator = Navigator.of(context);
-            bool isSplit = await ref
+          onSplit: (int value) {
+            ref
                 .read(ordersViewModelProvider.notifier)
                 .createSplitOrders(table.tableNo.toString());
-            navigator.pop();
-            if (isSplit) {
-              await navigator.push(
-                MaterialPageRoute(
-                  builder: (context) =>
-                      BillsSplit(table: table, totalSplit: value),
-                ),
-              );
-            }
+            Navigator.pop(context);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => BillsSplit(table: table, totalSplit: value),
+              ),
+            );
           },
         );
       },

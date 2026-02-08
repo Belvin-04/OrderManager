@@ -193,5 +193,5 @@ void main() {
     verify(() => orderRepo.saveOrder(any(), isSplit: true)).called(1);
     expect(find.byType(SplitBillDialog), findsNothing);
     expect(find.byType(BillsSplit), findsOneWidget);
-  }, skip: true);
+  });
 }
