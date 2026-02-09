@@ -76,17 +76,14 @@ void main() {
   testWidgets('shows error message when cancelledOrdersProvider errors', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          cancelledOrdersProvider('1').overrideWithValue(
-            AsyncError(Exception('Something went wrong'), StackTrace.empty),
-          ),
-        ],
-        child: MaterialApp(
-          home: CancelledOrders(table: Table1(id: 't1', tableNo: 1)),
-        ),
+    final orderRepo = MockOrderRepository();
+    await pumpCancelledOrders(
+      tester,
+      ordersState: AsyncError(
+        Exception('Something went wrong'),
+        StackTrace.empty,
       ),
+      orderRepo: orderRepo,
     );
 
     await tester.pumpAndSettle();
