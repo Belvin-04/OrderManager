@@ -438,4 +438,84 @@ void main() {
       expect(orders.any((o) => o.table.splitNo == 2), false);
     },
   );
+
+  test('repeatAllOrders returns false when repeatOrder throws', () async {
+    final repo = MockOrderRepository();
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    when(
+      () => repo.getOrdersForTable(any()),
+    ).thenAnswer((_) async => [baseOrder()]);
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenThrow(Exception('save failed'));
+
+    final result = await vm.repeatAllOrders(Table1(tableNo: 1, id: 't1'));
+
+    expect(result, false);
+  });
+
+  test('restoreAllOrders returns false when restoreOrder throws', () async {
+    final repo = MockOrderRepository();
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    when(
+      () => repo.getOrdersForTable(any()),
+    ).thenAnswer((_) async => [baseOrder(status: "canceled")]);
+
+    when(
+      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+    ).thenThrow(Exception());
+
+    final result = await vm.restoreAllOrders(Table1(tableNo: 1, id: 't1'));
+
+    expect(result, false);
+  });
+
+  test('createSplitOrders returns false when saveOrder throws', () async {
+    final repo = MockOrderRepository();
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    when(
+      () => repo.getBillOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([baseOrder(quantity: 2)]));
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
+
+    final result = await vm.createSplitOrders("1");
+
+    expect(result, false);
+  });
+
+  test('changeOrderSplitNo returns false when saveOrder throws', () async {
+    final repo = MockOrderRepository();
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
+
+    final result = await vm.changeOrderSplitNo(baseOrder(), 2);
+
+    expect(result, false);
+  });
+
+  test('resetSplitNo returns false when saveOrder throws', () async {
+    final repo = MockOrderRepository();
+    final container = createContainer(repo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    when(
+      () => repo.getSplitOrders(any()),
+    ).thenAnswer((_) => Stream.value([baseOrder()]));
+
+    when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
+
+    final result = await vm.resetSplitNo("1", "0");
+
+    expect(result, false);
+  });
 }
