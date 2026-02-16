@@ -5,6 +5,7 @@ import 'package:order_manager/views/tables/table_popup_menu.dart';
 class TablePopupOverlay {
   static OverlayEntry? _entry;
   static Table1? _openForTable;
+  static bool isOpen = false;
 
   static void show({
     required BuildContext context,
@@ -28,6 +29,7 @@ class TablePopupOverlay {
     Table1 table,
     TablePopupMenu child,
   ) {
+    isOpen = true;
     _openForTable = table;
     _entry = OverlayEntry(
       builder: (_) =>
@@ -37,6 +39,7 @@ class TablePopupOverlay {
   }
 
   static void hide() {
+    isOpen = false;
     _openForTable = null;
     _entry?.remove();
     _entry = null;

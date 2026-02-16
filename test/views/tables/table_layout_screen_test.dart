@@ -6,6 +6,7 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
@@ -52,6 +53,7 @@ Future<void> pumpLayoutWidget(
 }
 
 void main() {
+  setUp(TablePopupOverlay.hide);
   setUpAll(() {
     registerFallbackValue(Offset.zero);
   });
@@ -328,5 +330,31 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TablePopupMenu), findsOneWidget);
+  });
+
+  testWidgets('popup menu closes on pressing back button', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    final tables = [
+      Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
+    ];
+
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData(tables),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsNothing);
   });
 }
