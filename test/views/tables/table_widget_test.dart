@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
@@ -18,6 +19,7 @@ Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
 }
 
 void main() {
+  setUp(TablePopupOverlay.hide);
   testWidgets('tapping table opens popup menu', (tester) async {
     final table = Table1(id: 't1', tableNo: 1);
 

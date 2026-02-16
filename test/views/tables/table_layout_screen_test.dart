@@ -294,4 +294,39 @@ void main() {
 
     expect(popupRect.overlaps(otherTableRect), isTrue);
   });
+
+  testWidgets('popup menu open and close behavior', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    final tables = [
+      Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
+      Table1(id: 't2', tableNo: 2, position: const Offset(150, 200)),
+    ];
+
+    await pumpTableLayoutScreen(
+      tester,
+      tables: AsyncData(tables),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    final tableIcons = find.byIcon(Icons.table_restaurant);
+    expect(tableIcons, findsNWidgets(2));
+
+    await tester.tap(tableIcons.at(0));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+
+    await tester.tap(tableIcons.at(1));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+
+    await tester.tap(tableIcons.at(0));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+  });
 }

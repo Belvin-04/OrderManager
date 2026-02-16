@@ -14,7 +14,6 @@ class TableWidget extends ConsumerStatefulWidget {
 }
 
 class TableWidgetState extends ConsumerState<TableWidget> {
-  bool showMenu = false;
   late final Table1 table;
   @override
   void initState() {
@@ -28,32 +27,26 @@ class TableWidgetState extends ConsumerState<TableWidget> {
       onTap: () {
         final box = context.findRenderObject() as RenderBox;
         final pos = box.localToGlobal(Offset.zero);
-        showMenu = !showMenu;
+        TablePopupOverlay.show(
+          context: context,
+          position: pos,
+          child: TablePopupMenu(
+            table: table,
+            onAction: (action) async {
+              TablePopupOverlay.hide();
+              switch (action) {
+                case TablePopupAction.takeOrder:
+                  takeOrder(context, table);
 
-        if (showMenu) {
-          TablePopupOverlay.show(
-            context: context,
-            position: pos,
-            child: TablePopupMenu(
-              table: table,
-              onAction: (action) async {
-                TablePopupOverlay.hide();
-                switch (action) {
-                  case TablePopupAction.takeOrder:
-                    takeOrder(context, table);
+                case TablePopupAction.swap:
+                  await swapTableOrder(context, ref, table);
 
-                  case TablePopupAction.swap:
-                    await swapTableOrder(context, ref, table);
-
-                  case TablePopupAction.clear:
-                    await clearTable(context, ref, table);
-                }
-              },
-            ),
-          );
-        } else {
-          TablePopupOverlay.hide();
-        }
+                case TablePopupAction.clear:
+                  await clearTable(context, ref, table);
+              }
+            },
+          ),
+        );
       },
       child: LongPressDraggable<Table1>(
         data: table,
