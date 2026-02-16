@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
+import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 
 class TableWidget extends ConsumerStatefulWidget {
@@ -33,7 +34,22 @@ class TableWidgetState extends ConsumerState<TableWidget> {
           TablePopupOverlay.show(
             context: context,
             position: pos,
-            child: TablePopupMenu(table: table),
+            child: TablePopupMenu(
+              table: table,
+              onAction: (action) async {
+                TablePopupOverlay.hide();
+                switch (action) {
+                  case TablePopupAction.takeOrder:
+                    takeOrder(context, table);
+
+                  case TablePopupAction.swap:
+                    await swapTableOrder(context, ref, table);
+
+                  case TablePopupAction.clear:
+                    await clearTable(context, ref, table);
+                }
+              },
+            ),
           );
         } else {
           TablePopupOverlay.hide();

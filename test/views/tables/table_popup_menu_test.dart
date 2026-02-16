@@ -7,7 +7,6 @@ import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/utils/tap_functions.dart';
-import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 
@@ -19,14 +18,14 @@ class FakeTable1 extends Fake implements Table1 {}
 
 Future<void> pumpTablePopupMenu(
   WidgetTester tester, {
-  required MockTableRepository tableRepo,
+  required void Function(TablePopupAction action) onAction,
 }) async {
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: [tableRepositoryProvider.overrideWithValue(tableRepo)],
-      child: MaterialApp(
-        home: Scaffold(
-          body: TablePopupMenu(table: Table1(id: 't1', tableNo: 1)),
+    MaterialApp(
+      home: Scaffold(
+        body: TablePopupMenu(
+          table: Table1(id: 't1', tableNo: 1),
+          onAction: onAction,
         ),
       ),
     ),
@@ -56,72 +55,82 @@ void main() {
     registerFallbackValue(FakeTable1());
   });
   testWidgets('popup menu contains necessary options', (tester) async {
-    final tableRepo = MockTableRepository();
-    await pumpTablePopupMenu(tester, tableRepo: tableRepo);
+    await pumpTablePopupMenu(tester, onAction: (_) {});
 
     expect(find.byTooltip('Take Order'), findsOneWidget);
     expect(find.byTooltip('Swap Table Order'), findsOneWidget);
     expect(find.byTooltip('Clear Table'), findsOneWidget);
   });
 
-  testWidgets('tapping on take order popup menu option opens orders page', (
-    tester,
-  ) async {
-    final tableRepo = MockTableRepository();
-    await pumpTablePopupMenu(tester, tableRepo: tableRepo);
+  testWidgets('tapping take order emits correct action', (tester) async {
+    TablePopupAction? receivedAction;
 
-    await tester.tap(find.byIcon(Icons.event_note_outlined));
-    await tester.pumpAndSettle();
+    await pumpTablePopupMenu(
+      tester,
+      onAction: (action) {
+        receivedAction = action;
+      },
+    );
 
-    expect(find.byType(Orders), findsOneWidget);
+    await tester.tap(find.byTooltip('Take Order'));
+    await tester.pump();
+
+    expect(receivedAction, TablePopupAction.takeOrder);
   });
 
-  testWidgets(
-    'tapping on swap order popup menu option calls the appropriate function',
-    (tester) async {
-      final tableRepo = MockTableRepository();
+  testWidgets('tapping swap emits correct action', (tester) async {
+    TablePopupAction? receivedAction;
 
-      bool swapCalled = false;
+    await pumpTablePopupMenu(
+      tester,
+      onAction: (action) {
+        receivedAction = action;
+      },
+    );
 
-      swapTableOrder = (_, __, ___) async {
-        swapCalled = true;
-      };
+    await tester.tap(find.byTooltip('Swap Table Order'));
+    await tester.pump();
 
-      await pumpTablePopupMenu(tester, tableRepo: tableRepo);
+    expect(receivedAction, TablePopupAction.swap);
+  });
 
-      await tester.tap(find.byTooltip('Swap Table Order'));
-      await tester.pump();
+  testWidgets('tapping clear emits correct action', (tester) async {
+    TablePopupAction? receivedAction;
 
-      expect(swapCalled, isTrue);
-    },
-  );
+    await pumpTablePopupMenu(
+      tester,
+      onAction: (action) {
+        receivedAction = action;
+      },
+    );
 
-  testWidgets(
-    'tapping on clear table popup menu option calls the appropriate function',
-    (tester) async {
-      bool clearCalled = false;
+    await tester.tap(find.byTooltip('Clear Table'));
+    await tester.pump();
 
-      clearTable = (_, __, ___) async {
-        clearCalled = true;
-      };
-
-      final tableRepo = MockTableRepository();
-
-      await pumpTablePopupMenu(tester, tableRepo: tableRepo);
-
-      await tester.tap(find.byTooltip('Clear Table'));
-      await tester.pump();
-
-      expect(clearCalled, isTrue);
-    },
-  );
+    expect(receivedAction, TablePopupAction.clear);
+  });
 
   testWidgets('tapping take order popup menu option closes the popup menu', (
     tester,
   ) async {
     final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
 
-    await pumpTablePopupMenu(tester, tableRepo: tableRepo);
+    when(
+      tableRepo.watchTables,
+    ).thenAnswer((_) => Stream.value([Table1(tableNo: 1, id: 't1')]));
+
+    await pumpTableLayoutScreen(
+      tester,
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+      tables: AsyncData([Table1(tableNo: 1, id: 't1')]),
+    );
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
 
     expect(find.byIcon(Icons.clear), findsOneWidget);
 
@@ -168,10 +177,10 @@ void main() {
     final orderRepo = MockOrderRepository();
 
     when(
-      () => orderRepo.hasAnyOrdersForTable('t1'),
+      () => orderRepo.hasAnyOrdersForTable('1'),
     ).thenAnswer((_) async => true);
     when(
-      () => orderRepo.hasPendingOrdersForTable('t1'),
+      () => orderRepo.hasPendingOrdersForTable('1'),
     ).thenAnswer((_) async => false);
 
     await pumpTableLayoutScreen(

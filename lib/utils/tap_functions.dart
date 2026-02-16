@@ -7,6 +7,8 @@ import 'package:order_manager/viewmodels/tables_viewmodel.dart';
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/ui_utils.dart';
 
+enum TablePopupAction { takeOrder, swap, clear }
+
 typedef ClearTableFn =
     Future<void> Function(BuildContext context, WidgetRef ref, Table1 table);
 

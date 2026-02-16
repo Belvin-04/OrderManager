@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/utils/tap_functions.dart';
+import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 
@@ -66,5 +68,77 @@ void main() {
     await pumpTableWidget(tester, table);
 
     expect(find.text('T9'), findsOneWidget);
+  });
+
+  testWidgets('selecting take order from popup navigates to Orders page', (
+    tester,
+  ) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await pumpTableWidget(tester, table);
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Take Order'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Orders), findsOneWidget);
+  });
+
+  testWidgets('selecting swap triggers swapTableOrder', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    bool swapCalled = false;
+
+    swapTableOrder = (_, __, ___) async {
+      swapCalled = true;
+    };
+
+    await pumpTableWidget(tester, table);
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Swap Table Order'));
+    await tester.pumpAndSettle();
+
+    expect(swapCalled, isTrue);
+  });
+
+  testWidgets('selecting clear triggers clearTable', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    bool clearCalled = false;
+
+    clearTable = (_, __, ___) async {
+      clearCalled = true;
+    };
+
+    await pumpTableWidget(tester, table);
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Clear Table'));
+    await tester.pumpAndSettle();
+
+    expect(clearCalled, isTrue);
+  });
+
+  testWidgets('popup closes after selecting an action', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await pumpTableWidget(tester, table);
+
+    await tester.tap(find.byIcon(Icons.table_restaurant));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Swap Table Order'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsNothing);
   });
 }

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/utils/tap_functions.dart';
 
-class TablePopupMenu extends ConsumerWidget {
+class TablePopupMenu extends StatelessWidget {
   final Table1 table;
-  const TablePopupMenu({super.key, required this.table});
+  final void Function(TablePopupAction action) onAction;
+  const TablePopupMenu({
+    super.key,
+    required this.table,
+    required this.onAction,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Material(
       elevation: 6,
       child: Container(
@@ -22,10 +25,7 @@ class TablePopupMenu extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
-              onTap: () {
-                TablePopupOverlay.hide();
-                takeOrder(context, table);
-              },
+              onTap: () => onAction(TablePopupAction.takeOrder),
               child: const Padding(
                 padding: EdgeInsets.all(6),
                 child: Tooltip(
@@ -35,10 +35,7 @@ class TablePopupMenu extends ConsumerWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                TablePopupOverlay.hide();
-                swapTableOrder(context, ref, table);
-              },
+              onTap: () => onAction(TablePopupAction.swap),
               child: const Padding(
                 padding: EdgeInsets.all(6),
                 child: Tooltip(
@@ -48,10 +45,7 @@ class TablePopupMenu extends ConsumerWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {
-                TablePopupOverlay.hide();
-                clearTable(context, ref, table);
-              },
+              onTap: () => onAction(TablePopupAction.clear),
               child: const Padding(
                 padding: EdgeInsets.all(6),
                 child: Tooltip(
