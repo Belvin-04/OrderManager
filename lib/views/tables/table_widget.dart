@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
+import 'package:order_manager/views/ui_utils.dart';
 
 class TableWidget extends ConsumerStatefulWidget {
   final Table1 table;
@@ -23,6 +25,9 @@ class TableWidgetState extends ConsumerState<TableWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final tableOrderStatusState = ref.watch(
+      tableOrderStatus(table.tableNo.toString()),
+    );
     return GestureDetector(
       onTap: () {
         final box = context.findRenderObject() as RenderBox;
@@ -48,17 +53,53 @@ class TableWidgetState extends ConsumerState<TableWidget> {
           ),
         );
       },
-      child: LongPressDraggable<Table1>(
-        data: table,
-        feedback: Material(
-          color: Colors.transparent,
-          child: TableIcon(
-            table: table,
-            color: Colors.blue.withValues(alpha: 0.5),
-          ),
-        ),
-        childWhenDragging: TableIcon(table: table, color: Colors.grey),
-        child: TableIcon(table: table, color: Colors.blue),
+      child: tableOrderStatusState.when(
+        loading: () {
+          return const SizedBox(
+            height: 110,
+            width: 130,
+            child: Center(
+              child: SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
+        error: (e, _) {
+          return const SizedBox(
+            height: 110,
+            width: 130,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red),
+                SizedBox(height: 4),
+                Text(
+                  "Error",
+                  style: TextStyle(fontSize: 12, color: Colors.red),
+                ),
+              ],
+            ),
+          );
+        },
+        data: (data) {
+          Color? color = getBackgroundColor(data);
+          color ??= Colors.blue;
+          return LongPressDraggable<Table1>(
+            data: table,
+            feedback: Material(
+              color: Colors.transparent,
+              child: TableIcon(
+                table: table,
+                color: color.withValues(alpha: 0.5),
+              ),
+            ),
+            childWhenDragging: TableIcon(table: table, color: Colors.grey),
+            child: TableIcon(table: table, color: color),
+          );
+        },
       ),
     );
   }

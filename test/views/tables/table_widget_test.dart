@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/utils/tap_functions.dart';
+import 'package:order_manager/viewmodels/tables_viewmodel.dart'
+    show TableOrderStatus;
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
+import 'package:order_manager/views/ui_utils.dart' show getBackgroundColor;
 
 Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
   await tester.pumpWidget(
@@ -142,5 +146,150 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TablePopupMenu), findsNothing);
+  });
+
+  testWidgets('shows correct color for no order', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => Stream.value(TableOrderStatus.empty)),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final icon = tester.widget<Icon>(find.byIcon(Icons.table_restaurant));
+
+    const expectedColor = Colors.blue;
+
+    expect(icon.color, expectedColor);
+  });
+
+  testWidgets('shows correct color for pending status', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => Stream.value(TableOrderStatus.pending)),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final icon = tester.widget<Icon>(find.byIcon(Icons.table_restaurant));
+
+    final expectedColor = getBackgroundColor(TableOrderStatus.pending);
+
+    expect(icon.color, expectedColor);
+  });
+
+  testWidgets('shows correct color for completed status', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => Stream.value(TableOrderStatus.completed)),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final icon = tester.widget<Icon>(find.byIcon(Icons.table_restaurant));
+
+    final expectedColor = getBackgroundColor(TableOrderStatus.completed);
+
+    expect(icon.color, expectedColor);
+  });
+
+  testWidgets('shows correct color for canceled status', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => Stream.value(TableOrderStatus.canceled)),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final icon = tester.widget<Icon>(find.byIcon(Icons.table_restaurant));
+
+    final expectedColor = getBackgroundColor(TableOrderStatus.canceled);
+
+    expect(icon.color, expectedColor);
+  });
+
+  testWidgets('shows loading indicator while status is loading', (
+    tester,
+  ) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => const Stream.empty()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('shows error UI when provider throws error', (tester) async {
+    final table = Table1(id: 't1', tableNo: 1);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tableOrderStatus(
+            table.tableNo.toString(),
+          ).overrideWith((ref) => Stream.error(Exception('failed'))),
+        ],
+        child: MaterialApp(
+          home: Scaffold(body: TableWidget(table: table)),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.error_outline), findsOneWidget);
+    expect(find.text('Error'), findsOneWidget);
   });
 }
