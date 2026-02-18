@@ -424,4 +424,36 @@ void main() {
     expect(result.map((e) => e.id), {'1', '2'});
     verify(() => remote.getSplitOrdersByTable(1)).called(1);
   });
+
+  test('watchOrdersForTable returns empty list when raw is null', () async {
+    when(() => remote.watchOrders()).thenAnswer((_) => Stream.value(null));
+
+    final result = await repo.watchOrdersForTable('1').first;
+
+    expect(result, isEmpty);
+  });
+
+  test('filters orders by tableKey', () async {
+    final rawData = {
+      '1': fakeOrderMap(),
+      '2': fakeOrderMap(id: "2", tableNo: 2),
+    };
+
+    when(() => remote.watchOrders()).thenAnswer((_) => Stream.value(rawData));
+
+    final result = await repo.watchOrdersForTable('1').first;
+
+    expect(result.length, 1);
+    expect(result.first.table.tableNo, 1);
+  });
+
+  test('watchOrderStatus returns multiple matching orders', () async {
+    final rawData = {'1': fakeOrderMap(), '2': fakeOrderMap(id: "2")};
+
+    when(() => remote.watchOrders()).thenAnswer((_) => Stream.value(rawData));
+
+    final result = await repo.watchOrdersForTable('1').first;
+
+    expect(result.length, 2);
+  });
 }

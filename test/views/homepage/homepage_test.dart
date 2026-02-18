@@ -24,6 +24,32 @@ class MockOrderRepository extends Mock implements OrderRepository {}
 
 class FakeTable1 extends Fake implements Table1 {}
 
+final testTable = Table1(id: 't', tableNo: 1);
+
+Order baseOrder({
+  String id = '',
+  int quantity = 1,
+  String status = 'pending',
+  int amount = 100,
+  int splitNo = 0,
+  Table1? table,
+  Type1? type,
+  Item? item,
+}) {
+  return Order(
+    id: id,
+    quantity: quantity,
+    item: item ?? Item(id: 'i1', name: 'Burger', price: 100),
+    type: type ?? Type1(id: 't1', type: 'None', price: 0),
+    table:
+        table?.copyWith(splitNo: splitNo) ??
+        testTable.copyWith(splitNo: splitNo),
+    status: status,
+    note: '',
+    amount: amount,
+  );
+}
+
 Future<void> pumpHomePageScreen(
   WidgetTester tester, {
   required AsyncValue<List<Table1>> tablesState,
@@ -108,6 +134,10 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([
@@ -117,6 +147,8 @@ void main() {
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     final tiles = tester.widgetList<ListTile>(find.byType(ListTile)).toList();
 
@@ -135,12 +167,18 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.value(0));
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.event_note_outlined));
     await tester.pumpAndSettle();
@@ -173,12 +211,18 @@ void main() {
         () => orderRepo.deleteOrdersForTable(any()),
       ).thenAnswer((_) async {});
 
+      when(
+        () => orderRepo.watchOrdersForTable(any()),
+      ).thenAnswer((_) => Stream.value([]));
+
       await pumpHomePageScreen(
         tester,
         tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
         tableRepo: tableRepo,
         orderRepo: orderRepo,
       );
+
+      await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.clear));
       await tester.pumpAndSettle();
@@ -210,12 +254,18 @@ void main() {
       () => orderRepo.hasAnyOrdersForTable(any()),
     ).thenAnswer((_) async => false);
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.clear));
     await tester.pumpAndSettle();
@@ -244,12 +294,18 @@ void main() {
       () => orderRepo.hasPendingOrdersForTable(any()),
     ).thenAnswer((_) async => true);
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.clear));
     await tester.pumpAndSettle();
@@ -295,12 +351,18 @@ void main() {
 
     when(() => orderRepo.moveOrders(any(), any())).thenAnswer((_) async {});
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.swap_vert));
     await tester.pumpAndSettle();
@@ -348,12 +410,18 @@ void main() {
       ],
     );
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.swap_vert));
     await tester.pumpAndSettle();
@@ -380,12 +448,18 @@ void main() {
     ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {});
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.swap_vert));
     await tester.pumpAndSettle();
@@ -412,12 +486,18 @@ void main() {
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
     when(() => orderRepo.getOrdersForTable(any())).thenAnswer((_) async => []);
 
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
     await pumpHomePageScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
       orderRepo: orderRepo,
     );
+
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.swap_vert));
     await tester.pumpAndSettle();
@@ -503,5 +583,141 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Drawer), findsNothing);
+  });
+
+  testWidgets("table list background in orange color for pending table", (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([baseOrder()]));
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: AsyncData([
+        Table1(id: 't2', tableNo: 2),
+        Table1(id: 't1', tableNo: 1),
+      ]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.pumpAndSettle();
+
+    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
+
+    expect(cards[0].color, Colors.orange[900]);
+  });
+
+  testWidgets("table list background in green color for completed table", (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([baseOrder(status: "completed")]));
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: AsyncData([
+        Table1(id: 't2', tableNo: 2),
+        Table1(id: 't1', tableNo: 1),
+      ]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.pumpAndSettle();
+
+    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
+
+    expect(cards[0].color, Colors.green[900]);
+  });
+
+  testWidgets("table list background in red color for canceled table", (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([baseOrder(status: "canceled")]));
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: AsyncData([
+        Table1(id: 't2', tableNo: 2),
+        Table1(id: 't1', tableNo: 1),
+      ]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.pumpAndSettle();
+
+    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
+
+    expect(cards[0].color, Colors.red[900]);
+  });
+
+  testWidgets("table list background has no color for empty table", (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: AsyncData([
+        Table1(id: 't2', tableNo: 2),
+        Table1(id: 't1', tableNo: 1),
+      ]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.pumpAndSettle();
+
+    final cards = tester.widgetList<Card>(find.byType(Card)).toList();
+
+    expect(cards[0].color, isNull);
   });
 }

@@ -8,10 +8,13 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
+import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/views/bills/bills.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 
 class MockOrderRepository extends Mock implements OrderRepository {}
+
+class MockTableRepository extends Mock implements TableRepository {}
 
 class FakeOrder extends Fake implements Order {}
 
@@ -45,15 +48,22 @@ Future<void> pumpOrdersScreen(
   required MockOrderRepository orderRepo,
 }) async {
   final table = Table1(id: 't1', tableNo: 1);
+  final MockTableRepository mockTableRepo = MockTableRepository();
+  when(
+    () => orderRepo.watchOrdersForTable(any()),
+  ).thenAnswer((_) => Stream.value([]));
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        tableRepositoryProvider.overrideWithValue(mockTableRepo),
         orderRepositoryProvider.overrideWithValue(orderRepo),
         tablesProvider.overrideWithValue(AsyncData([table])),
       ],
       child: MaterialApp(home: HomePage()),
     ),
   );
+
+  await tester.pumpAndSettle();
 
   await tester.tap(find.byIcon(Icons.event_note_outlined));
 

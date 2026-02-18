@@ -6,6 +6,7 @@ import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
+import 'package:order_manager/views/ui_utils.dart';
 
 class HomePage extends ConsumerWidget {
   final _scaffoldStateKey = GlobalKey<ScaffoldState>();
@@ -49,49 +50,67 @@ class HomePage extends ConsumerWidget {
             itemCount: sortedTables.length,
             itemBuilder: (BuildContext context, int index) {
               final Table1 table = sortedTables[index];
-              return Card(
-                child: ListTile(
-                  title: Text("Table No. : ${table.tableNo}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TotalAmount(table: table),
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Take Order",
-                          child: Icon(
-                            Icons.event_note_outlined,
-                            color: Colors.green,
-                          ),
-                        ),
-                        onTap: () {
-                          takeOrder(context, table);
-                        },
-                      ),
-                      Container(margin: const EdgeInsets.only(right: 10.0)),
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Swap Table Order",
-                          child: Icon(Icons.swap_vert, color: Colors.yellow),
-                        ),
-                        onTap: () async {
-                          await swapTableOrder(context, ref, table);
-                        },
-                      ),
+              final tableOrderStatusState = ref.watch(
+                tableOrderStatus(table.tableNo.toString()),
+              );
 
-                      Container(margin: const EdgeInsets.only(right: 10.0)),
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Clear Table",
-                          child: Icon(Icons.clear, color: Colors.blue),
-                        ),
-                        onTap: () async {
-                          await clearTable(context, ref, table);
-                        },
+              return tableOrderStatusState.when(
+                loading: () =>
+                    const Card(child: ListTile(title: Text("Loading..."))),
+                error: (e, _) =>
+                    const Card(child: ListTile(title: Text("Error"))),
+
+                data: (data) {
+                  final bgColor = getBackgroundColor(data);
+                  return Card(
+                    color: bgColor,
+                    child: ListTile(
+                      title: Text("Table No. : ${table.tableNo}"),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TotalAmount(table: table),
+                          GestureDetector(
+                            child: const Tooltip(
+                              message: "Take Order",
+                              child: Icon(
+                                Icons.event_note_outlined,
+                                color: Colors.green,
+                              ),
+                            ),
+                            onTap: () {
+                              takeOrder(context, table);
+                            },
+                          ),
+                          Container(margin: const EdgeInsets.only(right: 10.0)),
+                          GestureDetector(
+                            child: const Tooltip(
+                              message: "Swap Table Order",
+                              child: Icon(
+                                Icons.swap_vert,
+                                color: Colors.yellow,
+                              ),
+                            ),
+                            onTap: () async {
+                              await swapTableOrder(context, ref, table);
+                            },
+                          ),
+
+                          Container(margin: const EdgeInsets.only(right: 10.0)),
+                          GestureDetector(
+                            child: const Tooltip(
+                              message: "Clear Table",
+                              child: Icon(Icons.clear, color: Colors.blue),
+                            ),
+                            onTap: () async {
+                              await clearTable(context, ref, table);
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           );

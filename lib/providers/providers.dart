@@ -158,3 +158,12 @@ final billTotalsProvider = Provider.family<Map<String, int>, String>((
   final orders = ref.watch(billOrdersProvider(tableNo)).value ?? [];
   return repo.getBillTotals(orders);
 });
+
+final tableOrderStatus = StreamProvider.family<TableOrderStatus, String>((
+  ref,
+  tableNo,
+) {
+  return ref
+      .watch(tablesViewmodelProvider.notifier)
+      .getTableOrderStatus(tableNo);
+});

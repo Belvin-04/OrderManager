@@ -12,6 +12,8 @@ enum ClearTableResult { hasPendingOrders, alreadyCleared, canClear }
 
 enum SwapTableResult { canSwap, noFreeTables, noOrdersOnSource, noOrdersAtAll }
 
+enum TableOrderStatus { pending, completed, canceled, empty }
+
 class SwapTableDecision {
   final SwapTableResult result;
   final List<int> availableTables;
@@ -108,5 +110,21 @@ class TablesViewmodel extends AsyncNotifier<void> {
 
   Future<void> updateTablePosition(String id, Offset newPos) async {
     await _tableRepo.updateTablePosition(id, newPos);
+  }
+
+  Stream<TableOrderStatus> getTableOrderStatus(String tableKey) {
+    return _orderRepo.watchOrdersForTable(tableKey).map((orders) {
+      if (orders.isNotEmpty) {
+        final hasPending = orders.any((o) => o.status == "pending");
+        if (hasPending) return TableOrderStatus.pending;
+
+        final hasCompleted = orders.any((o) => o.status == "completed");
+        if (hasCompleted) return TableOrderStatus.completed;
+
+        final hasCanceled = orders.any((o) => o.status == "canceled");
+        if (hasCanceled) return TableOrderStatus.canceled;
+      }
+      return TableOrderStatus.empty;
+    });
   }
 }

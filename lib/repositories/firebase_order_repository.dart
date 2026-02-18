@@ -240,4 +240,17 @@ class FirebaseOrderRepository extends OrderRepository {
   Future<void> deleteOrder(Order order, {required bool isSplit}) {
     return remote.delete(order.id, isSplit: isSplit);
   }
+
+  @override
+  Stream<List<Order>> watchOrdersForTable(String tableKey) {
+    return remote.watchOrders().map((raw) {
+      if (raw == null) return [];
+
+      final map = raw as Map;
+      return map.values
+          .map((e) => Order.fromMap(Map.from(e)))
+          .where((o) => o.table.tableNo.toString() == tableKey)
+          .toList();
+    });
+  }
 }

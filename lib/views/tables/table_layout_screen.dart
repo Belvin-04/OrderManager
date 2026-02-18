@@ -16,7 +16,7 @@ class TableLayoutScreen extends ConsumerWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if(TablePopupOverlay.isOpen){
+        if (TablePopupOverlay.isOpen) {
           TablePopupOverlay.hide();
           Navigator.pop(context);
         }
@@ -32,7 +32,7 @@ class TableLayoutScreen extends ConsumerWidget {
                 final box =
                     _canvasKey.currentContext!.findRenderObject() as RenderBox;
                 final localOffset = box.globalToLocal(details.offset);
-      
+
                 ref
                     .read(tablesViewmodelProvider.notifier)
                     .updateTablePosition(details.data.id, localOffset);

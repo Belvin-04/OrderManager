@@ -1,6 +1,7 @@
 import 'package:order_manager/models/order.dart';
 
 abstract class OrderRepository {
+  Stream<List<Order>> watchOrdersForTable(String tableKey);
   Future<bool> hasPendingOrdersForTable(String tableKey);
   Future<bool> hasAnyOrdersForTable(String tableKey);
   Future<void> deleteOrdersForTable(String tableKey);
