@@ -14,11 +14,9 @@ class TableLayoutScreen extends ConsumerWidget {
     final tablesAsync = ref.watch(tablesProvider);
 
     return PopScope(
-      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (TablePopupOverlay.isOpen) {
           TablePopupOverlay.hide();
-          Navigator.pop(context);
         }
       },
       child: Scaffold(
