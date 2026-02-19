@@ -720,4 +720,65 @@ void main() {
 
     expect(cards[0].color, isNull);
   });
+
+  testWidgets('shows Loading... when tableOrderStatus is loading', (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => const Stream.empty());
+
+    await pumpHomePageScreen(
+      tester,
+      tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
+      tableRepo: tableRepo,
+      orderRepo: orderRepo,
+    );
+
+    await tester.pump();
+
+    expect(find.text('Loading...'), findsOneWidget);
+  });
+
+  testWidgets('shows Error when tableOrderStatus throws error', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(
+            AsyncData([Table1(id: 't1', tableNo: 1)]),
+          ),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+          tableOrderStatus('1').overrideWithValue(
+            AsyncError(Exception("Error"), StackTrace.current),
+          ),
+        ],
+        child: MaterialApp(home: HomePage()),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('Error'), findsOneWidget);
+  });
 }
