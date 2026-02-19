@@ -15,11 +15,17 @@ import 'package:order_manager/views/ui_utils.dart' show getBackgroundColor;
 Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        tableOrderStatus(
+          table.tableNo.toString(),
+        ).overrideWith((ref) => Stream.value(TableOrderStatus.pending)),
+      ],
       child: MaterialApp(
         home: Scaffold(body: TableWidget(table: table)),
       ),
     ),
   );
+  await tester.pumpAndSettle();
 }
 
 void main() {

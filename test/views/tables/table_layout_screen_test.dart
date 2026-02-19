@@ -7,6 +7,7 @@ import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
+import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
@@ -23,6 +24,9 @@ Future<void> pumpTableLayoutScreen(
   required MockTableRepository tableRepo,
   required MockOrderRepository orderRepo,
 }) async {
+  when(
+    () => orderRepo.watchOrdersForTable(any()),
+  ).thenAnswer((_) => Stream.value([]));
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -35,14 +39,24 @@ Future<void> pumpTableLayoutScreen(
       child: MaterialApp(home: TableLayoutScreen()),
     ),
   );
+  await tester.pumpAndSettle();
 }
 
 Future<void> pumpLayoutWidget(
   WidgetTester tester,
   List<Widget> children,
 ) async {
+  final orderRepo = MockOrderRepository();
+  final tableRepo = MockTableRepository();
+  when(
+    () => orderRepo.watchOrdersForTable(any()),
+  ).thenAnswer((_) => Stream.value([]));
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        orderRepositoryProvider.overrideWithValue(orderRepo),
+        tableRepositoryProvider.overrideWithValue(tableRepo),
+      ],
       child: MaterialApp(
         home: Scaffold(
           body: Stack(children: [Stack(children: children)]),
@@ -50,6 +64,7 @@ Future<void> pumpLayoutWidget(
       ),
     ),
   );
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -61,11 +76,20 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
-    await pumpTableLayoutScreen(
-      tester,
-      tables: const AsyncLoading(),
-      tableRepo: tableRepo,
-      orderRepo: orderRepo,
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(const AsyncLoading()),
+
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: MaterialApp(home: TableLayoutScreen()),
+      ),
     );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -340,12 +364,30 @@ void main() {
       Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
     ];
 
-    await pumpTableLayoutScreen(
-      tester,
-      tables: AsyncData(tables),
-      tableRepo: tableRepo,
-      orderRepo: orderRepo,
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(AsyncValue.data(tables)),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: MaterialApp(home: HomePage()),
+      ),
     );
+
+    await tester.tap(find.byIcon(Icons.design_services));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.table_restaurant));
     await tester.pumpAndSettle();
