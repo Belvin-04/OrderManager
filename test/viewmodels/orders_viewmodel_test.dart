@@ -518,4 +518,18 @@ void main() {
 
     expect(result, false);
   });
+
+  test('deleteOrder delegates stream to repository', () async {
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.deleteOrder(any(), isSplit: false),
+    ).thenAnswer((_) async => {});
+
+    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
+
+    await vm.deleteOrder(baseOrder());
+
+    verify(() => repo.deleteOrder(any(), isSplit: false)).called(1);
+  });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:order_manager/views/items/items.dart';
+import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
 
@@ -46,6 +47,17 @@ class NavigationDrawer extends StatelessWidget {
                 );
               },
               title: const Text("Types"),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const QuickOrders()),
+                );
+              },
+              title: const Text("Quick Orders"),
             ),
             const Divider(color: Colors.white24),
             const ListTile(

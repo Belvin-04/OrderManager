@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/utils/change_theme_switch.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/views/items/items.dart';
+import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
 
@@ -32,6 +33,7 @@ void main() {
     expect(find.text('Items'), findsOneWidget);
     expect(find.text('Tables'), findsOneWidget);
     expect(find.text('Types'), findsOneWidget);
+    expect(find.text('Quick Orders'), findsOneWidget);
     expect(find.text('Dark Theme'), findsOneWidget);
   });
 
@@ -60,6 +62,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(Types), findsOneWidget);
+  });
+
+  testWidgets('tapping Quick Orders navigates to Quick Orders screen', (
+    tester,
+  ) async {
+    await pumpDrawer(tester);
+
+    await tester.tap(find.text('Quick Orders'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QuickOrders), findsOneWidget);
   });
 
   testWidgets('dark theme switch is shown', (tester) async {

@@ -125,6 +125,10 @@ final pendingOrdersProvider = StreamProvider.family<List<Order>, String>((
       .watchOrdersByStatus("pending", tableNo);
 });
 
+final quickOrdersProvider = StreamProvider<List<Order>>((ref) {
+  return ref.watch(orderRepositoryProvider).watchOrdersForTable("0");
+});
+
 final splitOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
   tableNo,
