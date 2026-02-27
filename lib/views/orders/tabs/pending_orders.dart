@@ -6,6 +6,7 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
+import 'package:order_manager/views/orders/tabs/quick_orders_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
 
 class PendingOrders extends ConsumerWidget {
@@ -20,26 +21,45 @@ class PendingOrders extends ConsumerWidget {
     );
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Take New Order",
-        child: const Icon(Icons.add),
-        onPressed: () {
-          showSaveOrderDialog(
-            context,
-            ref,
-            Order(
-              id: "",
-              item: Item(name: "", price: 0, id: ""),
-              amount: 0,
-              type: Type1(type: "", price: 0, id: ""),
-              table: table,
-              note: "",
-              status: "pending",
-              quantity: 0,
-            ),
-            0,
-          );
-        },
+      floatingActionButton: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            tooltip: "Take New Order",
+            heroTag: "Take New Order",
+            child: const Icon(Icons.add),
+            onPressed: () {
+              showSaveOrderDialog(
+                context,
+                ref,
+                Order(
+                  id: "",
+                  item: Item(name: "", price: 0, id: ""),
+                  amount: 0,
+                  type: Type1(type: "", price: 0, id: ""),
+                  table: table,
+                  note: "",
+                  status: "pending",
+                  quantity: 0,
+                ),
+                0,
+              );
+            },
+          ),
+          Container(
+            width: 0,
+            height: 0,
+            margin: const EdgeInsets.only(right: 10.0),
+          ),
+          FloatingActionButton(
+            tooltip: "Take Quick Orders",
+            heroTag: "Add Quick Order",
+            child: const Icon(Icons.library_add_sharp),
+            onPressed: () {
+              showQuickOrderDialog(context, table);
+            },
+          ),
+        ],
       ),
       body: pendingOrdersState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -143,6 +163,13 @@ class PendingOrders extends ConsumerWidget {
           showSnackBar("Order Saved Successfully...!", messenger);
         },
       ),
+    );
+  }
+
+  void showQuickOrderDialog(BuildContext context, Table1 table) {
+    showDialog(
+      context: context,
+      builder: (_) => QuickOrdersDialog(table: table),
     );
   }
 }

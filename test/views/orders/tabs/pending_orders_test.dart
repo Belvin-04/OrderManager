@@ -10,6 +10,7 @@ import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
 import 'package:order_manager/views/orders/tabs/pending_orders.dart';
+import 'package:order_manager/views/orders/tabs/quick_orders_dialog.dart';
 
 class MockOrderRepository extends Mock implements OrderRepository {}
 
@@ -123,6 +124,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(OrderSaveDialog), findsOneWidget);
+  });
+
+  testWidgets('Quick Order FAB opens quick order dialog', (tester) async {
+    final orderRepo = MockOrderRepository();
+    await pumpPendingOrders(
+      tester,
+      ordersState: const AsyncData([]),
+      orderRepo: orderRepo,
+    );
+
+    await tester.tap(find.byIcon(Icons.library_add_sharp));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(QuickOrdersDialog), findsOneWidget);
   });
 
   testWidgets('complete icon completes order and shows snackbar', (

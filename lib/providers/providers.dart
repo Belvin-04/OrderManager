@@ -17,6 +17,7 @@ import 'package:order_manager/repositories/remote_data_source/firebase_item_remo
 import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_table_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
+import 'package:order_manager/utils/quick_order_cart.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
@@ -128,6 +129,9 @@ final pendingOrdersProvider = StreamProvider.family<List<Order>, String>((
 final quickOrdersProvider = StreamProvider<List<Order>>((ref) {
   return ref.watch(orderRepositoryProvider).watchOrdersForTable("0");
 });
+
+final quickOrderCartProvider =
+    NotifierProvider<QuickOrderCart, Map<String, Order>>(QuickOrderCart.new);
 
 final splitOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
