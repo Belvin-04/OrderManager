@@ -209,7 +209,10 @@ class FirebaseOrderRepository extends OrderRepository {
       final map = raw as Map;
       return map.values
           .map((e) => Order.fromMap(Map.from(e)))
-          .where((o) => o.table.splitNo == 0)
+          .where(
+            (o) =>
+                o.table.splitNo == 0 && o.table.tableNo.toString() == tableNo,
+          )
           .toList();
     });
   }
