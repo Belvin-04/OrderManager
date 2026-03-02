@@ -205,7 +205,7 @@ void main() {
   });
 
   testWidgets(
-    'split bill does not create split orders if already present and navigates',
+    """split bill does not create split orders if already present and shows snackbar""",
     (tester) async {
       final orderRepo = MockOrderRepository();
 
@@ -246,7 +246,11 @@ void main() {
         () => orderRepo.hasAnyOrdersForTable("1", isSplit: true),
       ).called(1);
       expect(find.byType(SplitBillDialog), findsNothing);
-      expect(find.byType(BillsSplit), findsOneWidget);
+      expect(find.byType(BillsSplit), findsNothing);
+      expect(
+        find.text("Someone has already created split orders"),
+        findsOneWidget,
+      );
     },
   );
 }

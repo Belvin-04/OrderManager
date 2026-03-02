@@ -7,6 +7,7 @@ import 'package:order_manager/utils/bill_footer.dart';
 import 'package:order_manager/utils/bill_item.dart';
 import 'package:order_manager/views/bills/bills_split.dart';
 import 'package:order_manager/views/bills/split_bill_dialog.dart';
+import 'package:order_manager/views/ui_utils.dart';
 
 class Bills extends ConsumerWidget {
   final Table1 table;
@@ -92,13 +93,19 @@ class Bills extends ConsumerWidget {
                 ref
                     .read(ordersViewModelProvider.notifier)
                     .createSplitOrders(table.tableNo.toString());
+                Navigator.pop(context);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => BillsSplit(table: table, totalSplit: value),
+                  ),
+                );
+              } else {
+                Navigator.pop(context);
+                showSnackBar(
+                  "Someone has already created split orders",
+                  ScaffoldMessenger.of(context),
+                );
               }
-              Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => BillsSplit(table: table, totalSplit: value),
-                ),
-              );
             },
           );
         },

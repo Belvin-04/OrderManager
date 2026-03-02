@@ -28,8 +28,8 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   @override
   Future<Object?> getSplitOrdersByTable(int tableNo) async {
     final query = splitRef.orderByChild("table/tableNo").equalTo(tableNo);
-    final event = await query.once();
-    return event.snapshot.value;
+    final snapshot = await query.get();
+    return snapshot.value;
   }
 
   @override
