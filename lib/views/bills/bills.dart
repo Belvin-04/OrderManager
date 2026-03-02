@@ -76,22 +76,33 @@ class Bills extends ConsumerWidget {
   void showSplitBillDialog(BuildContext context, WidgetRef ref, Table1 table) {
     showDialog(
       context: context,
-      builder: (_) {
-        return SplitBillDialog(
-          table: table,
-          onSplit: (int value) {
-            ref
-                .read(ordersViewModelProvider.notifier)
-                .createSplitOrders(table.tableNo.toString());
-            Navigator.pop(context);
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => BillsSplit(table: table, totalSplit: value),
-              ),
-            );
-          },
-        );
-      },
+      builder: (_) => FutureBuilder<bool>(
+        future: ref
+            .read(ordersViewModelProvider.notifier)
+            .hasAnyOrdersForTable(table.tableNo.toString(), isSplit: true),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final hasSplitOrders = snapshot.data!;
+          return SplitBillDialog(
+            table: table,
+            onSplit: (int value) {
+              if (!hasSplitOrders) {
+                ref
+                    .read(ordersViewModelProvider.notifier)
+                    .createSplitOrders(table.tableNo.toString());
+              }
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => BillsSplit(table: table, totalSplit: value),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

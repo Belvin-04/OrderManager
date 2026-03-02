@@ -532,4 +532,18 @@ void main() {
 
     verify(() => repo.deleteOrder(any(), isSplit: false)).called(1);
   });
+
+  test('hasAnyOrderForTable delegates to repository', () async {
+    final repo = MockOrderRepository();
+
+    when(
+      () => repo.hasAnyOrdersForTable(any(), isSplit: false),
+    ).thenAnswer((_) async => false);
+
+    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
+
+    await vm.hasAnyOrdersForTable("1");
+
+    verify(() => repo.hasAnyOrdersForTable(any(), isSplit: false)).called(1);
+  });
 }

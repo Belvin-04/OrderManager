@@ -147,6 +147,10 @@ void main() {
   testWidgets('receipt icon opens SplitBillDialog', (tester) async {
     final orderRepo = MockOrderRepository();
 
+    when(
+      () => orderRepo.hasAnyOrdersForTable(any(), isSplit: true),
+    ).thenAnswer((_) async => false);
+
     await pumpBillsScreen(
       tester,
       orders: const AsyncData([]),
@@ -177,6 +181,10 @@ void main() {
       () => orderRepo.getBillOrdersForTable(any()),
     ).thenAnswer((_) => Stream.value([baseOrder()]));
 
+    when(
+      () => orderRepo.hasAnyOrdersForTable(any(), isSplit: true),
+    ).thenAnswer((_) async => false);
+
     await pumpBillsScreen(
       tester,
       orders: AsyncData([baseOrder()]),
@@ -191,7 +199,54 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(() => orderRepo.saveOrder(any(), isSplit: true)).called(1);
+    verify(() => orderRepo.hasAnyOrdersForTable("1", isSplit: true)).called(1);
     expect(find.byType(SplitBillDialog), findsNothing);
     expect(find.byType(BillsSplit), findsOneWidget);
   });
+
+  testWidgets(
+    'split bill does not create split orders if already present and navigates',
+    (tester) async {
+      final orderRepo = MockOrderRepository();
+
+      when(
+        () => orderRepo.getTotalAmountForTable(
+          any(),
+          splitNo: any(named: 'splitNo'),
+        ),
+      ).thenAnswer((_) => const Stream<int>.empty());
+
+      when(
+        () => orderRepo.saveOrder(any(), isSplit: true),
+      ).thenAnswer((_) async => {});
+
+      when(
+        () => orderRepo.getBillOrdersForTable(any()),
+      ).thenAnswer((_) => Stream.value([baseOrder()]));
+
+      when(
+        () => orderRepo.hasAnyOrdersForTable(any(), isSplit: true),
+      ).thenAnswer((_) async => true);
+
+      await pumpBillsScreen(
+        tester,
+        orders: AsyncData([baseOrder()]),
+        orderRepo: orderRepo,
+      );
+
+      await tester.tap(find.byIcon(Icons.receipt_outlined));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextFormField), '3');
+      await tester.tap(find.text('Split'));
+      await tester.pumpAndSettle();
+
+      verifyNever(() => orderRepo.saveOrder(any(), isSplit: true));
+      verify(
+        () => orderRepo.hasAnyOrdersForTable("1", isSplit: true),
+      ).called(1);
+      expect(find.byType(SplitBillDialog), findsNothing);
+      expect(find.byType(BillsSplit), findsOneWidget);
+    },
+  );
 }

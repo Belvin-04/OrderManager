@@ -3,7 +3,7 @@ import 'package:order_manager/models/order.dart';
 abstract class OrderRepository {
   Stream<List<Order>> watchOrdersForTable(String tableKey);
   Future<bool> hasPendingOrdersForTable(String tableKey);
-  Future<bool> hasAnyOrdersForTable(String tableKey);
+  Future<bool> hasAnyOrdersForTable(String tableKey, {bool isSplit});
   Future<void> deleteOrdersForTable(String tableKey);
   Stream<int> getTotalAmountForTable(String tableKey, {String splitNo});
   Future<List<Order>> getOrdersForTable(String tableKey);

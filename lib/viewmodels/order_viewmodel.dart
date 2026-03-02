@@ -174,6 +174,12 @@ class OrdersViewModel extends AsyncNotifier<void> {
         .deleteOrder(order, isSplit: isSplit);
   }
 
+  Future<bool> hasAnyOrdersForTable(String tableKey, {bool isSplit = false}) {
+    return ref
+        .read(orderRepositoryProvider)
+        .hasAnyOrdersForTable(tableKey, isSplit: isSplit);
+  }
+
   @override
   FutureOr<void> build() {}
 }

@@ -8,8 +8,13 @@ class FirebaseOrderRepository extends OrderRepository {
   FirebaseOrderRepository(this.remote);
 
   @override
-  Future<bool> hasAnyOrdersForTable(String tableKey) async {
-    final raw = await remote.getAllOrders();
+  Future<bool> hasAnyOrdersForTable(
+    String tableKey, {
+    bool isSplit = false,
+  }) async {
+    final raw = isSplit
+        ? await remote.getSplitOrdersByTable(int.parse(tableKey))
+        : await remote.getAllOrders();
     if (raw == null) return false;
 
     final map = raw as Map;

@@ -63,6 +63,16 @@ void main() {
     expect(result, false);
   });
 
+  test(
+    'hasAnyOrdersForTable calls split orders for table when isSplit is true',
+    () async {
+      when(() => remote.getSplitOrdersByTable(1)).thenAnswer((_) async => null);
+
+      final result = await repo.hasAnyOrdersForTable('1', isSplit: true);
+      expect(result, false);
+    },
+  );
+
   test('hasPendingOrdersForTable true when pending', () async {
     when(() => remote.queryOrdersByTable(1)).thenAnswer(
       (_) async => {
