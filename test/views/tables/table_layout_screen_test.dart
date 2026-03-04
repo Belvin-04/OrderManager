@@ -398,5 +398,107 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(TablePopupMenu), findsNothing);
+    expect(find.byType(HomePage), findsNothing);
+    expect(find.byType(TableLayoutScreen), findsOneWidget);
   });
+
+  testWidgets(
+    'back button navigates to homescreen if pop up menu is not opened',
+    (tester) async {
+      final tableRepo = MockTableRepository();
+      final orderRepo = MockOrderRepository();
+
+      final tables = [
+        Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
+      ];
+
+      when(
+        () => orderRepo.getTotalAmountForTable(
+          any(),
+          splitNo: any(named: 'splitNo'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
+
+      when(
+        () => orderRepo.watchOrdersForTable(any()),
+      ).thenAnswer((_) => Stream.value([]));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            tablesProvider.overrideWithValue(AsyncValue.data(tables)),
+            tableRepositoryProvider.overrideWithValue(tableRepo),
+            orderRepositoryProvider.overrideWithValue(orderRepo),
+          ],
+          child: MaterialApp(home: HomePage()),
+        ),
+      );
+
+      await tester.tap(find.byIcon(Icons.design_services));
+      await tester.pumpAndSettle();
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TablePopupMenu), findsNothing);
+      expect(find.byType(TableLayoutScreen), findsNothing);
+      expect(find.byType(HomePage), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    """popup menu closes on pressing back button and screen navigates to homescreen when back button is pressed again""",
+    (tester) async {
+      final tableRepo = MockTableRepository();
+      final orderRepo = MockOrderRepository();
+
+      final tables = [
+        Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
+      ];
+
+      when(
+        () => orderRepo.getTotalAmountForTable(
+          any(),
+          splitNo: any(named: 'splitNo'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
+
+      when(
+        () => orderRepo.watchOrdersForTable(any()),
+      ).thenAnswer((_) => Stream.value([]));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            tablesProvider.overrideWithValue(AsyncValue.data(tables)),
+            tableRepositoryProvider.overrideWithValue(tableRepo),
+            orderRepositoryProvider.overrideWithValue(orderRepo),
+          ],
+          child: MaterialApp(home: HomePage()),
+        ),
+      );
+
+      await tester.tap(find.byIcon(Icons.design_services));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.table_restaurant));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TablePopupMenu), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TablePopupMenu), findsNothing);
+      expect(find.byType(HomePage), findsNothing);
+      expect(find.byType(TableLayoutScreen), findsOneWidget);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TablePopupMenu), findsNothing);
+      expect(find.byType(TableLayoutScreen), findsNothing);
+      expect(find.byType(HomePage), findsOneWidget);
+    },
+  );
 }

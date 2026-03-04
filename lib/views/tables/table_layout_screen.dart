@@ -12,11 +12,14 @@ class TableLayoutScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tablesAsync = ref.watch(tablesProvider);
+    final popupTable = ref.watch(tablePopupProvider);
 
     return PopScope(
+      canPop: popupTable == 0,
       onPopInvokedWithResult: (didPop, result) {
         if (TablePopupOverlay.isOpen) {
           TablePopupOverlay.hide();
+          ref.read(tablePopupProvider.notifier).close();
         }
       },
       child: Scaffold(

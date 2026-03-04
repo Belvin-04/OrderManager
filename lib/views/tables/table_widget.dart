@@ -32,6 +32,14 @@ class TableWidgetState extends ConsumerState<TableWidget> {
       onTap: () {
         final box = context.findRenderObject() as RenderBox;
         final pos = box.localToGlobal(Offset.zero);
+        final popupTable = ref.watch(tablePopupProvider);
+
+        if (popupTable == table.tableNo) {
+          TablePopupOverlay.hide();
+          ref.read(tablePopupProvider.notifier).close();
+          return;
+        }
+
         TablePopupOverlay.show(
           context: context,
           position: pos,
@@ -39,6 +47,7 @@ class TableWidgetState extends ConsumerState<TableWidget> {
             table: table,
             onAction: (action) async {
               TablePopupOverlay.hide();
+              ref.read(tablePopupProvider.notifier).close();
               switch (action) {
                 case TablePopupAction.takeOrder:
                   takeOrder(context, table);
@@ -52,6 +61,7 @@ class TableWidgetState extends ConsumerState<TableWidget> {
             },
           ),
         );
+        ref.read(tablePopupProvider.notifier).open = table.tableNo;
       },
       child: tableOrderStatusState.when(
         loading: () {

@@ -17,6 +17,7 @@ import 'package:order_manager/repositories/remote_data_source/firebase_item_remo
 import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_table_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
+import 'package:order_manager/utils/popup_notifier.dart';
 import 'package:order_manager/utils/quick_order_cart.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
@@ -174,4 +175,8 @@ final tableOrderStatus = StreamProvider.family<TableOrderStatus, String>((
   return ref
       .watch(tablesViewmodelProvider.notifier)
       .getTableOrderStatus(tableNo);
+});
+
+final tablePopupProvider = NotifierProvider<PopupNotifier, int>(() {
+  return PopupNotifier();
 });
