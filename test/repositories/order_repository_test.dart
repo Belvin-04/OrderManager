@@ -371,19 +371,23 @@ void main() {
     expect(result, isEmpty);
   });
 
-  test('watchSplitOrders returns only splitNo == 0 orders', () async {
-    when(() => remote.watchSplitOrders()).thenAnswer(
-      (_) => Stream.value({
-        '1': fakeOrderMap(),
-        '2': fakeOrderMap(id: '2', splitNo: 1),
-      }),
-    );
+  test(
+    """watchSplitOrders returns only splitNo == 0 orders for the particular table number""",
+    () async {
+      when(() => remote.watchSplitOrders()).thenAnswer(
+        (_) => Stream.value({
+          '1': fakeOrderMap(),
+          '2': fakeOrderMap(id: '2', splitNo: 1),
+          '3': fakeOrderMap(id: '3', tableNo: 2),
+        }),
+      );
 
-    final result = await repo.watchSplitOrders('1').first;
+      final result = await repo.watchSplitOrders('1').first;
 
-    expect(result.length, 1);
-    expect(result.first.id, '1');
-  });
+      expect(result.length, 1);
+      expect(result.first.id, '1');
+    },
+  );
 
   test('getSplitOrders returns empty list when no data', () async {
     when(() => remote.watchSplitOrders()).thenAnswer((_) => Stream.value(null));
