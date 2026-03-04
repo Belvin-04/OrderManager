@@ -11,12 +11,14 @@ import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/orders/orders.dart';
 import 'package:order_manager/views/tables/table_clear_dialog.dart';
 import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_swap_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockTableRepository extends Mock implements TableRepository {}
 
@@ -780,5 +782,61 @@ void main() {
     await tester.pump();
 
     expect(find.text('Error'), findsOneWidget);
+  });
+
+  testWidgets('changing dark theme switch updates app theme', (tester) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    SharedPreferences.setMockInitialValues({'themeStatus': false});
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(
+            AsyncData([Table1(id: 't1', tableNo: 1)]),
+          ),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: Consumer(
+          builder: (context, ref, _) {
+            final themeMode = ref.watch(themeProvider);
+
+            return MaterialApp(
+              theme: MyThemes.lightTheme,
+              darkTheme: MyThemes.darkTheme,
+              themeMode: themeMode,
+              home: HomePage(),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    final homeElement = tester.element(find.byType(HomePage));
+    expect(Theme.of(homeElement).primaryColor, Colors.white);
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+
+    final updatedHomeElement = tester.element(find.byType(HomePage));
+    expect(Theme.of(updatedHomeElement).primaryColor, Colors.black);
   });
 }
