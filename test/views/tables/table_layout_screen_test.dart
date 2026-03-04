@@ -6,11 +6,14 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
+import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockTableRepository extends Mock implements TableRepository {}
 
@@ -68,7 +71,10 @@ Future<void> pumpLayoutWidget(
 }
 
 void main() {
-  setUp(TablePopupOverlay.hide);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({'startupScreen': 'home'});
+    TablePopupOverlay.hide();
+  });
   setUpAll(() {
     registerFallbackValue(Offset.zero);
   });
@@ -382,7 +388,7 @@ void main() {
           tableRepositoryProvider.overrideWithValue(tableRepo),
           orderRepositoryProvider.overrideWithValue(orderRepo),
         ],
-        child: MaterialApp(home: HomePage()),
+        child: const MaterialApp(home: PreferredStartupScreen()),
       ),
     );
 
@@ -402,8 +408,51 @@ void main() {
     expect(find.byType(TableLayoutScreen), findsOneWidget);
   });
 
+  testWidgets('back button keeps table layout when opened via replacement', (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    final tables = [
+      Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
+    ];
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(AsyncValue.data(tables)),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: const MaterialApp(home: PreferredStartupScreen()),
+      ),
+    );
+
+    await tester.tap(find.byIcon(Icons.design_services));
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(TablePopupMenu), findsNothing);
+    expect(find.byType(TableLayoutScreen), findsOneWidget);
+    expect(find.byType(HomePage), findsNothing);
+  });
+
   testWidgets(
-    'back button navigates to homescreen if pop up menu is not opened',
+    """popup menu closes on first back, second back stays on table layout when opened via replacement""",
     (tester) async {
       final tableRepo = MockTableRepository();
       final orderRepo = MockOrderRepository();
@@ -430,51 +479,7 @@ void main() {
             tableRepositoryProvider.overrideWithValue(tableRepo),
             orderRepositoryProvider.overrideWithValue(orderRepo),
           ],
-          child: MaterialApp(home: HomePage()),
-        ),
-      );
-
-      await tester.tap(find.byIcon(Icons.design_services));
-      await tester.pumpAndSettle();
-
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-
-      expect(find.byType(TablePopupMenu), findsNothing);
-      expect(find.byType(TableLayoutScreen), findsNothing);
-      expect(find.byType(HomePage), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    """popup menu closes on pressing back button and screen navigates to homescreen when back button is pressed again""",
-    (tester) async {
-      final tableRepo = MockTableRepository();
-      final orderRepo = MockOrderRepository();
-
-      final tables = [
-        Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
-      ];
-
-      when(
-        () => orderRepo.getTotalAmountForTable(
-          any(),
-          splitNo: any(named: 'splitNo'),
-        ),
-      ).thenAnswer((_) => const Stream.empty());
-
-      when(
-        () => orderRepo.watchOrdersForTable(any()),
-      ).thenAnswer((_) => Stream.value([]));
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            tablesProvider.overrideWithValue(AsyncValue.data(tables)),
-            tableRepositoryProvider.overrideWithValue(tableRepo),
-            orderRepositoryProvider.overrideWithValue(orderRepo),
-          ],
-          child: MaterialApp(home: HomePage()),
+          child: const MaterialApp(home: PreferredStartupScreen()),
         ),
       );
 
@@ -497,8 +502,85 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(TablePopupMenu), findsNothing);
-      expect(find.byType(TableLayoutScreen), findsNothing);
-      expect(find.byType(HomePage), findsOneWidget);
+      expect(find.byType(TableLayoutScreen), findsOneWidget);
+      expect(find.byType(HomePage), findsNothing);
     },
   );
+
+  testWidgets('table layout screen has working navigation drawer', (
+    tester,
+  ) async {
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          tablesProvider.overrideWithValue(
+            AsyncValue.data([Table1(id: 't1', tableNo: 1)]),
+          ),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: MaterialApp(home: TableLayoutScreen()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Drawer), findsOneWidget);
+  });
+
+  testWidgets('home icon updates startup preference and navigates to home', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'startupScreen': 'table_layout'});
+
+    final tableRepo = MockTableRepository();
+    final orderRepo = MockOrderRepository();
+
+    when(
+      () => orderRepo.getTotalAmountForTable(
+        any(),
+        splitNo: any(named: 'splitNo'),
+      ),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => orderRepo.watchOrdersForTable(any()),
+    ).thenAnswer((_) => Stream.value([]));
+
+    final container = ProviderContainer(
+      overrides: [
+        tablesProvider.overrideWithValue(
+          AsyncData([
+            Table1(id: 't1', tableNo: 1, position: const Offset(10, 10)),
+          ]),
+        ),
+        tableRepositoryProvider.overrideWithValue(tableRepo),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const MaterialApp(home: PreferredStartupScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Home Screen'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(startupScreenProvider), StartupScreen.home);
+    expect(find.byType(HomePage), findsOneWidget);
+  });
 }

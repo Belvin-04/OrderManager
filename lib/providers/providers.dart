@@ -19,6 +19,7 @@ import 'package:order_manager/repositories/remote_data_source/firebase_table_rem
 import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
 import 'package:order_manager/utils/popup_notifier.dart';
 import 'package:order_manager/utils/quick_order_cart.dart';
+import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/viewmodels/items_viewmodel.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
@@ -77,6 +78,11 @@ final splitOrderRefProvider = Provider<DatabaseReference>((ref) {
 final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(() {
   return ThemeNotifier();
 });
+
+final startupScreenProvider =
+    NotifierProvider<StartupScreenNotifier, StartupScreen>(() {
+      return StartupScreenNotifier();
+    });
 
 final itemsProvider = StreamProvider<List<Item>>((ref) {
   return ref.read(itemRepositoryProvider).watchItems();

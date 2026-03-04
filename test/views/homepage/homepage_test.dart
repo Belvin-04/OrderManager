@@ -11,9 +11,11 @@ import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/orders/orders.dart';
+import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 import 'package:order_manager/views/tables/table_clear_dialog.dart';
 import 'package:order_manager/views/tables/table_clear_warning_dialog.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';
@@ -70,10 +72,35 @@ Future<void> pumpHomePageScreen(
   );
 }
 
+Future<void> pumpPreferredScreen(
+  WidgetTester tester, {
+  required AsyncValue<List<Table1>> tablesState,
+  required MockTableRepository tableRepo,
+  required MockOrderRepository orderRepo,
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        tablesProvider.overrideWithValue(tablesState),
+        tableRepositoryProvider.overrideWithValue(tableRepo),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
+      ],
+      child: const MaterialApp(home: PreferredStartupScreen()),
+    ),
+  );
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(Offset.zero);
     registerFallbackValue(FakeTable1());
+  });
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      'startupScreen': 'home',
+      'themeStatus': false,
+    });
   });
 
   testWidgets('shows loading indicator while tables load', (tester) async {
@@ -523,7 +550,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    await pumpHomePageScreen(
+    await pumpPreferredScreen(
       tester,
       tablesState: AsyncData([Table1(id: 't1', tableNo: 1)]),
       tableRepo: tableRepo,
@@ -535,6 +562,45 @@ void main() {
 
     expect(find.byType(TableLayoutScreen), findsOneWidget);
   });
+
+  testWidgets(
+    'tapping layout icon updates startup preference to table layout',
+    (tester) async {
+      final tableRepo = MockTableRepository();
+      final orderRepo = MockOrderRepository();
+
+      when(
+        () => orderRepo.getTotalAmountForTable(
+          any(),
+          splitNo: any(named: 'splitNo'),
+        ),
+      ).thenAnswer((_) => const Stream.empty());
+
+      final container = ProviderContainer(
+        overrides: [
+          tablesProvider.overrideWithValue(
+            AsyncData([Table1(id: 't1', tableNo: 1)]),
+          ),
+          tableRepositoryProvider.overrideWithValue(tableRepo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(home: PreferredStartupScreen()),
+        ),
+      );
+
+      await tester.tap(find.byIcon(Icons.design_services));
+      await tester.pumpAndSettle();
+
+      expect(container.read(startupScreenProvider), StartupScreen.tableLayout);
+      expect(find.byType(TableLayoutScreen), findsOneWidget);
+    },
+  );
 
   testWidgets('open navigation drawer', (tester) async {
     final tableRepo = MockTableRepository();

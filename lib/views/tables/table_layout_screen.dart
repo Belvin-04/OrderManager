@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
+import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 
@@ -23,7 +25,21 @@ class TableLayoutScreen extends ConsumerWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text("Table Layout Editor")),
+        drawer: const drawer.NavigationDrawer(),
+        appBar: AppBar(
+          title: const Text("Table Layout Editor"),
+          actions: [
+            IconButton(
+              tooltip: "Home Screen",
+              icon: const Icon(Icons.home_outlined),
+              onPressed: () {
+                ref
+                    .read(startupScreenProvider.notifier)
+                    .setStartupScreen(StartupScreen.home);
+              },
+            ),
+          ],
+        ),
         body: tablesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => Center(child: Text('Error: $e')),

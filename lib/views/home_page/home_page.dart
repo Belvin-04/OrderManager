@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
+import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
-import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/ui_utils.dart';
 
 class HomePage extends ConsumerWidget {
@@ -28,10 +28,9 @@ class HomePage extends ConsumerWidget {
               child: Icon(Icons.design_services),
             ),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => TableLayoutScreen()),
-              );
+              ref
+                  .read(startupScreenProvider.notifier)
+                  .setStartupScreen(StartupScreen.tableLayout);
             },
           ),
         ],
