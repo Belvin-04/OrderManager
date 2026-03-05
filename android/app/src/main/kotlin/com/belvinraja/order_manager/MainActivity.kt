@@ -1,4 +1,4 @@
-package com.example.order_manager
+package com.belvinraja.order_manager
 
 import io.flutter.embedding.android.FlutterActivity
 

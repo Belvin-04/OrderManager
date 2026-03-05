@@ -185,12 +185,10 @@ linter:
     # Disabled rules
     always_put_control_body_on_new_line: false
     always_put_required_named_parameters_first: false
-    always_require_non_null_named_parameters: false
     always_specify_types: false
     always_use_package_imports: false
     annotate_redeclares: false
     avoid_annotating_with_dynamic: false
-    avoid_as: false
     avoid_catches_without_on_clauses: false
     avoid_classes_with_only_static_members: false
     avoid_dynamic_calls: false
@@ -200,8 +198,6 @@ linter:
     avoid_implementing_value_types: false
     avoid_js_rounded_ints: false
     avoid_null_checks_in_equality_operators: false
-    avoid_returning_null: false
-    avoid_returning_null_for_future: false
     avoid_returning_this: false
     avoid_slow_async_io: false
     avoid_types_on_closure_parameters: false
@@ -215,15 +211,11 @@ linter:
     discarded_futures: false
     do_not_use_environment: false
     document_ignores: false
-    enable_null_safety: false
     flutter_style_todos: false
     implicit_reopen: false
     invalid_case_patterns: false
-    invariant_booleans: false
-    iterable_contains_unrelated_type: false
     leading_newlines_in_multiline_strings: false
     library_names: false
-    list_remove_unrelated_type: false
     matching_super_parameters: false
     missing_code_block_language_in_doc_comment: false
     missing_whitespace_between_adjacent_strings: false
@@ -239,9 +231,7 @@ linter:
     # package_api_docs: false # removed in Dart '3.7.0'
     package_prefixed_library_names: false
     prefer_asserts_with_message: false
-    prefer_bool_in_asserts: false
     prefer_double_quotes: false
-    prefer_equal_for_default_values: false
     prefer_expression_function_bodies: false
     prefer_final_locals: false
     prefer_final_parameters: false
@@ -259,7 +249,6 @@ linter:
     specify_nonobvious_local_variable_types: false
     # specify_nonobvious_property_types: false # not a recognized lint rule
     # strict_top_level_inference: false # not a recognized lint rule
-    super_goes_last: false
     # unnecessary_async: false # not a recognized lint rule
     unnecessary_final: false
     # unnecessary_ignore: false # not a recognized lint rule
