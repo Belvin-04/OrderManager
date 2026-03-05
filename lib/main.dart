@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/firebase_initializer.dart';
 import 'package:order_manager/utils/theme_provider.dart';
-import 'package:order_manager/views/startup/preferred_startup_screen.dart';
+import 'package:order_manager/views/auth_gate.dart';
 
 import 'firebase_options.dart';
 
@@ -38,7 +38,7 @@ class App extends ConsumerWidget {
       home: firebaseState.when(
         loading: () => const SplashScreen(),
         error: (e, _) => ErrorScreen(error: e.toString()),
-        data: (_) => const PreferredStartupScreen(),
+        data: (_) => const AuthGate(),
       ),
     );
   }

@@ -8,14 +8,22 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:33997041371:android:e3ebea90d79d28e1b5a6fe",
+        "mobilesdk_app_id": "1:33997041371:android:4b91c70665abf461b5a6fe",
         "android_client_info": {
           "package_name": "com.belvinraja.order_manager"
         }
       },
       "oauth_client": [
         {
-          "client_id": "33997041371-hdsfqiaohcbq02ffs7t1csmk67k3p6mi.apps.googleusercontent.com",
+          "client_id": "33997041371-j0222u13ddul6mtacep4abooo1op3fsh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.belvinraja.order_manager",
+            "certificate_hash": "c488c0ff921dc26e4245152afac80d3b56b6f7b8"
+          }
+        },
+        {
+          "client_id": "33997041371-30qp3p5b3gti70qdet62314u9ktlb3ud.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -28,8 +36,15 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "33997041371-hdsfqiaohcbq02ffs7t1csmk67k3p6mi.apps.googleusercontent.com",
+              "client_id": "33997041371-1852a3pj2nf72l0culse05tkgqh8lbpd.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "33997041371-lfe2egnm0sbe29mhpn75mt9jnevom1cq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.belvinraja.orderManager"
+              }
             }
           ]
         }

@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/providers/providers.dart';
 import 'package:order_manager/utils/change_theme_switch.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/views/items/items.dart';
@@ -8,10 +11,18 @@ import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
 
-Future<void> pumpDrawer(WidgetTester tester) async {
+class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+Future<void> pumpDrawer(
+  WidgetTester tester, {
+  MockFirebaseAuth? mockAuth,
+}) async {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        if (mockAuth != null) firebaseAuthProvider.overrideWithValue(mockAuth),
+      ],
       child: MaterialApp(
         home: Scaffold(
           key: scaffoldKey,
@@ -34,6 +45,7 @@ void main() {
     expect(find.text('Tables'), findsOneWidget);
     expect(find.text('Types'), findsOneWidget);
     expect(find.text('Quick Orders'), findsOneWidget);
+    expect(find.text('Logout'), findsOneWidget);
     expect(find.text('Dark Theme'), findsOneWidget);
   });
 
@@ -79,5 +91,17 @@ void main() {
     await pumpDrawer(tester);
 
     expect(find.byType(ChangeThemeSwitch), findsOneWidget);
+  });
+
+  testWidgets('tapping Logout triggers sign out', (tester) async {
+    final firebaseAuth = MockFirebaseAuth();
+    when(firebaseAuth.signOut).thenAnswer((_) async {});
+
+    await pumpDrawer(tester, mockAuth: firebaseAuth);
+
+    await tester.tap(find.text('Logout'));
+    await tester.pumpAndSettle();
+
+    verify(firebaseAuth.signOut).called(1);
   });
 }

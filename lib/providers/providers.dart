@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
@@ -17,6 +19,7 @@ import 'package:order_manager/repositories/remote_data_source/firebase_item_remo
 import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_table_remote_data_source.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
+import 'package:order_manager/utils/auth_controller.dart';
 import 'package:order_manager/utils/popup_notifier.dart';
 import 'package:order_manager/utils/quick_order_cart.dart';
 import 'package:order_manager/utils/startup_screen_provider.dart';
@@ -29,6 +32,22 @@ import 'package:order_manager/viewmodels/types_viewmodel.dart';
 final firebaseDatabaseProvider = Provider<FirebaseDatabase>((ref) {
   return FirebaseDatabase.instance;
 });
+
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  return GoogleSignIn();
+});
+
+final authStateProvider = StreamProvider<User?>((ref) {
+  return ref.watch(firebaseAuthProvider).authStateChanges();
+});
+
+final authControllerProvider = AsyncNotifierProvider<AuthController, void>(
+  AuthController.new,
+);
 
 final typesRefProvider = Provider<DatabaseReference>((ref) {
   return ref.read(firebaseDatabaseProvider).ref('types');
