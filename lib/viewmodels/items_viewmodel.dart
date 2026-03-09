@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/item_providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 
 class ItemsViewmodel extends AsyncNotifier<void> {
   Future<void> saveItem(Item item) async {

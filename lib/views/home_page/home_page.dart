@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/table_providers.dart';
+import 'package:order_manager/providers/utils_provider.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/tap_functions.dart';

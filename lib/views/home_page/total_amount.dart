@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 
 class TotalAmount extends ConsumerWidget {
   final Table1 table;

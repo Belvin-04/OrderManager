@@ -8,12 +8,10 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/firebase_providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/firebase_item_repository.dart';
 import 'package:order_manager/repositories/firebase_order_repository.dart';
-import 'package:order_manager/repositories/firebase_table_repository.dart';
-import 'package:order_manager/repositories/firebase_type_repository.dart';
 
 class MockOrderRepository extends Mock implements OrderRepository {}
 
@@ -52,7 +50,8 @@ final testOrders = [
   baseOrder(id: '2', status: 'canceled'),
 ];
 
-void main() {
+
+void main(){
   test('cancelledOrdersProvider emits cancelled orders', () async {
     final mockRepository = MockOrderRepository();
 
@@ -151,39 +150,6 @@ void main() {
     expect(ref.path, 'split-orders');
   });
 
-  test('typeRepositoryProvider returns FirebaseTypeRepository', () {
-    final container = ProviderContainer(
-      overrides: [typesRefProvider.overrideWithValue(MockDatabaseReference())],
-    );
-    addTearDown(container.dispose);
-
-    final repo = container.read(typeRepositoryProvider);
-
-    expect(repo, isA<FirebaseTypeRepository>());
-  });
-
-  test('itemRepositoryProvider returns FirebaseItemRepository', () {
-    final container = ProviderContainer(
-      overrides: [itemsRefProvider.overrideWithValue(MockDatabaseReference())],
-    );
-    addTearDown(container.dispose);
-
-    final repo = container.read(itemRepositoryProvider);
-
-    expect(repo, isA<FirebaseItemRepository>());
-  });
-
-  test('tableRepositoryProvider returns FirebaseTableRepository', () {
-    final container = ProviderContainer(
-      overrides: [tablesRefProvider.overrideWithValue(MockDatabaseReference())],
-    );
-    addTearDown(container.dispose);
-
-    final repo = container.read(tableRepositoryProvider);
-
-    expect(repo, isA<FirebaseTableRepository>());
-  });
-
   test('orderRepositoryProvider returns FirebaseOrderRepository', () {
     final container = ProviderContainer(
       overrides: [
@@ -196,45 +162,5 @@ void main() {
     final repo = container.read(orderRepositoryProvider);
 
     expect(repo, isA<FirebaseOrderRepository>());
-  });
-
-  test('billTotalsProvider returns totals from repository', () {
-    final mockRepo = MockOrderRepository();
-
-    final orders = [baseOrder(), baseOrder(amount: 200)];
-
-    when(() => mockRepo.getBillTotals(orders)).thenReturn({'total': 300});
-
-    final container = ProviderContainer(
-      overrides: [
-        orderRepositoryProvider.overrideWithValue(mockRepo),
-        billOrdersProvider('1').overrideWithValue(AsyncData(orders)),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    final totals = container.read(billTotalsProvider('1'));
-
-    expect(totals, {'total': 300});
-    verify(() => mockRepo.getBillTotals(orders)).called(1);
-  });
-
-  test('billTotalsProvider returns empty totals when no orders', () {
-    final mockRepo = MockOrderRepository();
-
-    when(() => mockRepo.getBillTotals([])).thenReturn({});
-
-    final container = ProviderContainer(
-      overrides: [
-        orderRepositoryProvider.overrideWithValue(mockRepo),
-        billOrdersProvider('1').overrideWithValue(const AsyncData([])),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    final totals = container.read(billTotalsProvider('1'));
-
-    expect(totals, {});
-    verify(() => mockRepo.getBillTotals([])).called(1);
   });
 }

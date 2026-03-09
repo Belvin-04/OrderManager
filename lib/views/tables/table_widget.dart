@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/table_providers.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/utils/tap_functions.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';

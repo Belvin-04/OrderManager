@@ -6,7 +6,7 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/bills/bills_split.dart';
 import 'package:order_manager/views/bills/split_orders_dialog.dart';

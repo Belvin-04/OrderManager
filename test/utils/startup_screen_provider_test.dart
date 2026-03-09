@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/utils_provider.dart';
 import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

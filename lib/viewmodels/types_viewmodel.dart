@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
+import 'package:order_manager/providers/type_providers.dart';
 
 class TypesViewModel extends AsyncNotifier<List<Type1>> {
   @override

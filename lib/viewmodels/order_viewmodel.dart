@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 
 class OrdersViewModel extends AsyncNotifier<void> {
   Future<void> saveOrder(Order order, {bool isSplit = false}) async {

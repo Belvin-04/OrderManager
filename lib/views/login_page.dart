@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/firebase_providers.dart';
 
 class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});

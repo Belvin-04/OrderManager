@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/utils_provider.dart';
 import 'package:order_manager/utils/change_theme_switch.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 

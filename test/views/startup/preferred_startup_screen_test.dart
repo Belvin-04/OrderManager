@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/table_providers.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 import 'package:order_manager/views/tables/table_layout_screen.dart';

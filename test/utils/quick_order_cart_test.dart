@@ -4,7 +4,7 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/utils/quick_order_cart.dart';
 
 Item fakeItem(String name) => Item(id: name, name: name, price: 10);

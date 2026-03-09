@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 import 'login_page.dart';
 

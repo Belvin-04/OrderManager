@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';

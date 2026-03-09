@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/utils_provider.dart';
 
 class TableSwapDialog extends ConsumerWidget {
   final List<int> availableTables;

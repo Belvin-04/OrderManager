@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/login_page.dart';
 
 class MockGoogleSignIn extends Mock implements GoogleSignIn {}

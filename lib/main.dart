@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/utils_provider.dart';
 import 'package:order_manager/utils/firebase_initializer.dart';
 import 'package:order_manager/utils/theme_provider.dart';
 import 'package:order_manager/views/auth_gate.dart';

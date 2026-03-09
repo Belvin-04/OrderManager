@@ -5,7 +5,8 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/providers/providers.dart';
+import 'package:order_manager/providers/item_providers.dart';
+import 'package:order_manager/providers/type_providers.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
 
 final testItems = [
