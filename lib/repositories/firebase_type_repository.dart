@@ -22,7 +22,7 @@ class FirebaseTypeRepository implements TypeRepository {
 
   @override
   Future<void> saveType(Type1 type) async {
-    final existing = await remote.queryByType(type.type);
+    final existing = await remote.queryById(type.id);
 
     String id;
 

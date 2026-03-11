@@ -50,8 +50,7 @@ final testOrders = [
   baseOrder(id: '2', status: 'canceled'),
 ];
 
-
-void main(){
+void main() {
   test('cancelledOrdersProvider emits cancelled orders', () async {
     final mockRepository = MockOrderRepository();
 

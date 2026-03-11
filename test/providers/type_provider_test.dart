@@ -7,8 +7,8 @@ import 'package:order_manager/repositories/firebase_type_repository.dart';
 
 class MockDatabaseReference extends Mock implements DatabaseReference {}
 
-void main(){
-   test('typeRepositoryProvider returns FirebaseTypeRepository', () {
+void main() {
+  test('typeRepositoryProvider returns FirebaseTypeRepository', () {
     final container = ProviderContainer(
       overrides: [typesRefProvider.overrideWithValue(MockDatabaseReference())],
     );

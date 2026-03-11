@@ -7,8 +7,8 @@ import 'package:order_manager/repositories/firebase_table_repository.dart';
 
 class MockDatabaseReference extends Mock implements DatabaseReference {}
 
-void main(){
-    test('tableRepositoryProvider returns FirebaseTableRepository', () {
+void main() {
+  test('tableRepositoryProvider returns FirebaseTableRepository', () {
     final container = ProviderContainer(
       overrides: [tablesRefProvider.overrideWithValue(MockDatabaseReference())],
     );

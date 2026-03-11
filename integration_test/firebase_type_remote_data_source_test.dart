@@ -49,6 +49,27 @@ void main() {
     expect(result, isNull);
   });
 
+  test('save and queryById returns correct data', () async {
+    final id = await dataSource.generateId();
+
+    final data = {'id': id,'type': 'food', 'name': 'Pizza'};
+
+    await dataSource.save(id, data);
+
+    final result = await dataSource.queryByType('food') as Map?;
+
+    final idResult =
+        await dataSource.queryById(result!.values.first["id"]) as Map?;
+
+    expect(idResult, isNotNull);
+    expect(idResult!.values.first['name'], 'Pizza');
+  });
+
+  test('queryById returns null when no match', () async {
+    final result = await dataSource.queryById('DoesNotExist');
+    expect(result, isNull);
+  });
+
   test('delete removes data from database', () async {
     final id = await dataSource.generateId();
 

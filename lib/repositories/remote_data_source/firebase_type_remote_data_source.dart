@@ -18,6 +18,12 @@ class FirebaseTypeRemoteDataSource implements TypeRemoteDataSource {
   }
 
   @override
+  Future<Object?> queryById(String id) async {
+    final result = await ref.orderByChild('id').equalTo(id).once();
+    return result.snapshot.value;
+  }
+
+  @override
   Future<String> generateId() async {
     return ref.push().key!;
   }

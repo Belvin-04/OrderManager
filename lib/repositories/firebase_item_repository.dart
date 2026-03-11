@@ -14,7 +14,7 @@ class FirebaseItemRepository implements ItemsRepository {
 
   @override
   Future<void> saveItem(Item item) async {
-    final existing = await remote.queryByName(item.name);
+    final existing = await remote.queryById(item.id);
 
     String id;
 
