@@ -8,8 +8,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
 import 'package:order_manager/views/auth_gate.dart';
+import 'package:order_manager/views/business/businesses_page.dart';
 import 'package:order_manager/views/login_page.dart';
-import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 
 class MockUser extends Mock implements User {}
 
@@ -60,7 +60,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(PreferredStartupScreen), findsOneWidget);
+    expect(find.byType(BusinessGate), findsOneWidget);
   });
 
   testWidgets('shows error UI when auth stream emits error', (tester) async {

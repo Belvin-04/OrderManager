@@ -6,9 +6,24 @@ final billOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
   tableNo,
 ) {
-  return ref
-      .read(ordersViewModelProvider.notifier)
-      .getBillOrdersForTable(tableNo);
+  final orderRepo = ref.watch(orderRepositoryProvider);
+  return orderRepo.getBillOrdersForTable(tableNo).map((orderList) {
+    Map<String, Order> orderMap = {};
+    for (final Order order in orderList) {
+      final key = '${order.item.name} ${order.type.getType(1)}';
+      if (orderMap.containsKey(key)) {
+        final existingOrder = orderMap[key]!;
+        final updatedOrder = existingOrder.copyWith(
+          quantity: existingOrder.quantity + order.quantity,
+          amount: existingOrder.amount + order.amount,
+        );
+        orderMap[key] = updatedOrder;
+      } else {
+        orderMap[key] = order;
+      }
+    }
+    return orderMap.values.toList();
+  });
 });
 
 final billTotalsProvider = Provider.family<Map<String, int>, String>((

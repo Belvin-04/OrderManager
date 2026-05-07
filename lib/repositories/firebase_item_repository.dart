@@ -4,8 +4,9 @@ import 'package:order_manager/repositories/abstract_files/remote_data_source/ite
 
 class FirebaseItemRepository implements ItemsRepository {
   final ItemRemoteDataSource remote;
+  final String businessId;
 
-  FirebaseItemRepository(this.remote);
+  FirebaseItemRepository(this.remote, {required this.businessId});
 
   @override
   Future<void> deleteItem(Item item) {
@@ -14,17 +15,9 @@ class FirebaseItemRepository implements ItemsRepository {
 
   @override
   Future<void> saveItem(Item item) async {
-    final existing = await remote.queryById(item.id);
+    String id = item.id.isEmpty ? await remote.generateId() : item.id;
 
-    String id;
-
-    if (existing is Map && existing.isNotEmpty) {
-      id = existing.values.first['id'];
-    } else {
-      id = await remote.generateId();
-    }
-
-    final data = item.toMap()..['id'] = id;
+    final data = item.copyWith(id: id, businessId: businessId).toMap();
     await remote.save(id, data);
   }
 

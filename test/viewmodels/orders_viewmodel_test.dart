@@ -261,48 +261,6 @@ void main() {
     },
   );
 
-  test('getBillOrdersForTable aggregates orders', () async {
-    final repo = MockOrderRepository();
-
-    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
-      (_) => Stream.value([
-        baseOrder(amount: 120),
-        baseOrder(quantity: 2, amount: 240),
-      ]),
-    );
-
-    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
-
-    final aggregated = await vm.getBillOrdersForTable('1').first;
-
-    expect(aggregated.single.quantity, 3);
-    expect(aggregated.single.amount, 360);
-  });
-
-  test('getBillOrdersForTable separates orders with different types', () async {
-    final repo = MockOrderRepository();
-
-    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
-      (_) => Stream.value([
-        baseOrder(
-          id: '1',
-          type: Type1(id: 't1', type: 'Extra', price: 20),
-          amount: 120,
-        ),
-        baseOrder(
-          id: '2',
-          type: Type1(id: 't2', type: 'None', price: 0),
-        ),
-      ]),
-    );
-
-    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
-
-    final bill = await vm.getBillOrdersForTable('1').first;
-
-    expect(bill.length, 2);
-  });
-
   test(
     'createSplitOrders creates one split order when quantity is 1',
     () async {

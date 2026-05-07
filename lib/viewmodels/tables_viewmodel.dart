@@ -23,8 +23,8 @@ class SwapTableDecision {
 }
 
 class TablesViewmodel extends AsyncNotifier<void> {
-  late final TableRepository _tableRepo;
-  late final OrderRepository _orderRepo;
+  late TableRepository _tableRepo;
+  late OrderRepository _orderRepo;
 
   @override
   FutureOr<void> build() {
@@ -33,12 +33,16 @@ class TablesViewmodel extends AsyncNotifier<void> {
   }
 
   Future<void> addTable() async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     final lastNo = await _tableRepo.getLastTable();
     final nextTableNo = (lastNo?.tableNo ?? 0) + 1;
     await _tableRepo.addTable(nextTableNo);
   }
 
   Future<RemoveTableResult> removeTable() async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     final lastTable = await _tableRepo.getLastTable();
 
     if (lastTable == null) {
@@ -57,6 +61,8 @@ class TablesViewmodel extends AsyncNotifier<void> {
   }
 
   Future<ClearTableResult> clearTable(String tableKey) async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     final hasAnyOrders = await _orderRepo.hasAnyOrdersForTable(tableKey);
 
     if (!hasAnyOrders) {
@@ -72,10 +78,14 @@ class TablesViewmodel extends AsyncNotifier<void> {
   }
 
   Future<void> clearTableConfirm(String tableKey) async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     await _orderRepo.deleteOrdersForTable(tableKey);
   }
 
   Future<SwapTableDecision> swapTable(String sourceTableKey) async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     final tables = await _tableRepo.watchTables().first;
     Set<int> occupiedTables = await _orderRepo.getOccupiedTableNos();
 
@@ -108,14 +118,20 @@ class TablesViewmodel extends AsyncNotifier<void> {
     required String fromTableKey,
     required String toTableKey,
   }) async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     await _orderRepo.moveOrders(fromTableKey, toTableKey);
   }
 
   Future<void> updateTablePosition(String id, Offset newPos) async {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     await _tableRepo.updateTablePosition(id, newPos);
   }
 
   Stream<TableOrderStatus> getTableOrderStatus(String tableKey) {
+    _tableRepo = ref.read(tableRepositoryProvider);
+    _orderRepo = ref.read(orderRepositoryProvider);
     return _orderRepo.watchOrdersForTable(tableKey).map((orders) {
       if (orders.isNotEmpty) {
         final hasPending = orders.any((o) => o.status == "pending");

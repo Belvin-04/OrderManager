@@ -1,5 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_table_remote_data_source.dart';
@@ -7,7 +8,8 @@ import 'package:order_manager/repositories/remote_data_source/firebase_table_rem
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late DatabaseReference ref;
+  const businessId = 'business_table_test';
+  late CollectionReference<Map<String, dynamic>> ref;
   late FirebaseTableRemoteDataSource dataSource;
 
   setUpAll(() async {
@@ -15,15 +17,32 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    final database = FirebaseDatabase.instance;
-    database.useDatabaseEmulator('localhost', 9000);
+    final firestore = FirebaseFirestore.instance;
+    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    firestore.useFirestoreEmulator('localhost', 8080);
+    await FirebaseAuth.instance.signInAnonymously();
 
-    ref = database.ref('tables_test');
-    dataSource = FirebaseTableRemoteDataSource(ref);
+    await FirebaseAuth.instance.authStateChanges().first;
+
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await firestore.collection('businesses').doc(businessId).set({
+      'ownerId': uid,
+    });
+
+    ref = firestore.collection('tables');
+    dataSource = FirebaseTableRemoteDataSource(ref, businessId: businessId);
   });
 
   tearDown(() async {
-    await ref.remove();
+    final snapshot = await ref.where('businessId', isEqualTo: businessId).get();
+    if (snapshot.docs.isEmpty) {
+      return;
+    }
+    final batch = ref.firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   });
 
   test('generateId returns a non-empty id', () async {
@@ -36,7 +55,11 @@ void main() {
 
     final stream = dataSource.watchTables();
 
-    await dataSource.save(id, {'tableNo': 1, 'capacity': 4});
+    await dataSource.save(id, {
+      'businessId': businessId,
+      'tableNo': 1,
+      'capacity': 4,
+    });
 
     final emitted = await stream.first as Map?;
 
@@ -45,11 +68,23 @@ void main() {
   });
 
   test('getLastTable returns table with highest tableNo', () async {
-    await dataSource.save('t1', {'tableNo': 1, 'capacity': 2});
+    await dataSource.save('t1', {
+      'businessId': businessId,
+      'tableNo': 1,
+      'capacity': 2,
+    });
 
-    await dataSource.save('t2', {'tableNo': 3, 'capacity': 6});
+    await dataSource.save('t2', {
+      'businessId': businessId,
+      'tableNo': 3,
+      'capacity': 6,
+    });
 
-    await dataSource.save('t3', {'tableNo': 2, 'capacity': 4});
+    await dataSource.save('t3', {
+      'businessId': businessId,
+      'tableNo': 2,
+      'capacity': 4,
+    });
 
     final result = await dataSource.getLastTable() as Map?;
 
@@ -64,6 +99,7 @@ void main() {
     final id = await dataSource.generateId();
 
     await dataSource.save(id, {
+      'businessId': businessId,
       'tableNo': 5,
       'capacity': 4,
       'position': {'x': 0, 'y': 0},
@@ -71,8 +107,8 @@ void main() {
 
     await dataSource.updatePosition(id, {'x': 10, 'y': 20});
 
-    final snapshot = await ref.child(id).get();
-    final data = snapshot.value as Map;
+    final snapshot = await ref.doc(id).get();
+    final data = snapshot.data()!;
 
     expect(data['tableNo'], 5);
     expect(data['capacity'], 4);
@@ -83,11 +119,31 @@ void main() {
   test('delete removes table from database', () async {
     final id = await dataSource.generateId();
 
-    await dataSource.save(id, {'tableNo': 9, 'capacity': 8});
+    await dataSource.save(id, {
+      'businessId': businessId,
+      'tableNo': 9,
+      'capacity': 8,
+    });
 
     await dataSource.delete(id);
 
-    final snapshot = await ref.child(id).get();
+    final snapshot = await ref.doc(id).get();
     expect(snapshot.exists, false);
   });
+
+  test(
+    'getLastTable returns null when all tableNo values are invalid',
+    () async {
+      await dataSource.save('1', {
+        'businessId': businessId,
+        'tableNo': 'invalid',
+      });
+
+      await dataSource.save('2', {'businessId': businessId, 'tableNo': null});
+
+      final result = await dataSource.getLastTable();
+
+      expect(result, isNull);
+    },
+  );
 }

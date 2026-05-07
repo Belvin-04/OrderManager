@@ -1,5 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
@@ -7,8 +8,9 @@ import 'package:order_manager/repositories/remote_data_source/firebase_order_rem
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late DatabaseReference orderRef;
-  late DatabaseReference splitOrderRef;
+  const businessId = 'business_order_test';
+  late CollectionReference<Map<String, dynamic>> orderRef;
+  late CollectionReference<Map<String, dynamic>> splitOrderRef;
   late FirebaseOrderRemoteDataSource dataSource;
 
   setUpAll(() async {
@@ -16,21 +18,51 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    final db = FirebaseDatabase.instance;
-    db.useDatabaseEmulator('localhost', 9000);
+    final firestore = FirebaseFirestore.instance;
+    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    firestore.useFirestoreEmulator('localhost', 8080);
+    await FirebaseAuth.instance.signInAnonymously();
 
-    orderRef = db.ref('orders_test');
-    splitOrderRef = db.ref('split_orders_test');
+    await FirebaseAuth.instance.authStateChanges().first;
 
-    dataSource = FirebaseOrderRemoteDataSource(orderRef, splitOrderRef);
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await firestore.collection('businesses').doc(businessId).set({
+      'ownerId': uid,
+    });
+
+    orderRef = firestore.collection('orders');
+    splitOrderRef = firestore.collection('split-orders');
+
+    dataSource = FirebaseOrderRemoteDataSource(
+      orderRef,
+      splitOrderRef,
+      businessId: businessId,
+    );
   });
 
   tearDown(() async {
-    await orderRef.remove();
-    await splitOrderRef.remove();
+    Future<void> clearCollection(
+      CollectionReference<Map<String, dynamic>> collection,
+    ) async {
+      final snapshot = await collection
+          .where('businessId', isEqualTo: businessId)
+          .get();
+      if (snapshot.docs.isEmpty) {
+        return;
+      }
+      final batch = collection.firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+
+    await clearCollection(orderRef);
+    await clearCollection(splitOrderRef);
   });
 
   Map<String, dynamic> sampleOrder(int tableNo) => {
+    'businessId': businessId,
     'item': {'name': 'Pizza'},
     'type': {'type': 'Food'},
     'table': {'tableNo': tableNo},
@@ -48,13 +80,14 @@ void main() {
     final orderId = await dataSource.generateId(isSplit: false);
 
     await dataSource.save(orderId, {
+      'businessId': businessId,
       'item': {'name': 'Pizza'},
       'type': {'type': 'Food'},
       'table': {'tableNo': 1},
     }, isSplit: false);
 
-    final orderSnapshot = await orderRef.child(orderId).get();
-    final splitSnapshotForOrder = await splitOrderRef.child(orderId).get();
+    final orderSnapshot = await orderRef.doc(orderId).get();
+    final splitSnapshotForOrder = await splitOrderRef.doc(orderId).get();
 
     expect(orderSnapshot.exists, true);
     expect(splitSnapshotForOrder.exists, false);
@@ -62,13 +95,14 @@ void main() {
     final splitId = await dataSource.generateId(isSplit: true);
 
     await dataSource.save(splitId, {
+      'businessId': businessId,
       'item': {'name': 'Burger'},
       'type': {'type': 'Food'},
       'table': {'tableNo': 2},
     }, isSplit: true);
 
-    final splitSnapshot = await splitOrderRef.child(splitId).get();
-    final orderSnapshotForSplit = await orderRef.child(splitId).get();
+    final splitSnapshot = await splitOrderRef.doc(splitId).get();
+    final orderSnapshotForSplit = await orderRef.doc(splitId).get();
 
     expect(splitSnapshot.exists, true);
     expect(orderSnapshotForSplit.exists, false);
@@ -92,6 +126,12 @@ void main() {
     expect(result!.values.first['table']['tableNo'], 5);
   });
 
+  test('queryOrdersByTable returns null when no orders exist', () async {
+    final result = await dataSource.queryOrdersByTable(1);
+
+    expect(result, isNull);
+  });
+
   test('queryOrdersByType returns correct orders', () async {
     final id = await dataSource.generateId(isSplit: false);
     await dataSource.save(id, sampleOrder(2), isSplit: false);
@@ -99,6 +139,12 @@ void main() {
     final result = await dataSource.queryOrdersByType('Food') as Map?;
     expect(result, isNotNull);
     expect(result!.values.first['type']['type'], 'Food');
+  });
+
+  test('queryOrdersByType returns null when no orders exist', () async {
+    final result = await dataSource.queryOrdersByType('Dine In');
+
+    expect(result, isNull);
   });
 
   test('queryOrdersByItem returns correct orders', () async {
@@ -110,14 +156,20 @@ void main() {
     expect(result!.values.first['item']['name'], 'Pizza');
   });
 
+  test('queryOrdersByItem returns null when no orders exist', () async {
+    final result = await dataSource.queryOrdersByItem('Pizza');
+
+    expect(result, isNull);
+  });
+
   test('updateTableNo updates nested field only', () async {
     final id = await dataSource.generateId(isSplit: false);
     await dataSource.save(id, sampleOrder(1), isSplit: false);
 
     await dataSource.updateTableNo(id, 10);
 
-    final snapshot = await orderRef.child(id).get();
-    final data = snapshot.value as Map;
+    final snapshot = await orderRef.doc(id).get();
+    final data = snapshot.data()!;
 
     expect(data['table']['tableNo'], 10);
     expect(data['item']['name'], 'Pizza');
@@ -139,7 +191,7 @@ void main() {
 
     await dataSource.save(id, sampleOrder(4), isSplit: false);
 
-    final emitted = await stream.first as Map?;
+    final emitted = await stream.firstWhere((raw) => raw != null) as Map?;
     expect(emitted, isNotNull);
   });
 
@@ -149,7 +201,7 @@ void main() {
 
     await dataSource.delete(id, isSplit: false);
 
-    final snapshot = await orderRef.child(id).get();
+    final snapshot = await orderRef.doc(id).get();
     expect(snapshot.exists, false);
   });
 
@@ -159,12 +211,13 @@ void main() {
     final id = await dataSource.generateId(isSplit: true);
 
     await dataSource.save(id, {
+      'businessId': businessId,
       'item': {'name': 'Burger'},
       'type': {'type': 'Food'},
       'table': {'tableNo': 12},
     }, isSplit: true);
 
-    final emitted = await stream.first as Map?;
+    final emitted = await stream.firstWhere((raw) => raw != null) as Map?;
 
     expect(emitted, isNotNull);
     expect(emitted![id]['table']['tableNo'], 12);
@@ -174,6 +227,7 @@ void main() {
     final id = await dataSource.generateId(isSplit: true);
 
     await dataSource.save(id, {
+      'businessId': businessId,
       'item': {'name': 'Juice'},
       'type': {'type': 'Drink'},
       'table': {'tableNo': 2},
@@ -183,7 +237,16 @@ void main() {
 
     await dataSource.delete(id, isSplit: true);
 
-    final emitted = await stream.first;
+    final emitted = await stream.firstWhere((raw) => raw == null);
     expect(emitted, isNull);
   });
+
+  test(
+    'getSplitOrdersByTable returns null when no split orders exist',
+    () async {
+      final result = await dataSource.getSplitOrdersByTable(1);
+
+      expect(result, isNull);
+    },
+  );
 }

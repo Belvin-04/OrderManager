@@ -11,6 +11,7 @@ class Order {
   final String status;
   final String note;
   final int amount;
+  final String businessId;
 
   Order({
     required this.quantity,
@@ -21,6 +22,7 @@ class Order {
     required this.status,
     required this.note,
     required this.amount,
+    this.businessId = '',
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Order {
     orderMap['note'] = note;
     orderMap['status'] = status;
     orderMap['amount'] = amount;
+    orderMap['businessId'] = businessId;
     return orderMap;
   }
 
@@ -46,6 +49,7 @@ class Order {
     Table1 table;
     int quantity;
     int amount;
+    String businessId;
 
     id = orderMap['id'];
     table = Table1.fromMap(Map<String, dynamic>.from(orderMap['table']));
@@ -55,6 +59,7 @@ class Order {
     note = orderMap['note'];
     status = orderMap['status'];
     amount = orderMap['amount'];
+    businessId = orderMap['businessId'] ?? '';
 
     return Order(
       quantity: quantity,
@@ -65,6 +70,7 @@ class Order {
       status: status,
       note: note,
       amount: amount,
+      businessId: businessId,
     );
   }
 
@@ -96,6 +102,7 @@ class Order {
     String? status,
     String? note,
     int? amount,
+    String? businessId,
   }) {
     return Order(
       quantity: quantity ?? this.quantity,
@@ -106,6 +113,7 @@ class Order {
       status: status ?? this.status,
       note: note ?? this.note,
       amount: amount ?? this.amount,
+      businessId: businessId ?? this.businessId,
     );
   }
 

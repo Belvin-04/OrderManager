@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:firebase_database/firebase_database.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,16 +8,14 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
+import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/firebase_order_repository.dart';
+import 'package:order_manager/utils/selected_business_notifier.dart';
 
 class MockOrderRepository extends Mock implements OrderRepository {}
-
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-
-class MockFirebaseDatabase extends Mock implements FirebaseDatabase {}
 
 final testTable = Table1(id: 't', tableNo: 1);
 
@@ -132,28 +130,15 @@ void main() {
     sub.close();
   });
 
-  test('splitOrderRefProvider returns split-orders database ref', () {
-    final mockDb = MockFirebaseDatabase();
-    final mockRef = MockDatabaseReference();
-
-    when(() => mockDb.ref('split-orders')).thenReturn(mockRef);
-    when(() => mockRef.path).thenReturn('split-orders');
-
-    final container = ProviderContainer(
-      overrides: [firebaseDatabaseProvider.overrideWithValue(mockDb)],
-    );
-    addTearDown(container.dispose);
-
-    final ref = container.read(splitOrderRefProvider);
-
-    expect(ref.path, 'split-orders');
-  });
-
   test('orderRepositoryProvider returns FirebaseOrderRepository', () {
+    final firestore = FakeFirebaseFirestore();
     final container = ProviderContainer(
       overrides: [
-        orderRefProvider.overrideWithValue(MockDatabaseReference()),
-        splitOrderRefProvider.overrideWithValue(MockDatabaseReference()),
+        orderRefProvider.overrideWithValue(firestore.collection('orders')),
+        splitOrderRefProvider.overrideWithValue(
+          firestore.collection('split-orders'),
+        ),
+        currentBusinessIdProvider.overrideWithValue('business-test'),
       ],
     );
     addTearDown(container.dispose);
@@ -161,5 +146,22 @@ void main() {
     final repo = container.read(orderRepositoryProvider);
 
     expect(repo, isA<FirebaseOrderRepository>());
+  });
+
+  test('splitOrderRefProvider returns split-orders collection', () {
+    final firestore = FakeFirebaseFirestore();
+
+    final container = ProviderContainer(
+      overrides: [
+        firebaseFirestoreProvider.overrideWithValue(firestore),
+        selectedBusinessProvider.overrideWith(SelectedBusinessNotifier.new),
+      ],
+    );
+
+    addTearDown(container.dispose);
+
+    final ref = container.read(splitOrderRefProvider);
+
+    expect(ref.path, 'split-orders');
   });
 }

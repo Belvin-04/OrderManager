@@ -11,9 +11,16 @@ import 'package:order_manager/repositories/abstract_files/order_repository.dart'
 
 class MockOrderRepository extends Mock implements OrderRepository {}
 
+ProviderContainer createContainer(MockOrderRepository repo) {
+  return ProviderContainer(
+    overrides: [orderRepositoryProvider.overrideWithValue(repo)],
+  );
+}
+
 final testTable = Table1(id: 't', tableNo: 1);
 
 Order baseOrder({
+  String businessId = 'biz-1',
   String id = '',
   int quantity = 1,
   String status = 'pending',
@@ -81,5 +88,51 @@ void main() {
 
     expect(totals, {});
     verify(() => mockRepo.getBillTotals([])).called(1);
+  });
+
+  test('billOrdersProvider aggregates orders', () async {
+    final repo = MockOrderRepository();
+
+    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+      (_) => Stream.value([
+        baseOrder(amount: 120),
+        baseOrder(quantity: 2, amount: 240),
+      ]),
+    );
+
+    final container = createContainer(repo);
+
+    container.listen(billOrdersProvider('1'), (_, __) {});
+
+    final aggregated = await container.read(billOrdersProvider('1').future);
+
+    expect(aggregated.single.quantity, 3);
+    expect(aggregated.single.amount, 360);
+  });
+
+  test('billOrdersProvider separates orders with different types', () async {
+    final repo = MockOrderRepository();
+
+    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+      (_) => Stream.value([
+        baseOrder(
+          id: '1',
+          type: Type1(id: 't1', type: 'Extra', price: 20),
+          amount: 120,
+        ),
+        baseOrder(
+          id: '2',
+          type: Type1(id: 't2', type: 'None', price: 0),
+        ),
+      ]),
+    );
+
+    final container = createContainer(repo);
+
+    container.listen(billOrdersProvider('1'), (_, __) {});
+
+    final bill = await container.read(billOrdersProvider('1').future);
+
+    expect(bill.length, 2);
   });
 }

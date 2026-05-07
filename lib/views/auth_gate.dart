@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-import 'package:order_manager/views/startup/preferred_startup_screen.dart';
+import 'package:order_manager/views/business/businesses_page.dart';
 import 'login_page.dart';
 
 class AuthGate extends ConsumerWidget {
@@ -16,7 +16,7 @@ class AuthGate extends ConsumerWidget {
         if (user == null) {
           return const LoginPage();
         }
-        return const PreferredStartupScreen();
+        return const BusinessGate();
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),

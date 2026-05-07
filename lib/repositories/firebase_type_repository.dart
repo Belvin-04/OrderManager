@@ -4,8 +4,9 @@ import 'package:order_manager/repositories/abstract_files/type_repository.dart';
 
 class FirebaseTypeRepository implements TypeRepository {
   final TypeRemoteDataSource remote;
+  final String businessId;
 
-  FirebaseTypeRepository(this.remote);
+  FirebaseTypeRepository(this.remote, {required this.businessId});
 
   @override
   Stream<List<Type1>> watchTypes() {
@@ -22,17 +23,9 @@ class FirebaseTypeRepository implements TypeRepository {
 
   @override
   Future<void> saveType(Type1 type) async {
-    final existing = await remote.queryById(type.id);
+    final id = type.id.isEmpty ? await remote.generateId() : type.id;
 
-    String id;
-
-    if (existing is Map && existing.values.isNotEmpty) {
-      id = existing.values.first['id'];
-    } else {
-      id = await remote.generateId();
-    }
-
-    final data = type.toMap()..['id'] = id;
+    final data = type.copyWith(id: id, businessId: businessId).toMap();
     await remote.save(id, data);
   }
 

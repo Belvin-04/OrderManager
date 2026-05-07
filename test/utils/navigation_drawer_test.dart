@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/models/business.dart';
+import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
+import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:order_manager/utils/change_theme_switch.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
 import 'package:order_manager/views/items/items.dart';
@@ -11,21 +14,52 @@ import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
 
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+class MockBusinessRepository extends Mock implements BusinessRepository {}
 
-Future<void> pumpDrawer(
-  WidgetTester tester, {
-  MockFirebaseAuth? mockAuth,
-}) async {
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+class MockAuthRepository extends Mock implements FirebaseAuth {}
+
+class FakeBusiness extends Mock implements Business {}
+
+Future<
+  ({
+    ProviderContainer container,
+    MockBusinessRepository businessRepo,
+    MockAuthRepository authRepo,
+  })
+>
+pumpDrawer(WidgetTester tester, {Business? selectedBusiness}) async {
+  final businessRepo = MockBusinessRepository();
+  final authRepo = MockAuthRepository();
+
+  when(authRepo.signOut).thenAnswer((_) async {});
+
+  final container = ProviderContainer(
+    retry: (_, __) => null,
+    overrides: [
+      businessRepositoryProvider.overrideWithValue(businessRepo),
+      firebaseAuthProvider.overrideWithValue(authRepo),
+    ],
+  );
+
+  if (selectedBusiness != null) {
+    container.read(selectedBusinessProvider.notifier).selectedBusiness =
+        selectedBusiness;
+  }
+
+  addTearDown(() async {
+    container.dispose();
+
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    await tester.pump();
+  });
+
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        if (mockAuth != null) firebaseAuthProvider.overrideWithValue(mockAuth),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         home: Scaffold(
-          key: scaffoldKey,
+          appBar: AppBar(),
           drawer: const drawer.NavigationDrawer(),
           body: const Center(child: Text('Home')),
         ),
@@ -33,13 +67,42 @@ Future<void> pumpDrawer(
     ),
   );
 
-  scaffoldKey.currentState!.openDrawer();
-  await tester.pumpAndSettle();
+  await tester.tap(find.byTooltip('Open navigation menu'));
+
+  await tester.pump();
+
+  await tester.pump(const Duration(milliseconds: 350));
+
+  return (container: container, businessRepo: businessRepo, authRepo: authRepo);
+}
+
+Future<void> tapDrawerItem(WidgetTester tester, String text) async {
+  final finder = find.text(text);
+
+  expect(finder, findsOneWidget);
+
+  await tester.scrollUntilVisible(
+    finder,
+    100,
+    scrollable: find.byType(Scrollable).first,
+  );
+
+  await tester.tap(finder);
+
+  await tester.pump();
+
+  await tester.pump(const Duration(milliseconds: 350));
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeBusiness());
+  });
+
+  const business = Business(id: 'b1', name: 'Test Business', ownerId: 'owner1');
+
   testWidgets('navigation drawer shows all menu items', (tester) async {
-    await pumpDrawer(tester);
+    await pumpDrawer(tester, selectedBusiness: business);
 
     expect(find.text('Items'), findsOneWidget);
     expect(find.text('Tables'), findsOneWidget);
@@ -47,13 +110,25 @@ void main() {
     expect(find.text('Quick Orders'), findsOneWidget);
     expect(find.text('Logout'), findsOneWidget);
     expect(find.text('Dark Theme'), findsOneWidget);
+    expect(find.text('Switch Business'), findsOneWidget);
+  });
+
+  testWidgets('shows selected business name', (tester) async {
+    await pumpDrawer(tester, selectedBusiness: business);
+
+    expect(find.text('Test Business'), findsOneWidget);
+  });
+
+  testWidgets('shows fallback text when no business selected', (tester) async {
+    await pumpDrawer(tester);
+
+    expect(find.text('Not selected'), findsOneWidget);
   });
 
   testWidgets('tapping Items navigates to Items screen', (tester) async {
     await pumpDrawer(tester);
 
-    await tester.tap(find.text('Items'));
-    await tester.pumpAndSettle();
+    await tapDrawerItem(tester, 'Items');
 
     expect(find.byType(Items), findsOneWidget);
   });
@@ -61,8 +136,7 @@ void main() {
   testWidgets('tapping Tables navigates to Tables screen', (tester) async {
     await pumpDrawer(tester);
 
-    await tester.tap(find.text('Tables'));
-    await tester.pumpAndSettle();
+    await tapDrawerItem(tester, 'Tables');
 
     expect(find.byType(Tables), findsOneWidget);
   });
@@ -70,8 +144,7 @@ void main() {
   testWidgets('tapping Types navigates to Types screen', (tester) async {
     await pumpDrawer(tester);
 
-    await tester.tap(find.text('Types'));
-    await tester.pumpAndSettle();
+    await tapDrawerItem(tester, 'Types');
 
     expect(find.byType(Types), findsOneWidget);
   });
@@ -81,8 +154,7 @@ void main() {
   ) async {
     await pumpDrawer(tester);
 
-    await tester.tap(find.text('Quick Orders'));
-    await tester.pumpAndSettle();
+    await tapDrawerItem(tester, 'Quick Orders');
 
     expect(find.byType(QuickOrders), findsOneWidget);
   });
@@ -93,15 +165,25 @@ void main() {
     expect(find.byType(ChangeThemeSwitch), findsOneWidget);
   });
 
-  testWidgets('tapping Logout triggers sign out', (tester) async {
-    final firebaseAuth = MockFirebaseAuth();
-    when(firebaseAuth.signOut).thenAnswer((_) async {});
+  testWidgets('tapping Switch Business clears selected business', (
+    tester,
+  ) async {
+    final result = await pumpDrawer(tester, selectedBusiness: business);
 
-    await pumpDrawer(tester, mockAuth: firebaseAuth);
+    expect(result.container.read(selectedBusinessProvider), isNotNull);
 
-    await tester.tap(find.text('Logout'));
-    await tester.pumpAndSettle();
+    await tapDrawerItem(tester, 'Switch Business');
 
-    verify(firebaseAuth.signOut).called(1);
+    expect(result.container.read(selectedBusinessProvider), isNull);
+  });
+
+  testWidgets('tapping Logout clears business and signs out', (tester) async {
+    final result = await pumpDrawer(tester, selectedBusiness: business);
+
+    await tapDrawerItem(tester, 'Logout');
+
+    expect(result.container.read(selectedBusinessProvider), isNull);
+
+    verify(result.authRepo.signOut).called(1);
   });
 }

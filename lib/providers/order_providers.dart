@@ -1,6 +1,7 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/order.dart';
+import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/firebase_order_repository.dart';
@@ -8,19 +9,27 @@ import 'package:order_manager/repositories/remote_data_source/firebase_order_rem
 import 'package:order_manager/utils/quick_order_cart.dart';
 import 'package:order_manager/viewmodels/order_viewmodel.dart';
 
-final orderRefProvider = Provider<DatabaseReference>((ref) {
-  return ref.read(firebaseDatabaseProvider).ref('orders');
+final orderRefProvider = Provider<CollectionReference<Map<String, dynamic>>>((
+  ref,
+) {
+  return ref.watch(firebaseFirestoreProvider).collection('orders');
 });
 
-final splitOrderRefProvider = Provider<DatabaseReference>((ref) {
-  return ref.read(firebaseDatabaseProvider).ref('split-orders');
-});
+final splitOrderRefProvider =
+    Provider<CollectionReference<Map<String, dynamic>>>((ref) {
+      return ref.watch(firebaseFirestoreProvider).collection('split-orders');
+    });
 
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
-  final ordersRef = ref.read(orderRefProvider);
-  final splitRef = ref.read(splitOrderRefProvider);
-  final remote = FirebaseOrderRemoteDataSource(ordersRef, splitRef);
-  return FirebaseOrderRepository(remote);
+  final ordersRef = ref.watch(orderRefProvider);
+  final splitRef = ref.watch(splitOrderRefProvider);
+  final businessId = ref.watch(currentBusinessIdProvider);
+  final remote = FirebaseOrderRemoteDataSource(
+    ordersRef,
+    splitRef,
+    businessId: businessId,
+  );
+  return FirebaseOrderRepository(remote, businessId: businessId);
 });
 
 final ordersViewModelProvider = AsyncNotifierProvider<OrdersViewModel, void>(

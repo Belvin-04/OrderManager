@@ -14,6 +14,7 @@ Map<String, dynamic> fakeOrderMap({
   int amount = 10,
   int qty = 1,
 }) => {
+  'businessId': 'biz-1',
   'id': id,
   'status': status,
   'amount': amount,
@@ -44,7 +45,7 @@ void main() {
 
   setUp(() {
     remote = MockOrderRemoteDataSource();
-    repo = FirebaseOrderRepository(remote);
+    repo = FirebaseOrderRepository(remote, businessId: 'biz-1');
   });
 
   test('hasAnyOrdersForTable true when match exists', () async {

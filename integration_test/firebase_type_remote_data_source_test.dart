@@ -1,11 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_type_remote_data_source.dart';
 
 void main() {
-  late DatabaseReference ref;
+  const businessId = 'business_type_test';
+  late CollectionReference<Map<String, dynamic>> ref;
   late FirebaseTypeRemoteDataSource dataSource;
 
   setUpAll(() async {
@@ -15,15 +17,32 @@ void main() {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    final database = FirebaseDatabase.instance;
-    database.useDatabaseEmulator('localhost', 9000);
+    final firestore = FirebaseFirestore.instance;
+    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    firestore.useFirestoreEmulator('localhost', 8080);
+    await FirebaseAuth.instance.signInAnonymously();
 
-    ref = database.ref('types_test');
-    dataSource = FirebaseTypeRemoteDataSource(ref);
+    await FirebaseAuth.instance.authStateChanges().first;
+
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await firestore.collection('businesses').doc(businessId).set({
+      'ownerId': uid,
+    });
+
+    ref = firestore.collection('types');
+    dataSource = FirebaseTypeRemoteDataSource(ref, businessId: businessId);
   });
 
   tearDown(() async {
-    await ref.remove();
+    final snapshot = await ref.where('businessId', isEqualTo: businessId).get();
+    if (snapshot.docs.isEmpty) {
+      return;
+    }
+    final batch = ref.firestore.batch();
+    for (final doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
   });
 
   test('generateId returns a valid id', () async {
@@ -34,7 +53,7 @@ void main() {
   test('save and queryByType returns correct data', () async {
     final id = await dataSource.generateId();
 
-    final data = {'type': 'food', 'name': 'Pizza'};
+    final data = {'businessId': businessId, 'type': 'food', 'name': 'Pizza'};
 
     await dataSource.save(id, data);
 
@@ -52,7 +71,12 @@ void main() {
   test('save and queryById returns correct data', () async {
     final id = await dataSource.generateId();
 
-    final data = {'id': id,'type': 'food', 'name': 'Pizza'};
+    final data = {
+      'businessId': businessId,
+      'id': id,
+      'type': 'food',
+      'name': 'Pizza',
+    };
 
     await dataSource.save(id, data);
 
@@ -73,11 +97,15 @@ void main() {
   test('delete removes data from database', () async {
     final id = await dataSource.generateId();
 
-    await dataSource.save(id, {'type': 'drink', 'name': 'Coffee'});
+    await dataSource.save(id, {
+      'businessId': businessId,
+      'type': 'drink',
+      'name': 'Coffee',
+    });
 
     await dataSource.delete(id);
 
-    final snapshot = await ref.child(id).get();
+    final snapshot = await ref.doc(id).get();
     expect(snapshot.exists, false);
   });
 
@@ -86,7 +114,11 @@ void main() {
 
     final stream = dataSource.watchTypes();
 
-    await dataSource.save(id, {'type': 'snack', 'name': 'Burger'});
+    await dataSource.save(id, {
+      'businessId': businessId,
+      'type': 'snack',
+      'name': 'Burger',
+    });
 
     final emitted = await stream.first as Map?;
 

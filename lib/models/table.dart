@@ -5,12 +5,14 @@ class Table1 {
   final int tableNo;
   final int splitNo;
   final Offset position;
+  final String businessId;
 
   Table1({
     required this.tableNo,
     required this.id,
     this.splitNo = 0,
     this.position = const Offset(100, 100),
+    this.businessId = '',
   });
 
   Map<String, dynamic> toMap() {
@@ -19,6 +21,7 @@ class Table1 {
     tableMap['tableNo'] = tableNo;
     tableMap['splitNo'] = splitNo;
     tableMap['position'] = position.toMap();
+    tableMap['businessId'] = businessId;
     return tableMap;
   }
 
@@ -26,6 +29,7 @@ class Table1 {
     String id = tableMap['id'];
     int tableNo = tableMap['tableNo'];
     int splitNo = tableMap['splitNo'] ?? 0;
+    String businessId = tableMap['businessId'] ?? '';
     Offset position = fromOffsetMap(
       Map<String, dynamic>.from(tableMap['position']),
     );
@@ -34,15 +38,23 @@ class Table1 {
       id: id,
       splitNo: splitNo,
       position: position,
+      businessId: businessId,
     );
   }
 
-  Table1 copyWith({String? id, int? tableNo, int? splitNo, Offset? position}) {
+  Table1 copyWith({
+    String? id,
+    int? tableNo,
+    int? splitNo,
+    Offset? position,
+    String? businessId,
+  }) {
     return Table1(
       tableNo: tableNo ?? this.tableNo,
       id: id ?? this.id,
       splitNo: splitNo ?? this.splitNo,
       position: position ?? this.position,
+      businessId: businessId ?? this.businessId,
     );
   }
 

@@ -12,7 +12,7 @@ void main() {
 
   setUp(() {
     remote = MockItemRemoteDataSource();
-    repository = FirebaseItemRepository(remote);
+    repository = FirebaseItemRepository(remote, businessId: 'biz-1');
   });
 
   test('watchItems returns empty list when data is null', () async {
@@ -60,11 +60,6 @@ void main() {
   });
 
   test('saveItem reuses existing id when id already exists remotely', () async {
-    when(() => remote.queryById('existing-id')).thenAnswer(
-      (_) async => {
-        'k1': {'id': 'existing-id', 'name': 'Item A', 'price': 10},
-      },
-    );
     when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
     final item = Item(id: 'existing-id', name: 'Item A', price: 10);
@@ -72,12 +67,10 @@ void main() {
     await repository.saveItem(item);
 
     verifyNever(() => remote.generateId());
-    verify(() => remote.queryById('existing-id')).called(1);
     verify(() => remote.save('existing-id', any())).called(1);
   });
 
   test('saveItem generates id when item id is empty', () async {
-    when(() => remote.queryById('')).thenAnswer((_) async => null);
     when(() => remote.generateId()).thenAnswer((_) async => 'new-id');
     when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
@@ -85,27 +78,9 @@ void main() {
 
     await repository.saveItem(item);
 
-    verify(() => remote.queryById('')).called(1);
     verify(() => remote.generateId()).called(1);
     verify(() => remote.save('new-id', any())).called(1);
   });
-
-  test(
-    'saveItem generates id when provided id does not exist remotely',
-    () async {
-      when(() => remote.queryById('missing-id')).thenAnswer((_) async => null);
-      when(() => remote.generateId()).thenAnswer((_) async => 'new-id');
-      when(() => remote.save(any(), any())).thenAnswer((_) async {});
-
-      final item = Item(id: 'missing-id', name: 'Item A', price: 10);
-
-      await repository.saveItem(item);
-
-      verify(() => remote.queryById('missing-id')).called(1);
-      verify(() => remote.generateId()).called(1);
-      verify(() => remote.save('new-id', any())).called(1);
-    },
-  );
 
   test('deleteItem deletes item by id', () async {
     when(() => remote.delete('1')).thenAnswer((_) async {});

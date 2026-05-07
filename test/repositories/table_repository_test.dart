@@ -11,7 +11,7 @@ void main() {
 
   setUp(() {
     remote = MockTableRemoteDataSource();
-    repository = FirebaseTableRepository(remote);
+    repository = FirebaseTableRepository(remote, businessId: 'biz-1');
   });
 
   test('watchTables returns empty list when no data', () async {

@@ -68,32 +68,6 @@ class OrdersViewModel extends AsyncNotifier<void> {
     return restored;
   }
 
-  Stream<List<Order>> getBillOrdersForTable(String tableNo) async* {
-    Stream<List<Order>> orderStream = ref
-        .read(orderRepositoryProvider)
-        .getBillOrdersForTable(tableNo);
-    Map<String, Order> orderMap = {};
-
-    await for (final List<Order> orderList in orderStream) {
-      orderMap.clear();
-      for (final Order order in orderList) {
-        final key = '${order.item.name} ${order.type.getType(1)}';
-        if (orderMap.containsKey(key)) {
-          final existingOrder = orderMap[key]!;
-          final updatedOrder = existingOrder.copyWith(
-            quantity: existingOrder.quantity + order.quantity,
-            amount: existingOrder.amount + order.amount,
-          );
-          orderMap[key] = updatedOrder;
-        } else {
-          orderMap[key] = order;
-        }
-      }
-      List<Order> orders = orderMap.values.toList();
-      yield orders;
-    }
-  }
-
   Future<bool> createSplitOrders(String tableNo) async {
     Stream<List<Order>> orderStream = ref
         .read(orderRepositoryProvider)

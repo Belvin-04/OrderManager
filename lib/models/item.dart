@@ -2,14 +2,21 @@ class Item {
   final int price;
   final String name;
   final String id;
+  final String businessId;
 
-  Item({required this.name, required this.price, required this.id});
+  Item({
+    required this.name,
+    required this.price,
+    required this.id,
+    this.businessId = '',
+  });
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> itemMap = {};
     itemMap['name'] = name;
     itemMap['price'] = price;
     itemMap['id'] = id;
+    itemMap['businessId'] = businessId;
     return itemMap;
   }
 
@@ -17,7 +24,8 @@ class Item {
     String name = itemMap['name'];
     int price = itemMap['price'];
     String id = itemMap['id'];
-    return Item(name: name, price: price, id: id);
+    String businessId = itemMap['businessId'] ?? '';
+    return Item(name: name, price: price, id: id, businessId: businessId);
   }
 
   @override
@@ -26,11 +34,12 @@ class Item {
     return itemDetails;
   }
 
-  Item copyWith({int? price, String? name, String? id}) {
+  Item copyWith({int? price, String? name, String? id, String? businessId}) {
     return Item(
       name: name ?? this.name,
       price: price ?? this.price,
       id: id ?? this.id,
+      businessId: businessId ?? this.businessId,
     );
   }
 

@@ -1,16 +1,18 @@
-import 'package:firebase_database/firebase_database.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
 import 'package:order_manager/repositories/firebase_type_repository.dart';
 
-class MockDatabaseReference extends Mock implements DatabaseReference {}
-
 void main() {
   test('typeRepositoryProvider returns FirebaseTypeRepository', () {
+    final firestore = FakeFirebaseFirestore();
     final container = ProviderContainer(
-      overrides: [typesRefProvider.overrideWithValue(MockDatabaseReference())],
+      overrides: [
+        typesRefProvider.overrideWithValue(firestore.collection('types')),
+        currentBusinessIdProvider.overrideWithValue('business-test'),
+      ],
     );
     addTearDown(container.dispose);
 

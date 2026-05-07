@@ -6,13 +6,14 @@ import 'package:order_manager/repositories/abstract_files/table_repository.dart'
 
 class FirebaseTableRepository implements TableRepository {
   final TableRemoteDataSource remote;
+  final String businessId;
 
-  FirebaseTableRepository(this.remote);
+  FirebaseTableRepository(this.remote, {required this.businessId});
 
   @override
   Future<void> addTable(int tableNo) async {
     final id = await remote.generateId();
-    final table = Table1(tableNo: tableNo, id: id);
+    final table = Table1(tableNo: tableNo, id: id, businessId: businessId);
     await remote.save(id, table.toMap());
   }
 

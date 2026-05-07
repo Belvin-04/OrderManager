@@ -12,7 +12,7 @@ void main() {
 
   setUp(() {
     remote = MockTypeRemoteDataSource();
-    repository = FirebaseTypeRepository(remote);
+    repository = FirebaseTypeRepository(remote, businessId: 'biz-1');
   });
   test('watchTypes returns empty list when data is null', () async {
     when(
@@ -59,7 +59,6 @@ void main() {
   });
 
   test('saveType generates id when id is empty', () async {
-    when(() => remote.queryById('')).thenAnswer((_) async => null);
     when(() => remote.generateId()).thenAnswer((_) async => 'newId');
     when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
@@ -67,40 +66,18 @@ void main() {
 
     await repository.saveType(type);
 
-    verify(() => remote.queryById('')).called(1);
     verify(() => remote.generateId()).called(1);
     verify(() => remote.save('newId', any())).called(1);
   });
 
   test('saveType reuses existing id when id exists remotely', () async {
-    when(() => remote.queryById('existingId')).thenAnswer(
-      (_) async => {
-        'k1': {'id': 'existingId', 'type': 'A', 'price': 10},
-      },
-    );
-
     when(() => remote.save(any(), any())).thenAnswer((_) async {});
 
     final type = Type1(id: 'existingId', type: 'A', price: 10);
 
     await repository.saveType(type);
-    verify(() => remote.queryById('existingId')).called(1);
     verifyNever(() => remote.generateId());
     verify(() => remote.save('existingId', any())).called(1);
-  });
-
-  test('saveType generates id when provided id is not found', () async {
-    when(() => remote.queryById('missing-id')).thenAnswer((_) async => null);
-    when(() => remote.generateId()).thenAnswer((_) async => 'newId');
-    when(() => remote.save(any(), any())).thenAnswer((_) async {});
-
-    final type = Type1(id: 'missing-id', type: 'A', price: 10);
-
-    await repository.saveType(type);
-
-    verify(() => remote.queryById('missing-id')).called(1);
-    verify(() => remote.generateId()).called(1);
-    verify(() => remote.save('newId', any())).called(1);
   });
 
   test('deleteType deletes by id', () async {

@@ -4,8 +4,11 @@ import 'package:order_manager/repositories/abstract_files/remote_data_source/ord
 
 class FirebaseOrderRepository extends OrderRepository {
   final OrderRemoteDataSource remote;
+  final String businessId;
 
-  FirebaseOrderRepository(this.remote);
+  FirebaseOrderRepository(this.remote, {required this.businessId});
+
+  bool _isBusinessMatch(Order order) => order.businessId == businessId;
 
   @override
   Future<bool> hasAnyOrdersForTable(
@@ -19,7 +22,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((e) => Order.fromMap(Map.from(e)))
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
         .any((o) => o.table.tableNo.toString() == tableKey);
   }
 
@@ -39,7 +43,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     for (final entry in map.values) {
-      Order order = Order.fromMap(entry);
+      final Order order = Order.fromMap(Map<String, dynamic>.from(entry));
       await deleteOrder(order, isSplit: false);
     }
   }
@@ -57,9 +61,10 @@ class FirebaseOrderRepository extends OrderRepository {
       int total = 0;
 
       for (final v in map.values) {
-        final order = Order.fromMap(Map.from(v));
+        final order = Order.fromMap(Map<String, dynamic>.from(v));
         if (order.table.tableNo.toString() == tableKey &&
             order.table.splitNo.toString() == splitNo &&
+            _isBusinessMatch(order) &&
             order.status != 'canceled') {
           total += order.amount;
         }
@@ -75,7 +80,9 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((v) => Order.fromMap(Map.from(v)).table.tableNo)
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
+        .map((order) => order.table.tableNo)
         .toSet();
   }
 
@@ -86,7 +93,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
         .where((o) => o.table.tableNo.toString() == tableKey)
         .toList();
   }
@@ -101,7 +109,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
         .where(
           (o) =>
               o.table.tableNo.toString() == tableKey &&
@@ -117,7 +126,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     for (final entry in map.entries) {
-      final order = Order.fromMap(Map.from(entry.value));
+      final order = Order.fromMap(Map<String, dynamic>.from(entry.value));
       if (order.table.tableNo.toString() == fromTableKey) {
         await remote.updateTableNo(entry.key, int.parse(toTableKey));
       }
@@ -130,7 +139,7 @@ class FirebaseOrderRepository extends OrderRepository {
         ? await remote.generateId(isSplit: isSplit)
         : order.id;
 
-    final updated = order.copyWith(id: id);
+    final updated = order.copyWith(id: id, businessId: businessId);
     await remote.save(id, updated.toMap(), isSplit: isSplit);
   }
 
@@ -141,7 +150,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
         .toList();
   }
 
@@ -152,7 +162,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     return map.values
-        .map((v) => Order.fromMap(Map<String, dynamic>.from(v)))
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .where(_isBusinessMatch)
         .toList();
   }
 
@@ -163,7 +174,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
       final map = raw as Map;
       return map.values
-          .map((e) => Order.fromMap(Map.from(e)))
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .where(_isBusinessMatch)
           .where(
             (o) => o.status == status && o.table.tableNo.toString() == tableNo,
           )
@@ -178,7 +190,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
       final map = raw as Map;
       return map.values
-          .map((e) => Order.fromMap(Map.from(e)))
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .where(_isBusinessMatch)
           .where(
             (o) =>
                 o.table.tableNo.toString() == tableNo &&
@@ -208,7 +221,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
       final map = raw as Map;
       return map.values
-          .map((e) => Order.fromMap(Map.from(e)))
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .where(_isBusinessMatch)
           .where(
             (o) =>
                 o.table.splitNo == 0 && o.table.tableNo.toString() == tableNo,
@@ -223,7 +237,10 @@ class FirebaseOrderRepository extends OrderRepository {
       if (raw == null) return [];
 
       final map = raw as Map;
-      return map.values.map((e) => Order.fromMap(Map.from(e))).toList();
+      return map.values
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .where(_isBusinessMatch)
+          .toList();
     });
   }
 
@@ -256,7 +273,8 @@ class FirebaseOrderRepository extends OrderRepository {
 
       final map = raw as Map;
       return map.values
-          .map((e) => Order.fromMap(Map.from(e)))
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .where(_isBusinessMatch)
           .where((o) => o.table.tableNo.toString() == tableKey)
           .toList();
     });

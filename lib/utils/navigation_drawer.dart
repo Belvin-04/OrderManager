@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/items/items.dart';
 import 'package:order_manager/views/quick_orders.dart';
@@ -13,11 +14,29 @@ class NavigationDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedBusiness = ref.watch(selectedBusinessProvider);
+
     return Drawer(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView(
           children: [
+            ListTile(
+              title: const Text("Current Business"),
+              subtitle: Text(selectedBusiness?.name ?? "Not selected"),
+              leading: const Icon(Icons.store_mall_directory_outlined),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              title: const Text("Switch Business"),
+              onTap: () {
+                ref
+                    .read(businessViewModelProvider.notifier)
+                    .clearSelectedBusiness();
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+            ),
+            const Divider(color: Colors.white24),
             ListTile(
               title: const Text("Items"),
               onTap: () {
@@ -65,6 +84,9 @@ class NavigationDrawer extends ConsumerWidget {
             ListTile(
               onTap: () async {
                 Navigator.pop(context);
+                ref
+                    .read(businessViewModelProvider.notifier)
+                    .clearSelectedBusiness();
                 await ref.read(authControllerProvider.notifier).signOut();
               },
               title: const Text("Logout"),
