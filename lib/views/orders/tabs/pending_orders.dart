@@ -28,7 +28,20 @@ class PendingOrders extends ConsumerWidget {
             tooltip: "Take New Order",
             heroTag: "Take New Order",
             child: const Icon(Icons.add),
-            onPressed: () {
+            onPressed: () async {
+              final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                context,
+              );
+              bool canOpenSaveDialog = await ref
+                  .read(ordersViewModelProvider.notifier)
+                  .canOpenSaveDialog();
+              if (!canOpenSaveDialog) {
+                showSnackBar("Please add items and types first", messenger);
+                return;
+              }
+              if (!context.mounted) {
+                return;
+              }
               showSaveOrderDialog(
                 context,
                 ref,
@@ -55,7 +68,20 @@ class PendingOrders extends ConsumerWidget {
             tooltip: "Take Quick Orders",
             heroTag: "Add Quick Order",
             child: const Icon(Icons.library_add_sharp),
-            onPressed: () {
+            onPressed: () async {
+              final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+                context,
+              );
+              bool canOpenQuickDialog = await ref
+                  .read(ordersViewModelProvider.notifier)
+                  .canOpenQuickDialog();
+              if (!canOpenQuickDialog) {
+                showSnackBar("Please add quick orders first", messenger);
+                return;
+              }
+              if (!context.mounted) {
+                return;
+              }
               showQuickOrderDialog(context, table);
             },
           ),

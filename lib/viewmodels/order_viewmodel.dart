@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
+import 'package:order_manager/models/type.dart';
+import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
+import 'package:order_manager/providers/type_providers.dart';
 
 class OrdersViewModel extends AsyncNotifier<void> {
   Future<void> saveOrder(Order order, {bool isSplit = false}) async {
@@ -152,6 +156,35 @@ class OrdersViewModel extends AsyncNotifier<void> {
     return ref
         .read(orderRepositoryProvider)
         .hasAnyOrdersForTable(tableKey, isSplit: isSplit);
+  }
+
+  Future<bool> canOpenSaveDialog() async {
+    List<Item> items = await ref
+        .read(itemRepositoryProvider)
+        .watchItems()
+        .first;
+    if (items.isEmpty) {
+      return false;
+    }
+    List<Type1> types = await ref
+        .read(typeRepositoryProvider)
+        .watchTypes()
+        .first;
+    if (types.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> canOpenQuickDialog() async {
+    List<Order> orders = await ref
+        .read(orderRepositoryProvider)
+        .getOrdersForTable("0");
+
+    if (orders.isEmpty) {
+      return false;
+    }
+    return true;
   }
 
   @override

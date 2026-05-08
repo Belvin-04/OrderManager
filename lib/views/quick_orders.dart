@@ -20,7 +20,20 @@ class QuickOrders extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         tooltip: "Create New Quick Order",
         child: const Icon(Icons.add),
-        onPressed: () {
+        onPressed: () async {
+          final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
+            context,
+          );
+          bool canOpenSaveDialog = await ref
+              .read(ordersViewModelProvider.notifier)
+              .canOpenSaveDialog();
+          if (!canOpenSaveDialog) {
+            showSnackBar("Please add items and types first", messenger);
+            return;
+          }
+          if (!context.mounted) {
+            return;
+          }
           showSaveOrderDialog(
             context,
             ref,

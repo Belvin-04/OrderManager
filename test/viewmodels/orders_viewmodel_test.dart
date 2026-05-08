@@ -5,14 +5,22 @@ import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
+import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
+import 'package:order_manager/providers/type_providers.dart';
+import 'package:order_manager/repositories/abstract_files/items_repository.dart';
 import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/repositories/abstract_files/table_repository.dart';
+import 'package:order_manager/repositories/abstract_files/type_repository.dart';
 
 class MockOrderRepository extends Mock implements OrderRepository {}
 
 class MockTableRepository extends Mock implements TableRepository {}
+
+class MockItemsRepository extends Mock implements ItemsRepository {}
+
+class MockTypeRepository extends Mock implements TypeRepository {}
 
 class FakeOrder extends Fake implements Order {}
 
@@ -57,6 +65,20 @@ ProviderContainer createTableContainer(
     overrides: [
       orderRepositoryProvider.overrideWithValue(repo),
       tableRepositoryProvider.overrideWithValue(tableRepo),
+    ],
+  );
+}
+
+ProviderContainer createFullContainer(
+  MockOrderRepository repo,
+  MockItemsRepository itemRepo,
+  MockTypeRepository typeRepo,
+) {
+  return ProviderContainer(
+    overrides: [
+      orderRepositoryProvider.overrideWithValue(repo),
+      itemRepositoryProvider.overrideWithValue(itemRepo),
+      typeRepositoryProvider.overrideWithValue(typeRepo),
     ],
   );
 }
@@ -504,5 +526,82 @@ void main() {
     await vm.hasAnyOrdersForTable("1");
 
     verify(() => repo.hasAnyOrdersForTable(any(), isSplit: false)).called(1);
+  });
+
+  test('canOpenSaveDialog returns true when items and types exist', () async {
+    final orderRepo = MockOrderRepository();
+    final itemRepo = MockItemsRepository();
+    final typeRepo = MockTypeRepository();
+
+    when(itemRepo.watchItems).thenAnswer(
+      (_) => Stream.value([Item(id: 'i', name: 'Burger', price: 100)]),
+    );
+    when(
+      typeRepo.watchTypes,
+    ).thenAnswer((_) => Stream.value([Type1(id: 't', type: 'None', price: 0)]));
+
+    final container = createFullContainer(orderRepo, itemRepo, typeRepo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    final result = await vm.canOpenSaveDialog();
+    expect(result, true);
+  });
+
+  test('canOpenSaveDialog returns false when items are empty', () async {
+    final orderRepo = MockOrderRepository();
+    final itemRepo = MockItemsRepository();
+    final typeRepo = MockTypeRepository();
+
+    when(itemRepo.watchItems).thenAnswer((_) => Stream.value([]));
+
+    final container = createFullContainer(orderRepo, itemRepo, typeRepo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    final result = await vm.canOpenSaveDialog();
+    expect(result, false);
+  });
+
+  test('canOpenSaveDialog returns false when types are empty', () async {
+    final orderRepo = MockOrderRepository();
+    final itemRepo = MockItemsRepository();
+    final typeRepo = MockTypeRepository();
+
+    when(itemRepo.watchItems).thenAnswer(
+      (_) => Stream.value([Item(id: 'i', name: 'Burger', price: 100)]),
+    );
+    when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([]));
+
+    final container = createFullContainer(orderRepo, itemRepo, typeRepo);
+    final vm = container.read(ordersViewModelProvider.notifier);
+
+    final result = await vm.canOpenSaveDialog();
+    expect(result, false);
+  });
+
+  test(
+    'canOpenQuickDialog returns true when orders exist for table 0',
+    () async {
+      final repo = MockOrderRepository();
+
+      when(
+        () => repo.getOrdersForTable('0'),
+      ).thenAnswer((_) async => [baseOrder()]);
+
+      final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
+
+      final result = await vm.canOpenQuickDialog();
+      expect(result, true);
+    },
+  );
+
+  test('canOpenQuickDialog returns false when no orders for table 0', () async {
+    final repo = MockOrderRepository();
+
+    when(() => repo.getOrdersForTable('0')).thenAnswer((_) async => []);
+
+    final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
+
+    final result = await vm.canOpenQuickDialog();
+    expect(result, false);
   });
 }
