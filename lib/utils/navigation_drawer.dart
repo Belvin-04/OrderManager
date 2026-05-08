@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
+import 'package:order_manager/views/employees/employees.dart';
 import 'package:order_manager/views/items/items.dart';
 import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
@@ -79,6 +80,17 @@ class NavigationDrawer extends ConsumerWidget {
                 );
               },
               title: const Text("Quick Orders"),
+            ),
+            const Divider(color: Colors.white24),
+            ListTile(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Employees()),
+                );
+              },
+              title: const Text("Manage Employees"),
             ),
             const Divider(color: Colors.white24),
             ListTile(

@@ -9,6 +9,7 @@ import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:order_manager/utils/change_theme_switch.dart';
 import 'package:order_manager/utils/navigation_drawer.dart' as drawer;
+import 'package:order_manager/views/employees/employees.dart';
 import 'package:order_manager/views/items/items.dart';
 import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
@@ -116,9 +117,14 @@ void main() {
     expect(find.text('Tables'), findsOneWidget);
     expect(find.text('Types'), findsOneWidget);
     expect(find.text('Quick Orders'), findsOneWidget);
+    expect(find.text('Manage Employees'), findsOneWidget);
     expect(find.text('Logout'), findsOneWidget);
-    expect(find.text('Dark Theme'), findsOneWidget);
     expect(find.text('Switch Business'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Dark Theme'), 300);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dark Theme'), findsOneWidget);
   });
 
   testWidgets('shows selected business name', (tester) async {
@@ -167,8 +173,20 @@ void main() {
     expect(find.byType(QuickOrders), findsOneWidget);
   });
 
+  testWidgets('tapping Manage Employees navigates to Manage Employees screen', (
+    tester,
+  ) async {
+    await pumpDrawer(tester);
+
+    await tapDrawerItem(tester, 'Manage Employees');
+
+    expect(find.byType(Employees), findsOneWidget);
+  });
+
   testWidgets('dark theme switch is shown', (tester) async {
     await pumpDrawer(tester);
+    await tester.scrollUntilVisible(find.text('Dark Theme'), 300);
+    await tester.pumpAndSettle();
 
     expect(find.byType(ChangeThemeSwitch), findsOneWidget);
   });
