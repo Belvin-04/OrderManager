@@ -11,6 +11,7 @@ import 'package:order_manager/views/business/add_business_dialog.dart';
 import 'package:order_manager/views/business/businesses_page.dart';
 import 'package:order_manager/views/business/delete_business_dialog.dart';
 import 'package:order_manager/views/startup/preferred_startup_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockAuthRepository extends Mock implements FirebaseAuth {}
 
@@ -45,8 +46,9 @@ Future<ProviderContainer> pumpBusinessScreen(
   );
 
   if (selectedBusiness != null) {
-    container.read(selectedBusinessProvider.notifier).selectedBusiness =
-        selectedBusiness;
+    await container
+        .read(selectedBusinessProvider.notifier)
+        .setSelectedBusiness(selectedBusiness);
   }
 
   addTearDown(container.dispose);
@@ -62,9 +64,11 @@ Future<ProviderContainer> pumpBusinessScreen(
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   const business = Business(id: 'b1', name: 'Test Business');
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     registerFallbackValue(FakeBusiness());
   });
 

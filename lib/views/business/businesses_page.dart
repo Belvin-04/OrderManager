@@ -106,8 +106,9 @@ class BusinessesPage extends ConsumerWidget {
                   ],
                 ),
                 onTap: () {
-                  ref.read(selectedBusinessProvider.notifier).selectedBusiness =
-                      business;
+                  ref
+                      .read(selectedBusinessProvider.notifier)
+                      .setSelectedBusiness(business);
                 },
               );
             },

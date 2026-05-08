@@ -16,8 +16,9 @@ class BusinessViewModel extends AsyncNotifier<void> {
     final ownerId = ref.read(currentUserIdProvider) ?? '';
     final businessToSave = business.copyWith(ownerId: ownerId);
     final savedBusiness = await _repo.saveBusiness(businessToSave);
-    ref.read(selectedBusinessProvider.notifier).selectedBusiness =
-        savedBusiness;
+    await ref
+        .read(selectedBusinessProvider.notifier)
+        .setSelectedBusiness(savedBusiness);
   }
 
   Future<void> deleteBusiness(Business business) async {
@@ -27,7 +28,7 @@ class BusinessViewModel extends AsyncNotifier<void> {
 
     final selected = ref.read(selectedBusinessProvider);
     if (selected?.id == business.id) {
-      ref.read(selectedBusinessProvider.notifier).clearBusiness();
+      await ref.read(selectedBusinessProvider.notifier).clearBusiness();
     }
   }
 

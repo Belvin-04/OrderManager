@@ -5,18 +5,22 @@ import 'package:order_manager/models/business.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/repositories/abstract_files/business_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockBusinessRepository extends Mock implements BusinessRepository {}
 
 class FakeBusiness extends Fake implements Business {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late ProviderContainer container;
   late MockBusinessRepository repo;
 
   const business = Business(id: 'b1', name: 'Test Business');
 
   setUpAll(() {
+    SharedPreferences.setMockInitialValues({});
     registerFallbackValue(FakeBusiness());
   });
 
@@ -88,8 +92,9 @@ void main() {
 
       when(() => repo.deleteBusiness(any())).thenAnswer((_) async {});
 
-      container.read(selectedBusinessProvider.notifier).selectedBusiness =
-          business;
+      await container
+          .read(selectedBusinessProvider.notifier)
+          .setSelectedBusiness(business);
 
       final notifier = container.read(businessViewModelProvider.notifier);
 
@@ -102,12 +107,16 @@ void main() {
   );
 
   test('clearSelectedBusiness clears selected business', () async {
-    container.read(selectedBusinessProvider.notifier).selectedBusiness =
-        business;
+    await container
+        .read(selectedBusinessProvider.notifier)
+        .setSelectedBusiness(business);
 
     final notifier = container.read(businessViewModelProvider.notifier);
 
     notifier.clearSelectedBusiness();
+
+    await Future.microtask(() {});
+    await Future.microtask(() {});
 
     final selected = container.read(selectedBusinessProvider);
 

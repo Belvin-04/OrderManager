@@ -13,6 +13,7 @@ import 'package:order_manager/views/items/items.dart';
 import 'package:order_manager/views/quick_orders.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/types/types.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockBusinessRepository extends Mock implements BusinessRepository {}
 
@@ -42,8 +43,9 @@ pumpDrawer(WidgetTester tester, {Business? selectedBusiness}) async {
   );
 
   if (selectedBusiness != null) {
-    container.read(selectedBusinessProvider.notifier).selectedBusiness =
-        selectedBusiness;
+    await container
+        .read(selectedBusinessProvider.notifier)
+        .setSelectedBusiness(selectedBusiness);
   }
 
   addTearDown(() async {
@@ -95,6 +97,12 @@ Future<void> tapDrawerItem(WidgetTester tester, String text) async {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   setUpAll(() {
     registerFallbackValue(FakeBusiness());
   });
