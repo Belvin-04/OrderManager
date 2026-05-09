@@ -901,6 +901,13 @@ void main() {
     await tester.tap(find.byTooltip('Open navigation menu'));
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.byType(Switch),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
 

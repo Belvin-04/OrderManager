@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/app_user.dart';
+import 'package:order_manager/providers/app_user_provider.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/business/businesses_page.dart';
 import 'login_page.dart';
@@ -16,7 +18,31 @@ class AuthGate extends ConsumerWidget {
         if (user == null) {
           return const LoginPage();
         }
-        return const BusinessGate();
+        return FutureBuilder(
+          future: ref.watch(appUserRepositoryProvider).queryById(user.uid),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError) {
+              return Scaffold(
+                body: Center(child: Text(snapshot.error.toString())),
+              );
+            }
+            final appUser = snapshot.data;
+            if (appUser == null) {
+              final AppUser appUser = AppUser(
+                id: user.uid,
+                email: user.email!,
+                name: user.displayName!,
+              );
+              ref.read(appUserRepositoryProvider).saveUser(appUser);
+            }
+            return const BusinessGate();
+          },
+        );
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),

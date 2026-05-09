@@ -55,5 +55,9 @@ service cloud.firestore {
       allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
       allow update, delete: if hasBusinessAccess(resource.data.businessId);
     }
+
+    match /app_users/{userId} {
+      allow read, write: if isSignedIn();
+    }
   }
 }
