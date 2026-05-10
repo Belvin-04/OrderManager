@@ -40,6 +40,7 @@ pumpDrawer(WidgetTester tester, {Business? selectedBusiness}) async {
     overrides: [
       businessRepositoryProvider.overrideWithValue(businessRepo),
       firebaseAuthProvider.overrideWithValue(authRepo),
+      currentBusinessIdProvider.overrideWithValue(selectedBusiness?.id ?? ""),
     ],
   );
 
