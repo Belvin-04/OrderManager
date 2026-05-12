@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:order_manager/models/app_user.dart';
+import 'package:order_manager/models/business_employee.dart';
 
 class EmployeeDeleteDialog extends StatelessWidget {
-  final AppUser initialEmployee;
-  final Future<void> Function(AppUser) onDelete;
+  final BusinessEmployee initialEmployee;
+  final Future<void> Function(BusinessEmployee) onDelete;
 
   const EmployeeDeleteDialog({
     super.key,

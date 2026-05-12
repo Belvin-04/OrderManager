@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_app_user_remote_data_source.dart';
+import 'test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -11,24 +10,17 @@ void main() {
   late FirebaseFirestore firestore;
   late FirebaseAppUserRemoteDataSource dataSource;
   late CollectionReference<Map<String, dynamic>> usersRef;
+  late CollectionReference<Map<String, dynamic>> businessUsersRef;
 
   late String userId;
 
   setUpAll(() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await TestHelper.setupFirebase();
 
     firestore = FirebaseFirestore.instance;
-
-    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    firestore.useFirestoreEmulator('localhost', 8080);
-
-    await FirebaseAuth.instance.signInAnonymously();
-    await FirebaseAuth.instance.authStateChanges().first;
-
     usersRef = firestore.collection('app_users');
-    dataSource = FirebaseAppUserRemoteDataSource(usersRef);
+    businessUsersRef = firestore.collection('business_employees');
+    dataSource = FirebaseAppUserRemoteDataSource(usersRef, businessUsersRef);
   });
 
   setUp(() {
@@ -50,6 +42,16 @@ void main() {
     'id': id,
     'email': '$id@example.com',
     'name': 'User $id',
+  };
+
+  Map<String, dynamic> sampleBusinessUserData(String id, String businessId) => {
+    'relationId': 'r_$id',
+    'businessId': businessId,
+    'businessName': 'Business $businessId',
+    'employeeId': 'e_$id',
+    'employeeName': 'Employee $id',
+    'employeeEmail': 'e_$id@example.com',
+    'employeeRole': 'Role $id',
   };
 
   test('saveUser writes document to Firestore', () async {
@@ -133,60 +135,100 @@ void main() {
   });
 
   test(
-    'watchBusinessUsers emits null when no users belong to business',
+    'watchBusinessEmployees emits null when no users belong to business',
     () async {
-      const businessId = 'biz_empty';
+      final businessId = 'app_user_test_empty_$userId';
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await TestHelper.createBusiness(businessId, uid);
 
-      final stream = dataSource.watchBusinessUsers(businessId);
+      final stream = dataSource.watchBusinessEmployees(businessId);
 
       final emitted = await stream.first;
 
       expect(emitted, isNull);
     },
-    skip: true,
   );
 
-  test('watchBusinessUsers emits map of users belonging to business', () async {
-    const businessId = 'biz_test';
+  test(
+    'watchBusinessEmployees emits map of users belonging to business',
+    () async {
+      final businessId = 'app_user_test_map_$userId';
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await TestHelper.createBusiness(businessId, uid);
 
-    final data = {...sampleUserData(userId), 'businessId': businessId};
-    await dataSource.saveUser(userId, data);
+      final data = sampleBusinessUserData(userId, businessId);
+      await dataSource.addBusinessEmployee(data['relationId'], data);
 
-    final stream = dataSource.watchBusinessUsers(businessId);
+      final stream = dataSource.watchBusinessEmployees(businessId);
 
-    final emitted = await stream.firstWhere((e) => e != null) as Map?;
+      final emitted = await stream.firstWhere((e) => e != null) as Map?;
 
-    expect(emitted, isNotNull);
-    expect(emitted!.containsKey(userId), isTrue);
-    expect(emitted[userId]['businessId'], businessId);
-  }, skip: true);
+      expect(emitted, isNotNull);
+      expect(emitted!.containsKey(data['relationId']), isTrue);
+      expect(emitted[data['relationId']]['businessId'], businessId);
+    },
+  );
 
   test(
-    'watchBusinessUsers does not include users from other businesses',
+    'watchBusinessEmployees does not include users from other businesses',
     () async {
-      const businessId = 'biz_a';
-      const otherBusinessId = 'biz_b';
+      final businessId = 'app_user_test_a_$userId';
+      final otherBusinessId = 'app_user_test_b_$userId';
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await TestHelper.createBusiness(businessId, uid);
+      await TestHelper.createBusiness(otherBusinessId, uid);
 
       final otherId = '${userId}_other';
 
-      await dataSource.saveUser(userId, {
-        ...sampleUserData(userId),
-        'businessId': businessId,
-      });
+      final dataA = sampleBusinessUserData(userId, businessId);
+      await dataSource.addBusinessEmployee(dataA['relationId'], dataA);
 
-      await dataSource.saveUser(otherId, {
-        ...sampleUserData(otherId),
-        'businessId': otherBusinessId,
-      });
+      final dataB = sampleBusinessUserData(otherId, otherBusinessId);
+      await dataSource.addBusinessEmployee(dataB['relationId'], dataB);
 
-      final stream = dataSource.watchBusinessUsers(businessId);
+      final stream = dataSource.watchBusinessEmployees(businessId);
       final emitted = await stream.firstWhere((e) => e != null) as Map?;
 
       expect(emitted, isNotNull);
       expect(emitted!.length, 1);
-      expect(emitted.containsKey(userId), isTrue);
-      expect(emitted.containsKey(otherId), isFalse);
+      expect(emitted.containsKey(dataA['relationId']), isTrue);
+      expect(emitted.containsKey(dataB['relationId']), isFalse);
     },
-    skip: true,
   );
+
+  test('generateId returns a non-empty string', () async {
+    final id = await dataSource.generateId();
+    expect(id, isNotEmpty);
+  });
+
+  test('addBusinessEmployee adds document to firestore', () async {
+    final businessId = 'app_user_test_add_$userId';
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await TestHelper.createBusiness(businessId, uid);
+
+    final data = sampleBusinessUserData(userId, businessId);
+    var snapshot = await businessUsersRef.doc(data['relationId']).get();
+    expect(snapshot.exists, isFalse);
+
+    await dataSource.addBusinessEmployee(data['relationId'], data);
+    snapshot = await businessUsersRef.doc(data['relationId']).get();
+    expect(snapshot.exists, isTrue);
+  });
+
+  test('removeBusinessEmployee deletes document', () async {
+    final businessId = 'app_user_test_remove_$userId';
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await TestHelper.createBusiness(businessId, uid);
+
+    final data = sampleBusinessUserData(userId, businessId);
+    await dataSource.addBusinessEmployee(data['relationId'], data);
+
+    final beforeSnapshot = await businessUsersRef.doc(data['relationId']).get();
+    expect(beforeSnapshot.exists, isTrue);
+
+    await dataSource.removeBusinessEmployee(data['relationId']);
+
+    final afterSnapshot = await businessUsersRef.doc(data['relationId']).get();
+    expect(afterSnapshot.exists, isFalse);
+  });
 }

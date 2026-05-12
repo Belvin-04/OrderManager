@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/models/app_user.dart';
+import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/employee_provider.dart';
+import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/employees/delete_employee_dialog.dart';
 import 'package:order_manager/views/employees/save_employee_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -12,8 +13,11 @@ class Employees extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentBusinessId = ref.watch(currentBusinessIdProvider);
-    final employeesState = ref.watch(employeesProvider(currentBusinessId));
+    final currentSelectedBusiness = ref.watch(selectedBusinessProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final employeesState = ref.watch(
+      employeesProvider(currentSelectedBusiness!.id),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text("Employees")),
@@ -25,7 +29,15 @@ class Employees extends ConsumerWidget {
           showAddEmployeeDialog(
             context,
             ref,
-            const AppUser(id: "", name: "", email: ""),
+            BusinessEmployee(
+              relationId: "",
+              employeeId: currentUser!.uid,
+              businessId: currentSelectedBusiness.id,
+              businessName: currentSelectedBusiness.name,
+              employeeRole: "Staff",
+              employeeName: "",
+              employeeEmail: "",
+            ),
           );
         },
       ),
@@ -41,11 +53,11 @@ class Employees extends ConsumerWidget {
             shrinkWrap: true,
             itemCount: employees.length,
             itemBuilder: (BuildContext context, int index) {
-              AppUser employee = employees[index];
+              BusinessEmployee employee = employees[index];
               return Card(
                 child: ListTile(
-                  title: Text("Name: ${employee.name}"),
-                  subtitle: Text("Email: ${employee.email}"),
+                  title: Text("Name: ${employee.employeeName}"),
+                  subtitle: Text("Email: ${employee.employeeEmail}"),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -82,7 +94,7 @@ class Employees extends ConsumerWidget {
   void showAddEmployeeDialog(
     BuildContext context,
     WidgetRef ref,
-    AppUser employee,
+    BusinessEmployee employee,
   ) {
     showDialog(
       context: context,
@@ -92,6 +104,9 @@ class Employees extends ConsumerWidget {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,
           );
+          await ref
+              .read(employeeViewModelProvider.notifier)
+              .addBusinessEmployee(employee);
           showSnackBar("Employee Saved Successfully...", messenger);
         },
       ),
@@ -101,7 +116,7 @@ class Employees extends ConsumerWidget {
   void showDeleteEmployeeDialog(
     BuildContext context,
     WidgetRef ref,
-    AppUser employee,
+    BusinessEmployee employee,
   ) {
     showDialog(
       context: context,
@@ -111,6 +126,9 @@ class Employees extends ConsumerWidget {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,
           );
+          await ref
+              .read(employeeViewModelProvider.notifier)
+              .removeBusinessEmployee(employee);
           showSnackBar("Employee Deleted Successfully", messenger);
         },
       ),

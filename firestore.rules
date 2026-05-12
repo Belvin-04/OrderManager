@@ -59,5 +59,11 @@ service cloud.firestore {
     match /app_users/{userId} {
       allow read, write: if isSignedIn();
     }
+
+    match /business_employees/{relationId} {
+      allow create: if hasBusinessAccess(request.resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
+      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+    }
   }
 }

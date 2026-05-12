@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/models/app_user.dart';
+import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/views/employees/delete_employee_dialog.dart';
 
 Future<void> pumpEmployeeDeleteDialog(
   WidgetTester tester, {
-  required AppUser initialEmployee,
-  required Future<void> Function(AppUser) onDelete,
+  required BusinessEmployee initialEmployee,
+  required Future<void> Function(BusinessEmployee) onDelete,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -37,7 +37,15 @@ Future<void> pumpEmployeeDeleteDialog(
 
 void main() {
   testWidgets('shows delete confirmation dialog', (tester) async {
-    const employee = AppUser(id: 't1', name: 'Extra', email: "extra@email.com");
+    const employee = BusinessEmployee(
+      relationId: 't1',
+      businessId: 't1',
+      businessName: 't1',
+      employeeId: 't1',
+      employeeName: 'Extra',
+      employeeEmail: 'extra@email.com',
+      employeeRole: 't1',
+    );
 
     await pumpEmployeeDeleteDialog(
       tester,
@@ -51,8 +59,16 @@ void main() {
   });
 
   testWidgets('calls onDelete with the given type', (tester) async {
-    AppUser? deletedEmployee;
-    const employee = AppUser(id: 't1', name: 'Extra', email: "extra@email.com");
+    BusinessEmployee? deletedEmployee;
+    const employee = BusinessEmployee(
+      relationId: 't1',
+      businessId: 't1',
+      businessName: 't1',
+      employeeId: 't1',
+      employeeName: 'Extra',
+      employeeEmail: 'extra@email.com',
+      employeeRole: 't1',
+    );
 
     await pumpEmployeeDeleteDialog(
       tester,
@@ -70,7 +86,15 @@ void main() {
   });
 
   testWidgets('dialog closes after delete', (tester) async {
-    const employee = AppUser(id: 't1', name: 'Extra', email: "extra@email.com");
+    const employee = BusinessEmployee(
+      relationId: 't1',
+      businessId: 't1',
+      businessName: 't1',
+      employeeId: 't1',
+      employeeName: 'Extra',
+      employeeEmail: 'extra@email.com',
+      employeeRole: 't1',
+    );
 
     await pumpEmployeeDeleteDialog(
       tester,

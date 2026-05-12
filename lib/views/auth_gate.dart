@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/app_user.dart';
 import 'package:order_manager/providers/app_user_provider.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/business/businesses_page.dart';
 import 'login_page.dart';
@@ -38,7 +39,7 @@ class AuthGate extends ConsumerWidget {
                 email: user.email!,
                 name: user.displayName!,
               );
-              ref.read(appUserRepositoryProvider).saveUser(appUser);
+              ref.read(employeeViewModelProvider.notifier).saveUser(appUser);
             }
             return const BusinessGate();
           },

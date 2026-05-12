@@ -3,8 +3,9 @@ import 'package:order_manager/repositories/abstract_files/remote_data_source/app
 
 class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
   final CollectionReference<Map<String, dynamic>> usersRef;
+  final CollectionReference<Map<String, dynamic>> businessUsersRef;
 
-  FirebaseAppUserRemoteDataSource(this.usersRef);
+  FirebaseAppUserRemoteDataSource(this.usersRef, this.businessUsersRef);
 
   @override
   Future<void> saveUser(String id, Map<String, dynamic> data) async {
@@ -31,20 +32,21 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
   }
 
   @override
-  Stream<Object?> watchBusinessUsers(String businessId) {
-    return usersRef.where('businessId', isEqualTo: businessId).snapshots().map((
-      snapshot,
-    ) {
-      if (snapshot.docs.isEmpty) {
-        return null;
-      }
+  Stream<Object?> watchBusinessEmployees(String businessId) {
+    return businessUsersRef
+        .where('businessId', isEqualTo: businessId)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) {
+            return null;
+          }
 
-      final map = <String, dynamic>{};
-      for (final doc in snapshot.docs) {
-        map[doc.id] = doc.data();
-      }
-      return map;
-    });
+          final map = <String, dynamic>{};
+          for (final doc in snapshot.docs) {
+            map[doc.id] = doc.data();
+          }
+          return map;
+        });
   }
 
   @override
@@ -63,5 +65,23 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
       }
     }
     return map.isEmpty ? null : map;
+  }
+
+  @override
+  Future<void> addBusinessEmployee(
+    String relationId,
+    Map<String, dynamic> data,
+  ) {
+    return businessUsersRef.doc(relationId).set(data);
+  }
+
+  @override
+  Future<String> generateId() async {
+    return businessUsersRef.doc().id;
+  }
+
+  @override
+  Future<void> removeBusinessEmployee(String relationId) async {
+    return businessUsersRef.doc(relationId).delete();
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/app_user.dart';
+import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/repositories/abstract_files/remote_data_source/app_user_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_app_user_repository.dart';
 
@@ -10,6 +11,8 @@ class MockAppUserRemoteDataSource extends Mock
     implements AppUserRemoteDataSource {}
 
 class FakeAppUser extends Fake implements AppUser {}
+
+class FakeBusinessEmployee extends Fake implements BusinessEmployee {}
 
 void main() {
   late FirebaseAppUserRepository repository;
@@ -19,6 +22,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(FakeAppUser());
+    registerFallbackValue(FakeBusinessEmployee());
   });
 
   setUp(() {
@@ -52,45 +56,69 @@ void main() {
     });
   });
 
-  group('watchBusinessUsers', () {
+  group('watchBusinessEmployees', () {
     test('returns empty list when remote emits null', () async {
       when(
-        () => remote.watchBusinessUsers(any()),
+        () => remote.watchBusinessEmployees(any()),
       ).thenAnswer((_) => Stream.value(null));
 
-      final result = await repository.watchBusinessUsers('biz1').first;
+      final result = await repository.watchBusinessEmployees('biz1').first;
 
       expect(result, isEmpty);
-    }, skip: true);
+    });
 
-    test('maps remote data to AppUser list', () async {
-      when(() => remote.watchBusinessUsers(any())).thenAnswer(
+    test('maps remote data to BusinessEmployee list', () async {
+      when(() => remote.watchBusinessEmployees(any())).thenAnswer(
         (_) => Stream.value({
-          'u1': {'id': 'u1', 'email': 'a@example.com', 'name': 'Alice'},
-          'u2': {'id': 'u2', 'email': 'b@example.com', 'name': 'Bob'},
+          'r1': {
+            'relationId': 'r1',
+            'businessId': 'b1',
+            'businessName': 'b1',
+            'employeeId': 'e1',
+            'employeeName': 'e1',
+            'employeeEmail': 'e1@email.com',
+            'employeeRole': 'e1',
+          },
+          'r2': {
+            'relationId': 'r2',
+            'businessId': 'b1',
+            'businessName': 'b1',
+            'employeeId': 'e2',
+            'employeeName': 'e2',
+            'employeeEmail': 'e2@email.com',
+            'employeeRole': 'e2',
+          },
         }),
       );
 
-      final result = await repository.watchBusinessUsers('biz1').first;
+      final result = await repository.watchBusinessEmployees('b1').first;
 
       expect(result.length, 2);
-      expect(result.any((u) => u.name == 'Alice'), isTrue);
-      expect(result.any((u) => u.name == 'Bob'), isTrue);
-    }, skip: true);
+      expect(result.any((u) => u.employeeName == 'e1'), isTrue);
+      expect(result.any((u) => u.employeeName == 'e2'), isTrue);
+    });
 
     test('emits multiple events over time', () async {
       final controller = StreamController<Object?>();
 
       when(
-        () => remote.watchBusinessUsers(any()),
+        () => remote.watchBusinessEmployees(any()),
       ).thenAnswer((_) => controller.stream);
 
-      final emitted = <List<AppUser>>[];
-      final sub = repository.watchBusinessUsers('biz1').listen(emitted.add);
+      final emitted = <List<BusinessEmployee>>[];
+      final sub = repository.watchBusinessEmployees('biz1').listen(emitted.add);
 
       controller.add(null);
       controller.add({
-        'u1': {'id': 'u1', 'email': 'a@example.com', 'name': 'Alice'},
+        'r1': {
+          'relationId': 'r1',
+          'businessId': 'b1',
+          'businessName': 'b1',
+          'employeeId': 'e1',
+          'employeeName': 'e1',
+          'employeeEmail': 'e1@email.com',
+          'employeeRole': 'e1',
+        },
       });
       await Future<void>.delayed(Duration.zero);
 
@@ -98,8 +126,8 @@ void main() {
       await controller.close();
 
       expect(emitted[0], isEmpty);
-      expect(emitted[1].first.name, 'Alice');
-    }, skip: true);
+      expect(emitted[1].first.employeeName, 'e1');
+    });
   });
 
   group('queryById', () {
@@ -164,6 +192,79 @@ void main() {
       await repository.queryByEmail('hello@example.com');
 
       verify(() => remote.queryByEmail('hello@example.com')).called(1);
+    });
+  });
+
+  group('addBusinessEmployee', () {
+    const employee = BusinessEmployee(
+      relationId: 'r1',
+      businessId: 'b1',
+      businessName: 'b1',
+      employeeId: 'e1',
+      employeeName: 'e1',
+      employeeEmail: 'e1@email.com',
+      employeeRole: 'e1',
+    );
+
+    test('calls remote.addBusinessEmployee with existing relationId', () async {
+      when(
+        () => remote.addBusinessEmployee(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await repository.addBusinessEmployee(employee);
+
+      verify(
+        () => remote.addBusinessEmployee('r1', employee.toMap()),
+      ).called(1);
+    });
+
+    test('generates id when relationId is empty', () async {
+      const newEmployee = BusinessEmployee(
+        relationId: '',
+        businessId: 'b1',
+        businessName: 'b1',
+        employeeId: 'e1',
+        employeeName: 'e1',
+        employeeEmail: 'e1@email.com',
+        employeeRole: 'e1',
+      );
+
+      when(() => remote.generateId()).thenAnswer((_) async => 'generated_id');
+      when(
+        () => remote.addBusinessEmployee(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await repository.addBusinessEmployee(newEmployee);
+
+      verify(() => remote.generateId()).called(1);
+      verify(
+        () => remote.addBusinessEmployee(
+          'generated_id',
+          newEmployee.copyWith(relationId: 'generated_id').toMap(),
+        ),
+      ).called(1);
+    });
+  });
+
+  group('removeBusinessEmployee', () {
+    const employee = BusinessEmployee(
+      relationId: 'r1',
+      businessId: 'b1',
+      businessName: 'b1',
+      employeeId: 'e1',
+      employeeName: 'e1',
+      employeeEmail: 'e1@email.com',
+      employeeRole: 'e1',
+    );
+
+    test('delegates to remote.removeBusinessEmployee', () async {
+      when(() => remote.removeBusinessEmployee(any())).thenAnswer((_) async {});
+
+      await repository.removeBusinessEmployee(employee);
+
+      verify(
+        () => remote.removeBusinessEmployee(employee.relationId),
+      ).called(1);
     });
   });
 }

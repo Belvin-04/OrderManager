@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:order_manager/models/app_user.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/business_employee.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 
-class SaveEmployeeDialog extends StatefulWidget {
-  final AppUser initialEmployee;
-  final Future<void> Function(AppUser) onSave;
+class SaveEmployeeDialog extends ConsumerStatefulWidget {
+  final BusinessEmployee initialEmployee;
+  final Future<void> Function(BusinessEmployee) onSave;
 
   const SaveEmployeeDialog({
     super.key,
@@ -12,23 +14,28 @@ class SaveEmployeeDialog extends StatefulWidget {
   });
 
   @override
-  State<SaveEmployeeDialog> createState() => _SaveEmployeeDialogState();
+  ConsumerState<SaveEmployeeDialog> createState() => _SaveEmployeeDialogState();
 }
 
-class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
+class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
   late TextEditingController _emailController;
-  late AppUser _editedEmployee;
+  late BusinessEmployee _editedEmployee;
+
+  String? _emailError;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     _editedEmployee = widget.initialEmployee;
-    _nameController = TextEditingController(text: widget.initialEmployee.name);
+    _nameController = TextEditingController(
+      text: widget.initialEmployee.employeeName,
+    );
     _emailController = TextEditingController(
-      text: widget.initialEmployee.email,
+      text: widget.initialEmployee.employeeEmail,
     );
   }
 
@@ -53,7 +60,9 @@ class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
             children: [
               TextFormField(
                 onChanged: (name) {
-                  _editedEmployee = _editedEmployee.copyWith(name: name);
+                  _editedEmployee = _editedEmployee.copyWith(
+                    employeeName: name,
+                  );
                 },
                 validator: (value) {
                   if (value!.isEmpty) {
@@ -77,9 +86,9 @@ class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
               ),
               TextFormField(
                 onChanged: (email) {
-                  if (email.isNotEmpty) {
-                    _editedEmployee = _editedEmployee.copyWith(email: email);
-                  }
+                  _editedEmployee = _editedEmployee.copyWith(
+                    employeeEmail: email,
+                  );
                 },
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
@@ -88,6 +97,9 @@ class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
                   }
                   if (!isEmail(value)) {
                     return "Please Enter Valid Email";
+                  }
+                  if (_emailError != null) {
+                    return _emailError;
                   }
                   return null;
                 },
@@ -105,15 +117,12 @@ class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              await widget.onSave(_editedEmployee);
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-            }
-          },
-          child: const Text("Save Employee"),
+          onPressed: _isSaving
+              ? null
+              : () => _saveEmployee(context, _editedEmployee),
+          child: _isSaving
+              ? const CircularProgressIndicator()
+              : const Text("Save Employee"),
         ),
       ],
     );
@@ -131,5 +140,78 @@ class _SaveEmployeeDialogState extends State<SaveEmployeeDialog> {
     final regex = RegExp(pattern);
 
     return regex.hasMatch(value);
+  }
+
+  Future<void> _saveEmployee(
+    BuildContext context,
+    BusinessEmployee editedEmployee,
+  ) async {
+    setState(() {
+      _emailError = null;
+    });
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    final appUserExists = await ref
+        .read(employeeViewModelProvider.notifier)
+        .doesAppUserExists(editedEmployee.employeeEmail);
+
+    if (!appUserExists) {
+      setState(() {
+        _emailError = "User doesn't exist";
+        _isSaving = false;
+      });
+
+      _formKey.currentState!.validate();
+      return;
+    }
+
+    final employeeExists = await ref
+        .read(employeeViewModelProvider.notifier)
+        .doesEmployeeExists(
+          editedEmployee.employeeEmail,
+          editedEmployee.businessId,
+        );
+
+    if (employeeExists) {
+      if (editedEmployee.relationId.isEmpty) {
+        setState(() {
+          _emailError = "Employee already exists";
+          _isSaving = false;
+        });
+
+        _formKey.currentState!.validate();
+        return;
+      } else {
+        final user = await ref
+            .read(employeeViewModelProvider.notifier)
+            .queryBusinessEmployeeByEmail(
+              editedEmployee.employeeEmail,
+              editedEmployee.businessId,
+            );
+
+        if (editedEmployee.relationId != user!.relationId) {
+          setState(() {
+            _emailError = "Email already exists";
+            _isSaving = false;
+          });
+
+          _formKey.currentState!.validate();
+          return;
+        }
+      }
+    }
+
+    await widget.onSave(editedEmployee);
+
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
   }
 }

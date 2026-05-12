@@ -1,35 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_order_remote_data_source.dart';
+import 'test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const businessId = 'business_order_test';
+  late String businessId;
   late CollectionReference<Map<String, dynamic>> orderRef;
   late CollectionReference<Map<String, dynamic>> splitOrderRef;
   late FirebaseOrderRemoteDataSource dataSource;
 
   setUpAll(() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await TestHelper.setupFirebase();
+    businessId = 'order_test_${DateTime.now().millisecondsSinceEpoch}';
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await TestHelper.createBusiness(businessId, uid);
 
     final firestore = FirebaseFirestore.instance;
-    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
-    firestore.useFirestoreEmulator('localhost', 8080);
-    await FirebaseAuth.instance.signInAnonymously();
-
-    await FirebaseAuth.instance.authStateChanges().first;
-
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    await firestore.collection('businesses').doc(businessId).set({
-      'ownerId': uid,
-    });
-
     orderRef = firestore.collection('orders');
     splitOrderRef = firestore.collection('split-orders');
 

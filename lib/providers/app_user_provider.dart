@@ -10,6 +10,7 @@ final appUserRemoteDataSourceProvider = Provider<AppUserRemoteDataSource>((
 ) {
   return FirebaseAppUserRemoteDataSource(
     ref.watch(firebaseFirestoreProvider).collection('app_users'),
+    ref.watch(firebaseFirestoreProvider).collection('business_employees'),
   );
 });
 

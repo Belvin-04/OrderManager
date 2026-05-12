@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:order_manager/firebase_options.dart';
 import 'package:order_manager/repositories/remote_data_source/firebase_business_remote_data_source.dart';
+import 'test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -16,19 +15,9 @@ void main() {
   late String businessId;
 
   setUpAll(() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await TestHelper.setupFirebase();
 
     firestore = FirebaseFirestore.instance;
-
-    await FirebaseAuth.instance.useAuthEmulator('10.0.2.2', 9099);
-
-    firestore.useFirestoreEmulator('10.0.2.2', 8080);
-
-    await FirebaseAuth.instance.signInAnonymously();
-    await FirebaseAuth.instance.authStateChanges().first;
-
     ownerId = FirebaseAuth.instance.currentUser!.uid;
 
     businessesRef = firestore.collection('businesses');
@@ -104,9 +93,8 @@ void main() {
       'name': 'Cascade Test',
     });
 
-    await firestore.collection('businesses').doc('other_business').set({
-      'ownerId': ownerId,
-    });
+    final otherBusinessId = 'other_$businessId';
+    await TestHelper.createBusiness(otherBusinessId, ownerId);
 
     const collections = ['items', 'types', 'tables', 'orders', 'split-orders'];
 
@@ -117,7 +105,7 @@ void main() {
       });
 
       await firestore.collection(collection).add({
-        'businessId': 'other_business',
+        'businessId': otherBusinessId,
         'value': 'should_remain',
       });
     }
@@ -134,7 +122,7 @@ void main() {
 
       final remainingSnapshot = await firestore
           .collection(collection)
-          .where('businessId', isEqualTo: 'other_business')
+          .where('businessId', isEqualTo: otherBusinessId)
           .get();
 
       expect(remainingSnapshot.docs.length, 1);

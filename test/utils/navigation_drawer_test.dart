@@ -177,7 +177,7 @@ void main() {
   testWidgets('tapping Manage Employees navigates to Manage Employees screen', (
     tester,
   ) async {
-    await pumpDrawer(tester);
+    await pumpDrawer(tester, selectedBusiness: business);
 
     await tapDrawerItem(tester, 'Manage Employees');
 
