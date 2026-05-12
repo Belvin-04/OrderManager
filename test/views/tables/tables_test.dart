@@ -5,17 +5,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
 import 'package:order_manager/views/tables/tables.dart';
 import 'package:order_manager/views/tables/tables_warning_dialog.dart';
-
-class MockTableRepository extends Mock implements TableRepository {}
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeTable1 extends Fake implements Table1 {}
+import '../../test_helper.dart';
 
 Future<void> pumpTablesScreen(
   WidgetTester tester, {

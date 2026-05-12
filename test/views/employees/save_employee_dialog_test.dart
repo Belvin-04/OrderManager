@@ -5,10 +5,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/app_user.dart';
 import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/providers/app_user_provider.dart';
-import 'package:order_manager/repositories/abstract_files/app_user_repository.dart';
 import 'package:order_manager/views/employees/save_employee_dialog.dart';
-
-class MockAppUserRepository extends Mock implements AppUserRepository {}
+import '../../test_helper.dart';
 
 Future<void> pumpSaveEmployeeDialog(
   WidgetTester tester, {

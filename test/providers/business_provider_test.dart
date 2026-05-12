@@ -8,12 +8,11 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/business.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:order_manager/repositories/firebase_business_repository.dart';
 import 'package:order_manager/utils/selected_business_notifier.dart';
 import 'package:order_manager/viewmodels/business_viewmodel.dart';
 
-class MockBusinessRepository extends Mock implements BusinessRepository {}
+import '../test_helper.dart';
 
 void main() {
   late ProviderContainer container;

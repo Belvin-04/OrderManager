@@ -2,47 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:order_manager/models/item.dart';
-import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/views/bills/bills.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class MockTableRepository extends Mock implements TableRepository {}
-
-class FakeOrder extends Fake implements Order {}
-
-final testTable = Table1(id: 't', tableNo: 1);
-
-Order baseOrder({
-  String id = '',
-  int quantity = 1,
-  String status = 'pending',
-  int amount = 100,
-  int splitNo = 0,
-  Table1? table,
-  Type1? type,
-}) {
-  return Order(
-    id: id,
-    quantity: quantity,
-    item: Item(id: 'i', name: 'Burger', price: 100),
-    type: type ?? Type1(id: 't', type: 'None', price: 0),
-    table:
-        table?.copyWith(splitNo: splitNo) ??
-        testTable.copyWith(splitNo: splitNo),
-    status: status,
-    note: '',
-    amount: amount,
-  );
-}
+import '../../test_helper.dart';
 
 Future<void> pumpOrdersScreen(
   WidgetTester tester, {

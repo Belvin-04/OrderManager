@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,14 +5,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/app_user.dart';
 import 'package:order_manager/providers/app_user_provider.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-import 'package:order_manager/repositories/abstract_files/app_user_repository.dart';
 import 'package:order_manager/views/auth_gate.dart';
 import 'package:order_manager/views/business/businesses_page.dart';
 import 'package:order_manager/views/login_page.dart';
-
-class MockUser extends Mock implements firebase_auth.User {}
-
-class MockAppUserRepository extends Mock implements AppUserRepository {}
+import '../test_helper.dart';
 
 void main() {
   late MockAppUserRepository mockAppUserRepository;

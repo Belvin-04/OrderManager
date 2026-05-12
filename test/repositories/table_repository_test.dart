@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:order_manager/repositories/abstract_files/remote_data_source/table_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_table_repository.dart';
-
-class MockTableRemoteDataSource extends Mock implements TableRemoteDataSource {}
+import '../test_helper.dart';
 
 void main() {
   late MockTableRemoteDataSource remote;

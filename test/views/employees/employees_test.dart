@@ -14,10 +14,7 @@ import 'package:order_manager/repositories/abstract_files/app_user_repository.da
 import 'package:order_manager/views/employees/delete_employee_dialog.dart';
 import 'package:order_manager/views/employees/employees.dart';
 import 'package:order_manager/views/employees/save_employee_dialog.dart';
-
-class MockAppUserRepository extends Mock implements AppUserRepository {}
-
-class MockBusinessEmployee extends Mock implements BusinessEmployee {}
+import '../../test_helper.dart';
 
 class MockUser extends Mock implements User {
   @override

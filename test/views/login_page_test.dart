@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,9 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/login_page.dart';
 
-class MockGoogleSignIn extends Mock implements GoogleSignIn {}
-
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+import '../test_helper.dart';
 
 void main() {
   testWidgets('shows sign in button when idle', (tester) async {

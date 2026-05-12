@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,18 +5,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/business.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:order_manager/views/business/add_business_dialog.dart';
 import 'package:order_manager/views/business/businesses_page.dart';
 import 'package:order_manager/views/business/delete_business_dialog.dart';
 import 'package:order_manager/views/startup/preferred_startup_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockAuthRepository extends Mock implements FirebaseAuth {}
-
-class MockBusinessRepository extends Mock implements BusinessRepository {}
-
-class FakeBusiness extends Mock implements Business {}
+import '../../test_helper.dart';
 
 Future<ProviderContainer> pumpBusinessScreen(
   WidgetTester tester, {

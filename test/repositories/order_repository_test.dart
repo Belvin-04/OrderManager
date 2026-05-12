@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/order.dart';
-import 'package:order_manager/repositories/abstract_files/remote_data_source/order_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_order_repository.dart';
-
-class MockOrderRemoteDataSource extends Mock implements OrderRemoteDataSource {}
+import '../test_helper.dart';
 
 Map<String, dynamic> fakeOrderMap({
   String id = '1',

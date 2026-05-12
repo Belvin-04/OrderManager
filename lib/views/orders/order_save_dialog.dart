@@ -67,20 +67,21 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => const Text("Error loading items"),
                 data: (items) {
-                  items.sort((a, b) => a.name.compareTo(b.name));
+                  final sortedItems = [...items]
+                    ..sort((a, b) => a.name.compareTo(b.name));
                   editedOrder = editedOrder.copyWith(
                     item: editedOrder.item.name.isEmpty
-                        ? items.first
+                        ? sortedItems.first
                         : editedOrder.item,
                   );
-                  if (items.isEmpty) return const Text("No items found");
+                  if (sortedItems.isEmpty) return const Text("No items found");
                   return Row(
                     children: [
                       const Expanded(child: Text("Item Name: ")),
                       Expanded(
                         child: DropdownButton(
                           isExpanded: true,
-                          items: items.map((value) {
+                          items: sortedItems.map((value) {
                             return DropdownMenuItem(
                               value: value,
                               child: Text(
@@ -109,10 +110,11 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                 loading: () => const CircularProgressIndicator(),
                 error: (e, _) => const Text("Error loading types"),
                 data: (types) {
-                  types.sort((a, b) => a.type.compareTo(b.type));
+                  final sortedTypes = [...types]
+                    ..sort((a, b) => a.type.compareTo(b.type));
                   editedOrder = editedOrder.copyWith(
                     type: editedOrder.type.type.isEmpty
-                        ? types.first
+                        ? sortedTypes.first
                         : editedOrder.type,
                   );
                   return Row(
@@ -121,7 +123,7 @@ class _OrderSaveDialogState extends ConsumerState<OrderSaveDialog> {
                       Expanded(
                         child: DropdownButton(
                           isExpanded: true,
-                          items: types.map((value) {
+                          items: sortedTypes.map((value) {
                             return DropdownMenuItem(
                               value: value,
                               child: Text(

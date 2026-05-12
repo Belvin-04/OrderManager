@@ -3,22 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
-import 'package:order_manager/models/order.dart';
 import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
-import 'package:order_manager/repositories/abstract_files/items_repository.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/items/items.dart';
-
-class MockItemsRepository extends Mock implements ItemsRepository {}
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeItem extends Fake implements Item {}
-
-class FakeOrder extends Fake implements Order {}
+import '../../test_helper.dart';
 
 Future<void> pumpItemsScreen(
   WidgetTester tester, {

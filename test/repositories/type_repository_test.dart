@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/type.dart';
-import 'package:order_manager/repositories/abstract_files/remote_data_source/type_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_type_repository.dart';
-
-class MockTypeRemoteDataSource extends Mock implements TypeRemoteDataSource {}
+import '../test_helper.dart';
 
 void main() {
   late MockTypeRemoteDataSource remote;

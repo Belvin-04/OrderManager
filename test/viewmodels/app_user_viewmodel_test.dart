@@ -5,13 +5,7 @@ import 'package:order_manager/models/app_user.dart';
 import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/providers/app_user_provider.dart';
 import 'package:order_manager/providers/employee_provider.dart';
-import 'package:order_manager/repositories/abstract_files/app_user_repository.dart';
-
-class MockAppUserRepository extends Mock implements AppUserRepository {}
-
-class FakeAppUser extends Fake implements AppUser {}
-
-class FakeBusinessEmployee extends Fake implements BusinessEmployee {}
+import '../test_helper.dart';
 
 void main() {
   late MockAppUserRepository repository;

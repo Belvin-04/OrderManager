@@ -4,12 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/business.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockBusinessRepository extends Mock implements BusinessRepository {}
-
-class FakeBusiness extends Fake implements Business {}
+import '../test_helper.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

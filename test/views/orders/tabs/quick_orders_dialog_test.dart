@@ -4,31 +4,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
-import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/order_providers.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/orders/tabs/quick_orders_dialog.dart';
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeOrder extends Fake implements Order {}
-
-Item fakeItem(String name) => Item(id: name, name: name, price: 10);
-
-Type1 fakeType(String type) => Type1(id: type, type: type, price: 0);
-
-Table1 fakeTable() => Table1(id: "1", tableNo: 1);
+import '../../../test_helper.dart';
 
 Order fakeOrder(String name) {
-  return Order(
+  return baseOrder(
     id: name,
-    item: fakeItem(name),
-    table: fakeTable(),
-    type: fakeType("Regular"),
+    item: Item(id: name, name: name, price: 10),
+    type: Type1(id: "Regular", type: "Regular", price: 0),
     quantity: 0,
-    status: "pending",
-    note: "",
     amount: 0,
   );
 }
@@ -43,7 +29,7 @@ void main() {
         overrides: [
           quickOrdersProvider.overrideWithValue(const AsyncLoading()),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -58,7 +44,7 @@ void main() {
             const AsyncError("Failure", StackTrace.empty),
           ),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -76,7 +62,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [quickOrdersProvider.overrideWithValue(AsyncData(orders))],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -105,7 +91,7 @@ void main() {
             AsyncData([fakeOrder("Coffee")]),
           ),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -127,7 +113,7 @@ void main() {
             AsyncData([fakeOrder("Coffee")]),
           ),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -157,7 +143,7 @@ void main() {
             AsyncData([fakeOrder("Coffee")]),
           ),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -194,7 +180,7 @@ void main() {
           ),
           orderRepositoryProvider.overrideWithValue(fakeRepo),
         ],
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 
@@ -226,7 +212,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(home: QuickOrdersDialog(table: fakeTable())),
+        child: MaterialApp(home: QuickOrdersDialog(table: testTable)),
       ),
     );
 

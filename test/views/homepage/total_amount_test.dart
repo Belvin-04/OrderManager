@@ -4,15 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/order_providers.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
 import 'package:order_manager/views/home_page/total_amount.dart';
 
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeOrder extends Fake implements Order {}
+import '../../test_helper.dart';
 
 Future<void> pumpTotalAmount(
   WidgetTester tester,

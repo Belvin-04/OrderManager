@@ -7,12 +7,10 @@ import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/repositories/abstract_files/remote_data_source/app_user_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_app_user_repository.dart';
 
+import '../test_helper.dart';
+
 class MockAppUserRemoteDataSource extends Mock
     implements AppUserRemoteDataSource {}
-
-class FakeAppUser extends Fake implements AppUser {}
-
-class FakeBusinessEmployee extends Fake implements BusinessEmployee {}
 
 void main() {
   late FirebaseAppUserRepository repository;

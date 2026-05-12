@@ -9,47 +9,7 @@ import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
-import 'package:order_manager/repositories/abstract_files/items_repository.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/abstract_files/table_repository.dart';
-import 'package:order_manager/repositories/abstract_files/type_repository.dart';
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class MockTableRepository extends Mock implements TableRepository {}
-
-class MockItemsRepository extends Mock implements ItemsRepository {}
-
-class MockTypeRepository extends Mock implements TypeRepository {}
-
-class FakeOrder extends Fake implements Order {}
-
-class FakeTable1 extends Fake implements Table1 {}
-
-final testTable = Table1(id: 't', tableNo: 1);
-
-Order baseOrder({
-  String id = '',
-  int quantity = 1,
-  String status = 'pending',
-  int amount = 100,
-  int splitNo = 0,
-  Table1? table,
-  Type1? type,
-}) {
-  return Order(
-    id: id,
-    quantity: quantity,
-    item: Item(id: 'i', name: 'Burger', price: 100),
-    type: type ?? Type1(id: 't', type: 'None', price: 0),
-    table:
-        table?.copyWith(splitNo: splitNo) ??
-        testTable.copyWith(splitNo: splitNo),
-    status: status,
-    note: '',
-    amount: amount,
-  );
-}
+import '../test_helper.dart';
 
 ProviderContainer createContainer(MockOrderRepository repo) {
   return ProviderContainer(

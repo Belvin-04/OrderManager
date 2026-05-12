@@ -1,22 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
-
-class MockGoogleSignIn extends Mock implements GoogleSignIn {}
-
-class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
+import '../test_helper.dart';
 
 class MockGoogleSignInAuthentication extends Mock
     implements GoogleSignInAuthentication {}
-
-class MockFirebaseAuth extends Mock implements FirebaseAuth {}
-
-class MockUserCredential extends Mock implements UserCredential {}
-
-class FakeAuthCredential extends Fake implements AuthCredential {}
 
 void main() {
   setUpAll(() {

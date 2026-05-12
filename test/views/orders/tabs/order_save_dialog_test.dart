@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
-import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
 import 'package:order_manager/views/orders/order_save_dialog.dart';
+
+import '../../../test_helper.dart';
 
 final testItems = [
   Item(id: 'i1', name: 'Burger', price: 100),
@@ -18,32 +19,6 @@ final testTypes = [
   Type1(id: 't1', type: 'None', price: 0),
   Type1(id: 't2', type: 'Extra', price: 20),
 ];
-
-final testTable = Table1(id: 't', tableNo: 1);
-
-Order baseOrder({
-  String id = '',
-  int quantity = 1,
-  String status = 'pending',
-  int amount = 100,
-  int splitNo = 0,
-  Table1? table,
-  Type1? type,
-  Item? item,
-}) {
-  return Order(
-    id: id,
-    quantity: quantity,
-    item: item ?? testItems[0],
-    type: type ?? testTypes[0],
-    table:
-        table?.copyWith(splitNo: splitNo) ??
-        testTable.copyWith(splitNo: splitNo),
-    status: status,
-    note: '',
-    amount: amount,
-  );
-}
 
 Future<void> pumpOrderSaveDialog(
   WidgetTester tester, {
@@ -187,10 +162,10 @@ void main() {
     await tester.tap(find.text('Pizza').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Extra'));
+    await tester.tap(find.text('None'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('None').last);
+    await tester.tap(find.text('Extra').last);
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '1');
@@ -199,7 +174,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(savedOrder!.item.name, 'Pizza');
-    expect(savedOrder!.type.type, 'None');
+    expect(savedOrder!.type.type, 'Extra');
   });
 
   testWidgets('shows loading indicator while types and items are loading', (

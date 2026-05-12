@@ -6,10 +6,10 @@ import 'package:order_manager/models/business.dart';
 import 'package:order_manager/repositories/abstract_files/remote_data_source/business_remote_data_source.dart';
 import 'package:order_manager/repositories/firebase_business_repository.dart';
 
+import '../test_helper.dart';
+
 class MockBusinessRemoteDataSource extends Mock
     implements BusinessRemoteDataSource {}
-
-class FakeBusiness extends Fake implements Business {}
 
 void main() {
   late FirebaseBusinessRepository repository;

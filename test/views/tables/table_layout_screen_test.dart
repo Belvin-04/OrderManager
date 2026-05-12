@@ -6,8 +6,6 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
 import 'package:order_manager/providers/utils_provider.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/utils/startup_screen_provider.dart';
 import 'package:order_manager/utils/table_popup_overlay.dart';
 import 'package:order_manager/views/home_page/home_page.dart';
@@ -16,12 +14,7 @@ import 'package:order_manager/views/tables/table_layout_screen.dart';
 import 'package:order_manager/views/tables/table_popup_menu.dart';
 import 'package:order_manager/views/tables/table_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockTableRepository extends Mock implements TableRepository {}
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeTable1 extends Fake implements Table1 {}
+import '../../test_helper.dart';
 
 Future<void> pumpTableLayoutScreen(
   WidgetTester tester, {

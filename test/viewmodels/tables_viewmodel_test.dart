@@ -7,17 +7,8 @@ import 'package:order_manager/models/table.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/table_providers.dart';
-import 'package:order_manager/repositories/abstract_files/order_repository.dart';
-import 'package:order_manager/repositories/abstract_files/table_repository.dart';
 import 'package:order_manager/viewmodels/tables_viewmodel.dart';
-
-class MockTableRepository extends Mock implements TableRepository {}
-
-class MockOrderRepository extends Mock implements OrderRepository {}
-
-class FakeTable1 extends Fake implements Table1 {}
-
-class FakeOrder extends Fake implements Order {}
+import '../test_helper.dart';
 
 ProviderContainer createContainer({
   required MockTableRepository tableRepo,
