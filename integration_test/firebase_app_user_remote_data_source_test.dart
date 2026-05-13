@@ -23,18 +23,17 @@ void main() {
     dataSource = FirebaseAppUserRemoteDataSource(usersRef, businessUsersRef);
   });
 
-  setUp(() {
-    userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
+  setUp(() async {
+    userId = FirebaseAuth.instance.currentUser!.uid;
   });
 
   tearDown(() async {
-    final snapshot = await usersRef.get();
-    final batch = firestore.batch();
-    for (final doc in snapshot.docs) {
-      batch.delete(doc.reference);
-    }
-    if (snapshot.docs.isNotEmpty) {
-      await batch.commit();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await usersRef.doc(uid).delete();
+        await businessUsersRef.doc('r_$uid').delete();
+      } catch (_) {}
     }
   });
 
@@ -123,15 +122,21 @@ void main() {
   });
 
   test('queryByEmail ignores users with a different email', () async {
-    final otherId = '${userId}_other';
-    await dataSource.saveUser(userId, sampleUserData(userId));
-    await dataSource.saveUser(otherId, sampleUserData(otherId));
+    final originalUid = FirebaseAuth.instance.currentUser!.uid;
+    await dataSource.saveUser(originalUid, sampleUserData(originalUid));
 
-    final result = await dataSource.queryByEmail('$userId@example.com') as Map?;
+    await FirebaseAuth.instance.signOut();
+    await FirebaseAuth.instance.signInAnonymously();
+    final otherUid = FirebaseAuth.instance.currentUser!.uid;
+    await dataSource.saveUser(otherUid, sampleUserData(otherUid));
+
+    final result =
+        await dataSource.queryByEmail('$originalUid@example.com') as Map?;
 
     expect(result, isNotNull);
     expect(result!.length, 1);
-    expect(result.containsKey(userId), isTrue);
+    expect(result.containsKey(originalUid), isTrue);
+    expect(result.containsKey(otherUid), isFalse);
   });
 
   test(

@@ -16,8 +16,21 @@ service cloud.firestore {
       return isSignedIn() && businessOwnerId(businessId) == request.auth.uid;
     }
 
+    function isEmployed(businessId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/business_employees/$(businessId + '_' + request.auth.uid));
+    }
+
+    function businessIdUnchanged() {
+      return request.resource.data.businessId == resource.data.businessId;
+    }
+
+    function employeeRelationUnchanged() {
+      return request.resource.data.businessId == resource.data.businessId
+        && request.resource.data.employeeId == resource.data.employeeId;
+    }
+
     match /businesses/{businessId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (resource == null || resource.data.ownerId == request.auth.uid);
       allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
       allow create: if isSignedIn()
         && request.resource.data.ownerId == request.auth.uid;
@@ -28,42 +41,49 @@ service cloud.firestore {
 
     match /items/{itemId} {
       allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow delete: if hasBusinessAccess(resource.data.businessId);
+      allow update: if hasBusinessAccess(resource.data.businessId) && businessIdUnchanged();
     }
 
     match /types/{typeId} {
       allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow delete: if hasBusinessAccess(resource.data.businessId);
+      allow update: if hasBusinessAccess(resource.data.businessId) && businessIdUnchanged();
     }
 
     match /tables/{tableId} {
-      allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow create: if hasBusinessAccess(request.resource.data.businessId) || isEmployed(request.resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow delete: if hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow update: if (hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId)) && businessIdUnchanged();
     }
 
     match /orders/{orderId} {
-      allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow create: if hasBusinessAccess(request.resource.data.businessId) || isEmployed(request.resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow delete: if hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow update: if (hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId)) && businessIdUnchanged();
     }
 
     match /split-orders/{splitOrderId} {
-      allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow create: if hasBusinessAccess(request.resource.data.businessId) || isEmployed(request.resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow delete: if hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId);
+      allow update: if (hasBusinessAccess(resource.data.businessId) || isEmployed(resource.data.businessId)) && businessIdUnchanged();
     }
 
     match /app_users/{userId} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create, update, delete: if request.auth.uid == userId;
     }
 
     match /business_employees/{relationId} {
       allow create: if hasBusinessAccess(request.resource.data.businessId);
-      allow read: if resource == null || hasBusinessAccess(resource.data.businessId);
-      allow update, delete: if hasBusinessAccess(resource.data.businessId);
+      allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || resource.data.employeeId == request.auth.uid;
+      allow delete: if hasBusinessAccess(resource.data.businessId);
+      allow update: if hasBusinessAccess(resource.data.businessId) && employeeRelationUnchanged();
     }
   }
 }
