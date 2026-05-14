@@ -8,6 +8,7 @@ void main() {
       relationId: 'rel-1',
       businessId: 'biz-1',
       businessName: 'Test Business',
+      businessOwnerId: 'owner-1',
       employeeId: 'emp-1',
       employeeName: 'John Doe',
       employeeEmail: 'john@test.com',
@@ -19,6 +20,7 @@ void main() {
         'relationId': 'rel-1',
         'businessId': 'biz-1',
         'businessName': 'Test Business',
+        'businessOwnerId': 'owner-1',
         'employeeId': 'emp-1',
         'employeeName': 'John Doe',
         'employeeEmail': 'john@test.com',
@@ -36,6 +38,7 @@ void main() {
       expect(result.relationId, '');
       expect(result.businessId, '');
       expect(result.businessName, '');
+      expect(result.businessOwnerId, '');
       expect(result.employeeId, '');
       expect(result.employeeName, '');
       expect(result.employeeEmail, '');
@@ -49,6 +52,7 @@ void main() {
         'relationId': 'rel-1',
         'businessId': 'biz-1',
         'businessName': 'Test Business',
+        'businessOwnerId': 'owner-1',
         'employeeId': 'emp-1',
         'employeeName': 'John Doe',
         'employeeEmail': 'john@test.com',
@@ -65,6 +69,7 @@ void main() {
       expect(result.relationId, 'rel-1');
       expect(result.businessId, 'biz-1');
       expect(result.businessName, 'Test Business');
+      expect(result.businessOwnerId, 'owner-1');
       expect(result.employeeId, 'emp-1');
       expect(result.employeeName, 'Jane Doe');
       expect(result.employeeEmail, 'john@test.com');
@@ -77,6 +82,7 @@ void main() {
       expect(result.relationId, employee.relationId);
       expect(result.businessId, employee.businessId);
       expect(result.businessName, employee.businessName);
+      expect(result.businessOwnerId, employee.businessOwnerId);
       expect(result.employeeId, employee.employeeId);
       expect(result.employeeName, employee.employeeName);
       expect(result.employeeEmail, employee.employeeEmail);
@@ -89,6 +95,7 @@ void main() {
       expect(business, isA<Business>());
       expect(business.id, 'biz-1');
       expect(business.name, 'Test Business');
+      expect(business.ownerId, 'owner-1');
     });
 
     test('toString returns formatted string', () {
@@ -98,6 +105,7 @@ void main() {
       expect(result, contains('relationId: rel-1'));
       expect(result, contains('businessId: biz-1'));
       expect(result, contains('businessName: Test Business'));
+      expect(result, contains('businessOwnerId: owner-1'));
       expect(result, contains('employeeId: emp-1'));
       expect(result, contains('employeeName: John Doe'));
       expect(result, contains('employeeEmail: john@test.com'));
@@ -109,6 +117,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -125,6 +134,7 @@ void main() {
         relationId: 'different',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -141,6 +151,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -161,6 +172,7 @@ void main() {
         relationId: 'different',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -175,6 +187,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'different',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -189,6 +202,22 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'different',
+        businessOwnerId: 'owner-1',
+        employeeId: 'emp-1',
+        employeeName: 'John Doe',
+        employeeEmail: 'john@test.com',
+        employeeRole: 'manager',
+      );
+
+      expect(employee == other, false);
+    });
+
+    test('equality checks businessOwnerId', () {
+      const other = BusinessEmployee(
+        relationId: 'rel-1',
+        businessId: 'biz-1',
+        businessName: 'Test Business',
+        businessOwnerId: 'different',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -203,6 +232,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'different',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',
@@ -217,6 +247,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'different',
         employeeEmail: 'john@test.com',
@@ -231,6 +262,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'different@test.com',
@@ -245,6 +277,7 @@ void main() {
         relationId: 'rel-1',
         businessId: 'biz-1',
         businessName: 'Test Business',
+        businessOwnerId: 'owner-1',
         employeeId: 'emp-1',
         employeeName: 'John Doe',
         employeeEmail: 'john@test.com',

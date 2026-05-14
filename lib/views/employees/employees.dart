@@ -32,6 +32,7 @@ class Employees extends ConsumerWidget {
               employeeId: "",
               businessId: currentSelectedBusiness.id,
               businessName: currentSelectedBusiness.name,
+              businessOwnerId: currentSelectedBusiness.ownerId,
               employeeRole: "Staff",
               employeeName: "",
               employeeEmail: "",

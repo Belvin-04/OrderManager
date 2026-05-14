@@ -4,6 +4,7 @@ class BusinessEmployee {
   final String relationId;
   final String businessId;
   final String businessName;
+  final String businessOwnerId;
   final String employeeId;
   final String employeeName;
   final String employeeEmail;
@@ -13,6 +14,7 @@ class BusinessEmployee {
     required this.relationId,
     required this.businessId,
     required this.businessName,
+    required this.businessOwnerId,
     required this.employeeId,
     required this.employeeName,
     required this.employeeEmail,
@@ -24,6 +26,7 @@ class BusinessEmployee {
       relationId: map['relationId'] ?? '',
       businessId: map['businessId'] ?? '',
       businessName: map['businessName'] ?? '',
+      businessOwnerId: map['businessOwnerId'] ?? '',
       employeeId: map['employeeId'] ?? '',
       employeeName: map['employeeName'] ?? '',
       employeeEmail: map['employeeEmail'] ?? '',
@@ -36,6 +39,7 @@ class BusinessEmployee {
       'relationId': relationId,
       'businessId': businessId,
       'businessName': businessName,
+      'businessOwnerId': businessOwnerId,
       'employeeId': employeeId,
       'employeeName': employeeName,
       'employeeEmail': employeeEmail,
@@ -47,6 +51,7 @@ class BusinessEmployee {
     String? relationId,
     String? businessId,
     String? businessName,
+    String? businessOwnerId,
     String? employeeId,
     String? employeeName,
     String? employeeEmail,
@@ -56,6 +61,7 @@ class BusinessEmployee {
       relationId: relationId ?? this.relationId,
       businessId: businessId ?? this.businessId,
       businessName: businessName ?? this.businessName,
+      businessOwnerId: businessOwnerId ?? this.businessOwnerId,
       employeeId: employeeId ?? this.employeeId,
       employeeName: employeeName ?? this.employeeName,
       employeeEmail: employeeEmail ?? this.employeeEmail,
@@ -63,7 +69,8 @@ class BusinessEmployee {
     );
   }
 
-  Business toBusiness() => Business(id: businessId, name: businessName);
+  Business toBusiness() =>
+      Business(id: businessId, name: businessName, ownerId: businessOwnerId);
 
   @override
   String toString() {
@@ -71,6 +78,7 @@ class BusinessEmployee {
       relationId: $relationId,
       businessId: $businessId,
       businessName: $businessName,
+      businessOwnerId: $businessOwnerId,
       employeeId: $employeeId,
       employeeName: $employeeName,
       employeeEmail: $employeeEmail,
@@ -85,6 +93,7 @@ class BusinessEmployee {
           other.relationId == relationId &&
           other.businessId == businessId &&
           other.businessName == businessName &&
+          other.businessOwnerId == businessOwnerId &&
           other.employeeId == employeeId &&
           other.employeeName == employeeName &&
           other.employeeEmail == employeeEmail &&
@@ -95,6 +104,7 @@ class BusinessEmployee {
       relationId.hashCode ^
       businessId.hashCode ^
       businessName.hashCode ^
+      businessOwnerId.hashCode ^
       employeeId.hashCode ^
       employeeName.hashCode ^
       employeeEmail.hashCode ^
