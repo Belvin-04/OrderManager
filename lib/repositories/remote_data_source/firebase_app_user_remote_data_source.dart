@@ -76,11 +76,6 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
   }
 
   @override
-  Future<String> generateId() async {
-    return businessUsersRef.doc().id;
-  }
-
-  @override
   Future<void> removeBusinessEmployee(String relationId) async {
     return businessUsersRef.doc(relationId).delete();
   }

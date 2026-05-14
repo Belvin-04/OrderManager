@@ -227,18 +227,16 @@ void main() {
         employeeRole: 'e1',
       );
 
-      when(() => remote.generateId()).thenAnswer((_) async => 'generated_id');
       when(
         () => remote.addBusinessEmployee(any(), any()),
       ).thenAnswer((_) async {});
 
       await repository.addBusinessEmployee(newEmployee);
 
-      verify(() => remote.generateId()).called(1);
       verify(
         () => remote.addBusinessEmployee(
-          'generated_id',
-          newEmployee.copyWith(relationId: 'generated_id').toMap(),
+          'b1_e1',
+          newEmployee.copyWith(relationId: 'b1_e1').toMap(),
         ),
       ).called(1);
     });

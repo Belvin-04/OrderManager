@@ -4,7 +4,6 @@ abstract class AppUserRemoteDataSource {
   Future<Object?> queryById(String id);
   Stream<Object?> watchBusinessEmployees(String businessId);
   Future<Object?> queryByEmail(String email);
-  Future<String> generateId();
   Future<void> addBusinessEmployee(
     String relationId,
     Map<String, dynamic> data,

@@ -53,7 +53,7 @@ class FirebaseAppUserRepository implements AppUserRepository {
   @override
   Future<void> addBusinessEmployee(BusinessEmployee businessEmployee) async {
     final id = businessEmployee.relationId.isEmpty
-        ? await remote.generateId()
+        ? '${businessEmployee.businessId}_${businessEmployee.employeeId}'
         : businessEmployee.relationId;
     final updatedEmployee = businessEmployee.copyWith(relationId: id);
     return remote.addBusinessEmployee(id, updatedEmployee.toMap());

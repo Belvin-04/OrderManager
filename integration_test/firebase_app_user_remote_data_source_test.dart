@@ -201,11 +201,6 @@ void main() {
     },
   );
 
-  test('generateId returns a non-empty string', () async {
-    final id = await dataSource.generateId();
-    expect(id, isNotEmpty);
-  });
-
   test('addBusinessEmployee adds document to firestore', () async {
     final businessId = 'app_user_test_add_$userId';
     final uid = FirebaseAuth.instance.currentUser!.uid;
