@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:order_manager/firebase_options.dart';
 
 class TestHelper {
@@ -14,10 +15,11 @@ class TestHelper {
 
       final firestore = FirebaseFirestore.instance;
 
-      const host = String.fromEnvironment(
-        'EMULATOR_HOST',
-        defaultValue: 'localhost',
-      );
+      final host = const String.fromEnvironment('EMULATOR_HOST').isNotEmpty
+          ? const String.fromEnvironment('EMULATOR_HOST')
+          : (defaultTargetPlatform == TargetPlatform.android
+                ? '10.0.2.2'
+                : 'localhost');
 
       try {
         await FirebaseAuth.instance.useAuthEmulator(host, 9099);
