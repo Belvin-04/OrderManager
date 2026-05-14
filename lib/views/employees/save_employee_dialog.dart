@@ -117,9 +117,7 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isSaving
-              ? null
-              : () => _saveEmployee(context, _editedEmployee),
+          onPressed: _isSaving ? null : () => _saveEmployee(context),
           child: _isSaving
               ? const CircularProgressIndicator()
               : const Text("Save Employee"),
@@ -142,10 +140,7 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
     return regex.hasMatch(value);
   }
 
-  Future<void> _saveEmployee(
-    BuildContext context,
-    BusinessEmployee editedEmployee,
-  ) async {
+  Future<void> _saveEmployee(BuildContext context) async {
     setState(() {
       _emailError = null;
     });
@@ -160,7 +155,7 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
 
     final appUser = await ref
         .read(employeeViewModelProvider.notifier)
-        .queryAppUserByEmail(editedEmployee.employeeEmail);
+        .queryAppUserByEmail(_editedEmployee.employeeEmail);
 
     if (appUser == null) {
       setState(() {
@@ -172,15 +167,17 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
       return;
     }
 
+    _editedEmployee = _editedEmployee.copyWith(employeeId: appUser.id);
+
     final employeeExists = await ref
         .read(employeeViewModelProvider.notifier)
         .doesEmployeeExists(
-          editedEmployee.employeeEmail,
-          editedEmployee.businessId,
+          _editedEmployee.employeeEmail,
+          _editedEmployee.businessId,
         );
 
     if (employeeExists) {
-      if (editedEmployee.relationId.isEmpty) {
+      if (_editedEmployee.relationId.isEmpty) {
         setState(() {
           _emailError = "Employee already exists";
           _isSaving = false;
@@ -192,11 +189,11 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
         final user = await ref
             .read(employeeViewModelProvider.notifier)
             .queryBusinessEmployeeByEmail(
-              editedEmployee.employeeEmail,
-              editedEmployee.businessId,
+              _editedEmployee.employeeEmail,
+              _editedEmployee.businessId,
             );
 
-        if (editedEmployee.relationId != user!.relationId) {
+        if (_editedEmployee.relationId != user!.relationId) {
           setState(() {
             _emailError = "Email already exists";
             _isSaving = false;
@@ -208,7 +205,7 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
       }
     }
 
-    await widget.onSave(editedEmployee);
+    await widget.onSave(_editedEmployee);
 
     if (context.mounted) {
       Navigator.pop(context);

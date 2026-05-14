@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/business_employee.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/employee_provider.dart';
-import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/employees/delete_employee_dialog.dart';
 import 'package:order_manager/views/employees/save_employee_dialog.dart';
 import 'package:order_manager/views/ui_utils.dart';
@@ -14,7 +13,6 @@ class Employees extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentSelectedBusiness = ref.watch(selectedBusinessProvider);
-    final currentUser = ref.watch(currentUserProvider);
     final employeesState = ref.watch(
       employeesProvider(currentSelectedBusiness!.id),
     );
@@ -31,7 +29,7 @@ class Employees extends ConsumerWidget {
             ref,
             BusinessEmployee(
               relationId: "",
-              employeeId: currentUser!.uid,
+              employeeId: "",
               businessId: currentSelectedBusiness.id,
               businessName: currentSelectedBusiness.name,
               employeeRole: "Staff",

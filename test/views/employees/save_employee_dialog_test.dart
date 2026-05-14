@@ -332,4 +332,48 @@ void main() {
     expect(onSaveCalled, isTrue);
     expect(find.byType(AlertDialog), findsNothing);
   });
+
+  testWidgets('sets employeeId when saving new employee', (tester) async {
+    final repo = MockAppUserRepository();
+    when(() => repo.queryByEmail(any())).thenAnswer(
+      (_) async =>
+          const AppUser(id: 'u1', name: 'User 1', email: 'user1@email.com'),
+    );
+    when(
+      () => repo.watchBusinessEmployees(any()),
+    ).thenAnswer((_) => Stream<List<BusinessEmployee>>.value([]));
+
+    BusinessEmployee? savedEmployee;
+
+    const initial = BusinessEmployee(
+      relationId: '',
+      businessId: 't1',
+      businessName: 't1',
+      employeeId: '',
+      employeeName: 'New',
+      employeeEmail: 'new@email.com',
+      employeeRole: '1',
+    );
+
+    await pumpSaveEmployeeDialog(
+      tester,
+      initialEmployee: initial,
+      onSave: (employee) async {
+        savedEmployee = employee;
+      },
+      repo: repo,
+    );
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Premium');
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'premium@email.com',
+    );
+
+    await tester.tap(find.text('Save Employee'));
+    await tester.pumpAndSettle();
+
+    expect(savedEmployee, isNotNull);
+    expect(savedEmployee!.employeeId, 'u1');
+  });
 }
