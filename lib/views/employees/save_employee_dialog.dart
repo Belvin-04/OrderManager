@@ -167,6 +167,16 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
       return;
     }
 
+    if (appUser.id == _editedEmployee.businessOwnerId) {
+      setState(() {
+        _emailError = "You can't add yourself as an employee";
+        _isSaving = false;
+      });
+
+      _formKey.currentState!.validate();
+      return;
+    }
+
     _editedEmployee = _editedEmployee.copyWith(employeeId: appUser.id);
 
     final employeeExists = await ref

@@ -388,4 +388,41 @@ void main() {
     expect(savedEmployee, isNotNull);
     expect(savedEmployee!.employeeId, 'u1');
   });
+
+  testWidgets('shows error when owner adds themselves as an employee', (
+    tester,
+  ) async {
+    final repo = MockAppUserRepository();
+    when(() => repo.queryByEmail(any())).thenAnswer(
+      (_) async =>
+          const AppUser(id: 't1', name: '1', email: 'current@email.com'),
+    );
+
+    bool onSaveCalled = false;
+    const initial = BusinessEmployee(
+      relationId: '',
+      businessId: 't1',
+      businessName: 't1',
+      businessOwnerId: 't1',
+      employeeId: '',
+      employeeName: 'Current',
+      employeeEmail: 'current@email.com',
+      employeeRole: '1',
+    );
+
+    await pumpSaveEmployeeDialog(
+      tester,
+      initialEmployee: initial,
+      onSave: (_) async {
+        onSaveCalled = true;
+      },
+      repo: repo,
+    );
+
+    await tester.tap(find.text('Save Employee'));
+    await tester.pumpAndSettle();
+
+    expect(onSaveCalled, isFalse);
+    expect(find.text('You can\'t add yourself as an employee'), findsOneWidget);
+  });
 }

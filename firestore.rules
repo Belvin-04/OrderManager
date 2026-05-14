@@ -80,7 +80,7 @@ service cloud.firestore {
     }
 
     match /business_employees/{relationId} {
-      allow create: if hasBusinessAccess(request.resource.data.businessId);
+      allow create: if hasBusinessAccess(request.resource.data.businessId) && request.resource.data.employeeId != request.auth.uid;
       allow read: if resource == null || hasBusinessAccess(resource.data.businessId) || resource.data.employeeId == request.auth.uid;
       allow delete: if hasBusinessAccess(resource.data.businessId);
       allow update: if hasBusinessAccess(resource.data.businessId) && employeeRelationUnchanged();
