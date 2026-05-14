@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:order_manager/models/business.dart';
 import 'package:order_manager/models/business_employee.dart';
 
 void main() {
@@ -80,6 +81,14 @@ void main() {
       expect(result.employeeName, employee.employeeName);
       expect(result.employeeEmail, employee.employeeEmail);
       expect(result.employeeRole, employee.employeeRole);
+    });
+
+    test('toBusiness returns Business object', () {
+      final business = employee.toBusiness();
+
+      expect(business, isA<Business>());
+      expect(business.id, 'biz-1');
+      expect(business.name, 'Test Business');
     });
 
     test('toString returns formatted string', () {

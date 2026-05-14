@@ -1,3 +1,5 @@
+import 'package:order_manager/models/business.dart';
+
 class BusinessEmployee {
   final String relationId;
   final String businessId;
@@ -60,6 +62,8 @@ class BusinessEmployee {
       employeeRole: employeeRole ?? this.employeeRole,
     );
   }
+
+  Business toBusiness() => Business(id: businessId, name: businessName);
 
   @override
   String toString() {
