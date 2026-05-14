@@ -82,7 +82,7 @@ void main() {
       },
     );
 
-    test('doesAppUserExists returns true when user is found', () async {
+    test('queryAppUserByEmail returns appUser when user is found', () async {
       const email = 'test@email.com';
       when(() => repository.queryByEmail(email)).thenAnswer(
         (_) async => const AppUser(id: '1', email: email, name: '1'),
@@ -90,20 +90,20 @@ void main() {
 
       final result = await container
           .read(employeeViewModelProvider.notifier)
-          .doesAppUserExists(email);
+          .queryAppUserByEmail(email);
 
-      expect(result, isTrue);
+      expect(result, const AppUser(id: '1', email: email, name: '1'));
     });
 
-    test('doesAppUserExists returns false when user is not found', () async {
+    test('queryAppUserByEmail returns null when user is not found', () async {
       const email = 'test@email.com';
       when(() => repository.queryByEmail(email)).thenAnswer((_) async => null);
 
       final result = await container
           .read(employeeViewModelProvider.notifier)
-          .doesAppUserExists(email);
+          .queryAppUserByEmail(email);
 
-      expect(result, isFalse);
+      expect(result, isNull);
     });
 
     test('doesEmployeeExists returns true when employee is found', () async {

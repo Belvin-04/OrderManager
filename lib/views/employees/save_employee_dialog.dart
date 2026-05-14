@@ -158,11 +158,11 @@ class _SaveEmployeeDialogState extends ConsumerState<SaveEmployeeDialog> {
       _isSaving = true;
     });
 
-    final appUserExists = await ref
+    final appUser = await ref
         .read(employeeViewModelProvider.notifier)
-        .doesAppUserExists(editedEmployee.employeeEmail);
+        .queryAppUserByEmail(editedEmployee.employeeEmail);
 
-    if (!appUserExists) {
+    if (appUser == null) {
       setState(() {
         _emailError = "User doesn't exist";
         _isSaving = false;

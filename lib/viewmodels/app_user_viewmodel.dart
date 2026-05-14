@@ -43,12 +43,8 @@ class AppUserViewModel extends Notifier<void> {
     return employees.any((employee) => employee.employeeEmail == employeeEmail);
   }
 
-  Future<bool> doesAppUserExists(String email) async {
-    final AppUserRepository appUserRepository = ref.read(
-      appUserRepositoryProvider,
-    );
-    AppUser? appUser = await appUserRepository.queryByEmail(email);
-    return appUser != null;
+  Future<AppUser?> queryAppUserByEmail(String email) async {
+    return ref.read(appUserRepositoryProvider).queryByEmail(email);
   }
 
   Future<BusinessEmployee?> queryBusinessEmployeeByEmail(
