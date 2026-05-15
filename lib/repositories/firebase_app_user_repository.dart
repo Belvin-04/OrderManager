@@ -29,6 +29,17 @@ class FirebaseAppUserRepository implements AppUserRepository {
   }
 
   @override
+  Stream<List<BusinessEmployee>> watchEmployedBusinesses(AppUser user) {
+    return remote.watchEmployedBusinesses(user.id).map((data) {
+      if (data == null) return <BusinessEmployee>[];
+      final map = data as Map<String, dynamic>;
+      return map.values
+          .map((e) => BusinessEmployee.fromMap(Map<String, dynamic>.from(e)))
+          .toList();
+    });
+  }
+
+  @override
   Future<AppUser?> queryById(String id) async {
     final raw = await remote.queryById(id);
     if (raw == null) {

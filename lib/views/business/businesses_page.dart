@@ -28,6 +28,7 @@ class BusinessesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final businessesState = ref.watch(businessesProvider);
+    final employedBusinessesState = ref.watch(employedBusinessesProvider);
     final businessActionState = ref.watch(businessViewModelProvider);
 
     return Scaffold(
@@ -61,59 +62,154 @@ class BusinessesPage extends ConsumerWidget {
               },
         child: const Icon(Icons.add_business),
       ),
-      body: businessesState.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (businesses) {
-          if (businesses.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Text(
-                  'No businesses found.\nCreate one to start managing orders.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            );
-          }
+      body: Column(
+        children: [
+          Expanded(
+            child: businessesState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (businesses) {
+                if (businesses.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text(
+                        '''No businesses found.\nCreate one to start managing orders.''',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
 
-          return ListView.separated(
-            itemCount: businesses.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final business = businesses[index];
-              return ListTile(
-                leading: const Icon(Icons.store),
-                title: Text(business.name),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+                return Column(
                   children: [
-                    IconButton(
-                      tooltip: 'Edit Business',
-                      onPressed: () {
-                        _showAddBusinessDialog(context, ref, business);
-                      },
-                      icon: const Icon(Icons.edit, color: Colors.blue),
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "Owned Businesses",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    IconButton(
-                      tooltip: 'Delete Business',
-                      onPressed: () {
-                        _showDeleteBusinessDialog(context, ref, business);
-                      },
-                      icon: const Icon(Icons.delete, color: Colors.red),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: businesses.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final business = businesses[index];
+                          return ListTile(
+                            leading: const Icon(Icons.store),
+                            title: Text(business.name),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  tooltip: 'Edit Business',
+                                  onPressed: () {
+                                    _showAddBusinessDialog(
+                                      context,
+                                      ref,
+                                      business,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                IconButton(
+                                  tooltip: 'Delete Business',
+                                  onPressed: () {
+                                    _showDeleteBusinessDialog(
+                                      context,
+                                      ref,
+                                      business,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                const Icon(Icons.chevron_right),
+                              ],
+                            ),
+                            onTap: () {
+                              ref
+                                  .read(selectedBusinessProvider.notifier)
+                                  .setSelectedBusiness(business);
+                            },
+                          );
+                        },
+                      ),
                     ),
-                    const Icon(Icons.chevron_right),
                   ],
-                ),
-                onTap: () {
-                  ref
-                      .read(selectedBusinessProvider.notifier)
-                      .setSelectedBusiness(business);
-                },
-              );
-            },
-          );
-        },
+                );
+              },
+            ),
+          ),
+          const Divider(height: 1, thickness: 2),
+          Expanded(
+            child: employedBusinessesState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (employedBusinesses) {
+                if (employedBusinesses.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(24.0),
+                      child: Text(
+                        'No businesses found.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        "Employed Businesses",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: employedBusinesses.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final employedBusiness = employedBusinesses[index];
+                          return ListTile(
+                            leading: const Icon(Icons.store),
+                            title: Text(employedBusiness.businessName),
+                            subtitle: Text(
+                              '''${employedBusiness.employeeName} - ${employedBusiness.employeeRole}''',
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () {
+                              ref
+                                  .read(selectedBusinessProvider.notifier)
+                                  .setSelectedBusiness(
+                                    employedBusiness.toBusiness(),
+                                  );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

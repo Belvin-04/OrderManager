@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/app_user.dart';
 import 'package:order_manager/models/business.dart';
+import 'package:order_manager/models/business_employee.dart';
+import 'package:order_manager/providers/app_user_provider.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/repositories/abstract_files/business_repository.dart';
 import 'package:order_manager/repositories/firebase_business_repository.dart';
@@ -34,6 +37,24 @@ final businessRepositoryProvider = Provider<BusinessRepository>((ref) {
 
 final businessesProvider = StreamProvider<List<Business>>((ref) {
   return ref.watch(businessRepositoryProvider).watchBusiness();
+});
+
+final employedBusinessesProvider = StreamProvider<List<BusinessEmployee>>((
+  ref,
+) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) {
+    throw StateError('No authenticated user found.');
+  }
+  return ref
+      .watch(appUserRepositoryProvider)
+      .watchEmployedBusinesses(
+        AppUser(
+          id: user.uid,
+          email: user.email ?? '',
+          name: user.displayName ?? '',
+        ),
+      );
 });
 
 final businessViewModelProvider =

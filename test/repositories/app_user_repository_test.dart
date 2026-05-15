@@ -266,4 +266,39 @@ void main() {
       ).called(1);
     });
   });
+
+  group('watchEmployedBusinesses', () {
+    test('returns empty list when remote emits null', () async {
+      when(
+        () => remote.watchEmployedBusinesses(any()),
+      ).thenAnswer((_) => Stream.value(null));
+
+      final result = await repository.watchEmployedBusinesses(user).first;
+
+      expect(result, isEmpty);
+    });
+
+    test('maps remote data to BusinessEmployee list', () async {
+      when(() => remote.watchEmployedBusinesses(any())).thenAnswer(
+        (_) => Stream.value({
+          'r1': {
+            'relationId': 'r1',
+            'businessId': 'b1',
+            'businessName': 'Biz 1',
+            'businessOwnerId': 'o1',
+            'employeeId': 'u1',
+            'employeeName': 'Test User',
+            'employeeEmail': 'test@example.com',
+            'employeeRole': 'Staff',
+          },
+        }),
+      );
+
+      final result = await repository.watchEmployedBusinesses(user).first;
+
+      expect(result.length, 1);
+      expect(result.first.businessName, 'Biz 1');
+      expect(result.first.employeeRole, 'Staff');
+    });
+  });
 }

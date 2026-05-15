@@ -9,4 +9,5 @@ abstract class AppUserRemoteDataSource {
     Map<String, dynamic> data,
   );
   Future<void> removeBusinessEmployee(String relationId);
+  Stream<Object?> watchEmployedBusinesses(String userId);
 }

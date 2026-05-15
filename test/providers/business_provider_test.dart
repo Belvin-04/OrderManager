@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/business.dart';
+import 'package:order_manager/models/business_employee.dart';
+import 'package:order_manager/providers/app_user_provider.dart';
 import 'package:order_manager/providers/business_providers.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/repositories/firebase_business_repository.dart';
@@ -35,6 +37,8 @@ void main() {
     );
 
     addTearDown(container.dispose);
+    registerFallbackValue(FakeAppUser());
+    registerFallbackValue(FakeBusinessEmployee());
   });
 
   test('businessesCollectionProvider returns businesses collection', () {
@@ -145,6 +149,72 @@ void main() {
         ),
       ),
     );
+  });
+
+  test(
+    'employedBusinessesProvider emits employed businesses from repository',
+    () async {
+      final mockAppUserRepo = MockAppUserRepository();
+      final mockUser = MockUser();
+      when(() => mockUser.uid).thenReturn('u1');
+      when(() => mockUser.email).thenReturn('test@example.com');
+      when(() => mockUser.displayName).thenReturn('Test User');
+
+      const employee = BusinessEmployee(
+        businessId: 'b1',
+        businessName: 'Employed Biz',
+        businessOwnerId: 'owner1',
+        employeeId: 'u1',
+        employeeName: 'Test User',
+        employeeEmail: 'test@example.com',
+        employeeRole: 'Staff',
+        relationId: 'b1_u1',
+      );
+
+      when(
+        () => mockAppUserRepo.watchEmployedBusinesses(any()),
+      ).thenAnswer((_) => Stream.value([employee]));
+
+      final testContainer = ProviderContainer(
+        overrides: [
+          currentUserProvider.overrideWithValue(mockUser),
+          appUserRepositoryProvider.overrideWithValue(mockAppUserRepo),
+        ],
+      );
+
+      addTearDown(testContainer.dispose);
+
+      final completer = Completer<List<BusinessEmployee>>();
+
+      final sub = testContainer.listen(employedBusinessesProvider, (_, next) {
+        next.whenData((value) {
+          if (!completer.isCompleted) {
+            completer.complete(value);
+          }
+        });
+      }, fireImmediately: true);
+
+      addTearDown(sub.close);
+
+      final result = await completer.future;
+
+      expect(result.length, 1);
+      expect(result.first.businessName, 'Employed Biz');
+      verify(() => mockAppUserRepo.watchEmployedBusinesses(any())).called(1);
+    },
+  );
+
+  test('employedBusinessesProvider throws when user is null', () {
+    final testContainer = ProviderContainer(
+      overrides: [currentUserProvider.overrideWithValue(null)],
+    );
+
+    addTearDown(testContainer.dispose);
+
+    final result = testContainer.read(employedBusinessesProvider);
+
+    expect(result, isA<AsyncError<List<BusinessEmployee>>>());
+    expect(result.error.toString(), contains('No authenticated user found'));
   });
 }
 

@@ -32,6 +32,23 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
   }
 
   @override
+  Stream<Object?> watchEmployedBusinesses(String userId) {
+    return businessUsersRef
+        .where('employeeId', isEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) {
+            return null;
+          }
+          final map = <String, dynamic>{};
+          for (final doc in snapshot.docs) {
+            map[doc.id] = doc.data();
+          }
+          return map;
+        });
+  }
+
+  @override
   Stream<Object?> watchBusinessEmployees(String businessId) {
     return businessUsersRef
         .where('businessId', isEqualTo: businessId)

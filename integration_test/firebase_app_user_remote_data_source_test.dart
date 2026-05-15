@@ -232,4 +232,65 @@ void main() {
     final afterSnapshot = await businessUsersRef.doc(data['relationId']).get();
     expect(afterSnapshot.exists, isFalse);
   });
+
+  test(
+    'watchEmployedBusinesses emits null when user is not employed anywhere',
+    () async {
+      final currentUid = FirebaseAuth.instance.currentUser!.uid;
+      final stream = dataSource.watchEmployedBusinesses(currentUid);
+
+      final emitted = await stream.first;
+
+      expect(emitted, isNull);
+    },
+  );
+
+  test(
+    'watchEmployedBusinesses emits businesses where user is employed',
+    () async {
+      final employeeEmail =
+          'employee_${DateTime.now().millisecondsSinceEpoch}@test.com';
+      const employeePassword = 'password123';
+      final employeeCred = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: employeeEmail,
+            password: employeePassword,
+          );
+      final employeeId = employeeCred.user!.uid;
+
+      await FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signInAnonymously();
+      final ownerUid = FirebaseAuth.instance.currentUser!.uid;
+
+      final businessId = 'emp_biz_${DateTime.now().millisecondsSinceEpoch}';
+      await TestHelper.createBusiness(businessId, ownerUid);
+
+      final data = {
+        'relationId': 'r_${businessId}_$employeeId',
+        'businessId': businessId,
+        'businessName': 'Employed Business',
+        'businessOwnerId': ownerUid,
+        'employeeId': employeeId,
+        'employeeName': 'Test Employee',
+        'employeeEmail': employeeEmail,
+        'employeeRole': 'Staff',
+      };
+
+      await dataSource.addBusinessEmployee(data['relationId'] as String, data);
+
+      await FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: employeeEmail,
+        password: employeePassword,
+      );
+
+      final stream = dataSource.watchEmployedBusinesses(employeeId);
+
+      final emitted = await stream.firstWhere((e) => e != null) as Map?;
+
+      expect(emitted, isNotNull);
+      expect(emitted!.containsKey(data['relationId']), isTrue);
+      expect(emitted[data['relationId']]['businessName'], 'Employed Business');
+    },
+  );
 }
