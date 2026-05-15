@@ -97,18 +97,34 @@ void main() {
     final otherBusinessId = 'other_$businessId';
     await TestHelper.createBusiness(otherBusinessId, ownerId);
 
-    const collections = ['items', 'types', 'tables', 'orders', 'split-orders'];
+    const collections = [
+      'items',
+      'types',
+      'tables',
+      'orders',
+      'split-orders',
+      'business_employees',
+    ];
 
     for (final collection in collections) {
-      await firestore.collection(collection).add({
-        'businessId': businessId,
-        'value': 'test',
-      });
+      final data = {'businessId': businessId, 'value': 'test'};
+      if (collection == 'business_employees') {
+        data['employeeId'] = 'some_other_user';
+        data['relationId'] = '${businessId}_some_other_user';
+      }
 
-      await firestore.collection(collection).add({
+      await firestore.collection(collection).add(data);
+
+      final otherData = {
         'businessId': otherBusinessId,
         'value': 'should_remain',
-      });
+      };
+      if (collection == 'business_employees') {
+        otherData['employeeId'] = 'another_user';
+        otherData['relationId'] = '${otherBusinessId}_another_user';
+      }
+
+      await firestore.collection(collection).add(otherData);
     }
 
     await dataSource.deleteBusinessCollections(businessId);

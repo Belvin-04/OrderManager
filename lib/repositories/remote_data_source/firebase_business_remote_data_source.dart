@@ -61,7 +61,14 @@ class FirebaseBusinessRemoteDataSource implements BusinessRemoteDataSource {
 
   @override
   Future<void> deleteBusinessCollections(String businessId) async {
-    const collections = ['items', 'types', 'tables', 'orders', 'split-orders'];
+    const collections = [
+      'items',
+      'types',
+      'tables',
+      'orders',
+      'split-orders',
+      'business_employees',
+    ];
     const maxBatchSize = 450;
 
     for (final collection in collections) {
