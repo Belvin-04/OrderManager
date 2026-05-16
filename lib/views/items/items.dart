@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/item.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
@@ -12,17 +13,24 @@ class Items extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final itemsState = ref.watch(itemsProvider);
+    final isEmployee = ref.watch(isEmployeeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Items")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Add Item",
-        child: const Icon(Icons.add),
-        onPressed: () {
-          showAddItemDialog(context, ref, Item(id: "", name: "", price: 0));
-        },
-      ),
+      floatingActionButton: isEmployee
+          ? null
+          : FloatingActionButton(
+              tooltip: "Add Item",
+              child: const Icon(Icons.add),
+              onPressed: () {
+                showAddItemDialog(
+                  context,
+                  ref,
+                  Item(id: "", name: "", price: 0),
+                );
+              },
+            ),
       body: itemsState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
@@ -40,30 +48,34 @@ class Items extends ConsumerWidget {
                 child: ListTile(
                   title: Text("Name: ${item.name}"),
                   subtitle: Text("Price: ${item.price}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Edit Item",
-                          child: Icon(Icons.edit, color: Colors.blue),
+                  trailing: isEmployee
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              child: const Tooltip(
+                                message: "Edit Item",
+                                child: Icon(Icons.edit, color: Colors.blue),
+                              ),
+                              onTap: () {
+                                showAddItemDialog(context, ref, item);
+                              },
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(right: 10.0),
+                            ),
+                            GestureDetector(
+                              child: const Tooltip(
+                                message: "Delete Item",
+                                child: Icon(Icons.delete, color: Colors.red),
+                              ),
+                              onTap: () {
+                                showDeleteItemDialog(context, ref, item);
+                              },
+                            ),
+                          ],
                         ),
-                        onTap: () {
-                          showAddItemDialog(context, ref, item);
-                        },
-                      ),
-                      Container(margin: const EdgeInsets.only(right: 10.0)),
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Delete Item",
-                          child: Icon(Icons.delete, color: Colors.red),
-                        ),
-                        onTap: () {
-                          showDeleteItemDialog(context, ref, item);
-                        },
-                      ),
-                    ],
-                  ),
                 ),
               );
             },

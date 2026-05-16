@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/item.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/views/items/item_delete_dialog.dart';
 import 'package:order_manager/views/items/item_edit_dialog.dart';
 import 'package:order_manager/views/items/items.dart';
+
 import '../../test_helper.dart';
 
 Future<void> pumpItemsScreen(
@@ -176,5 +178,29 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => repo.saveItem(item)).called(1);
     expect(find.text('Item Saved Successfully...'), findsOneWidget);
+  });
+
+  testWidgets('FAB and edit/delete icons are hidden for employee', (
+    tester,
+  ) async {
+    final repo = MockItemsRepository();
+    final item = Item(id: '1', name: 'Burger', price: 100);
+    when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          itemRepositoryProvider.overrideWithValue(repo),
+          isEmployeeProvider.overrideWithValue(true),
+        ],
+        child: const MaterialApp(home: Items()),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byIcon(Icons.edit), findsNothing);
+    expect(find.byIcon(Icons.delete), findsNothing);
   });
 }

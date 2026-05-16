@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/providers/business_providers.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import 'package:order_manager/views/employees/employees.dart';
 import 'package:order_manager/views/items/items.dart';
@@ -16,6 +17,7 @@ class NavigationDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedBusiness = ref.watch(selectedBusinessProvider);
+    final isEmployee = ref.watch(isEmployeeProvider);
 
     return Drawer(
       child: Padding(
@@ -82,17 +84,18 @@ class NavigationDrawer extends ConsumerWidget {
               title: const Text("Quick Orders"),
             ),
             const Divider(color: Colors.white24),
-            ListTile(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Employees()),
-                );
-              },
-              title: const Text("Manage Employees"),
-            ),
-            const Divider(color: Colors.white24),
+            if (!isEmployee)
+              ListTile(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Employees()),
+                  );
+                },
+                title: const Text("Manage Employees"),
+              ),
+            if (!isEmployee) const Divider(color: Colors.white24),
             ListTile(
               onTap: () async {
                 Navigator.pop(context);

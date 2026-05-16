@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/models/type.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
 import 'package:order_manager/views/types/type_delete_dialog.dart';
 import 'package:order_manager/views/types/type_edit_dialog.dart';
 import 'package:order_manager/views/types/types.dart';
+
 import '../../test_helper.dart';
 
 Future<void> pumpTypesScreen(
@@ -174,5 +176,29 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => repo.saveType(type)).called(1);
     expect(find.text('Type Saved Successfully...'), findsOneWidget);
+  });
+
+  testWidgets('FAB and edit/delete icons are hidden for employee', (
+    tester,
+  ) async {
+    final repo = MockTypeRepository();
+    final type = Type1(id: '1', type: 'Extra', price: 20);
+    when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          typeRepositoryProvider.overrideWithValue(repo),
+          isEmployeeProvider.overrideWithValue(true),
+        ],
+        child: const MaterialApp(home: Types()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.byIcon(Icons.edit), findsNothing);
+    expect(find.byIcon(Icons.delete), findsNothing);
   });
 }

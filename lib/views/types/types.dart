@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:order_manager/models/type.dart';
+import 'package:order_manager/providers/employee_provider.dart';
 import 'package:order_manager/providers/type_providers.dart';
 import 'package:order_manager/views/types/type_delete_dialog.dart';
 import 'package:order_manager/views/types/type_edit_dialog.dart';
@@ -12,17 +13,24 @@ class Types extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final typesState = ref.watch(typesProvider);
+    final isEmployee = ref.watch(isEmployeeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text("Types")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Add Type",
-        child: const Icon(Icons.add),
-        onPressed: () {
-          showAddItemDialog(Type1(id: "", price: 0, type: ""), context, ref);
-        },
-      ),
+      floatingActionButton: isEmployee
+          ? null
+          : FloatingActionButton(
+              tooltip: "Add Type",
+              child: const Icon(Icons.add),
+              onPressed: () {
+                showAddItemDialog(
+                  Type1(id: "", price: 0, type: ""),
+                  context,
+                  ref,
+                );
+              },
+            ),
       body: typesState.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text("Error: $e")),
@@ -40,30 +48,34 @@ class Types extends ConsumerWidget {
                 child: ListTile(
                   title: Text("Type: ${type.type}"),
                   subtitle: Text("Price: ${type.price}"),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Edit Type",
-                          child: Icon(Icons.edit, color: Colors.blue),
+                  trailing: isEmployee
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              child: const Tooltip(
+                                message: "Edit Type",
+                                child: Icon(Icons.edit, color: Colors.blue),
+                              ),
+                              onTap: () {
+                                showAddItemDialog(type, context, ref);
+                              },
+                            ),
+                            Container(
+                              margin: const EdgeInsets.only(right: 10.0),
+                            ),
+                            GestureDetector(
+                              child: const Tooltip(
+                                message: "Delete Type",
+                                child: Icon(Icons.delete, color: Colors.red),
+                              ),
+                              onTap: () {
+                                showConfirmDeleteDialog(context, ref, type);
+                              },
+                            ),
+                          ],
                         ),
-                        onTap: () {
-                          showAddItemDialog(type, context, ref);
-                        },
-                      ),
-                      Container(margin: const EdgeInsets.only(right: 10.0)),
-                      GestureDetector(
-                        child: const Tooltip(
-                          message: "Delete Type",
-                          child: Icon(Icons.delete, color: Colors.red),
-                        ),
-                        onTap: () {
-                          showConfirmDeleteDialog(context, ref, type);
-                        },
-                      ),
-                    ],
-                  ),
                 ),
               );
             },

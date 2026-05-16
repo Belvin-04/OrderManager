@@ -207,4 +207,40 @@ void main() {
 
     verify(result.authRepo.signOut).called(1);
   });
+
+  testWidgets('navigation drawer hides Manage Employees for employee', (
+    tester,
+  ) async {
+    const business = Business(
+      id: 'b1',
+      name: 'Test Business',
+      ownerId: 'owner1',
+    );
+
+    final container = ProviderContainer(
+      overrides: [currentUserIdProvider.overrideWith((ref) => 'employee1')],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(selectedBusinessProvider.notifier)
+        .setSelectedBusiness(business);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          home: Scaffold(
+            appBar: AppBar(),
+            drawer: const drawer.NavigationDrawer(),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byTooltip('Open navigation menu'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manage Employees'), findsNothing);
+  });
 }
