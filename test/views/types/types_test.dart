@@ -124,13 +124,18 @@ void main() {
     tester,
   ) async {
     final repo = MockTypeRepository();
+    final orderRepo = MockOrderRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
     when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
     when(() => repo.deleteType(any())).thenAnswer((_) async {});
+    when(() => orderRepo.getOrdersByType(any())).thenAnswer((_) async => []);
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [typeRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          typeRepositoryProvider.overrideWithValue(repo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
         child: const MaterialApp(home: Types()),
       ),
     );
@@ -145,6 +150,40 @@ void main() {
     await tester.pumpAndSettle();
     verify(() => repo.deleteType(type)).called(1);
     expect(find.text('Type Deleted Successfully'), findsOneWidget);
+  });
+
+  testWidgets('delete type fails if orders exist', (tester) async {
+    final repo = MockTypeRepository();
+    final orderRepo = MockOrderRepository();
+    final type = Type1(id: '1', type: 'Extra', price: 20);
+    when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
+    when(
+      () => orderRepo.getOrdersByType(any()),
+    ).thenAnswer((_) async => [baseOrder(type: type)]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          typeRepositoryProvider.overrideWithValue(repo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: const MaterialApp(home: Types()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.delete));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Order with this type exists, cannot be deleted'),
+      findsOneWidget,
+    );
+    verifyNever(() => repo.deleteType(any()));
   });
 
   testWidgets('saving type saves type and shows snackbar', (tester) async {

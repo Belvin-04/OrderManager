@@ -180,13 +180,14 @@ void main() {
     verifyNever(() => ordersRepo.saveOrder(any()));
   });
 
-  test('deleteType delegates to repository', () async {
+  test('deleteType delegates to repository when no orders exist', () async {
     final type = Type1(id: 't1', type: 'Extra', price: 20);
 
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
 
     when(() => typeRepo.deleteType(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.getOrdersByType(any())).thenAnswer((_) async => []);
 
     final container = createContainer(
       typeRepo: typeRepo,
@@ -195,8 +196,36 @@ void main() {
 
     final vm = container.read(typesViewModelProvider.notifier);
 
-    await vm.deleteType(type);
+    final result = await vm.deleteType(type);
 
+    expect(result, true);
     verify(() => typeRepo.deleteType(type)).called(1);
   });
+
+  test(
+    'deleteType does not delegate to repository when orders exist',
+    () async {
+      final type = Type1(id: 't1', type: 'Extra', price: 20);
+
+      final typeRepo = MockTypeRepository();
+      final ordersRepo = MockOrderRepository();
+
+      when(() => typeRepo.deleteType(any())).thenAnswer((_) async {});
+      when(
+        () => ordersRepo.getOrdersByType(any()),
+      ).thenAnswer((_) async => [baseOrder(type: type)]);
+
+      final container = createContainer(
+        typeRepo: typeRepo,
+        ordersRepo: ordersRepo,
+      );
+
+      final vm = container.read(typesViewModelProvider.notifier);
+
+      final result = await vm.deleteType(type);
+
+      expect(result, false);
+      verifyNever(() => typeRepo.deleteType(any()));
+    },
+  );
 }

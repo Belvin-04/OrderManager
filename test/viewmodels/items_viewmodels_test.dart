@@ -230,14 +230,14 @@ void main() {
     verifyNever(() => ordersRepo.saveOrder(any()));
   });
 
-  test('deleteItem delegates to repository', () async {
+  test('deleteItem delegates to repository when no orders exist', () async {
     final item = Item(id: 'i1', name: 'Burger', price: 100);
 
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
     when(() => itemsRepo.deleteItem(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -245,8 +245,35 @@ void main() {
     );
     final vm = container.read(itemsViewModelProvider.notifier);
 
-    await vm.deleteItem(item);
+    final result = await vm.deleteItem(item);
 
+    expect(result, true);
     verify(() => itemsRepo.deleteItem(item)).called(1);
   });
+
+  test(
+    'deleteItem does not delegate to repository when orders exist',
+    () async {
+      final item = Item(id: 'i1', name: 'Burger', price: 100);
+
+      final itemsRepo = MockItemsRepository();
+      final ordersRepo = MockOrderRepository();
+
+      when(() => itemsRepo.deleteItem(any())).thenAnswer((_) async {});
+      when(
+        () => ordersRepo.getOrdersByItem(any()),
+      ).thenAnswer((_) async => [baseOrder(item: item)]);
+
+      final container = createContainer(
+        itemsRepo: itemsRepo,
+        ordersRepo: ordersRepo,
+      );
+      final vm = container.read(itemsViewModelProvider.notifier);
+
+      final result = await vm.deleteItem(item);
+
+      expect(result, false);
+      verifyNever(() => itemsRepo.deleteItem(any()));
+    },
+  );
 }

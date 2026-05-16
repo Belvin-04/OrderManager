@@ -31,8 +31,18 @@ class ItemsViewmodel extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> deleteItem(Item item) {
-    return ref.read(itemRepositoryProvider).deleteItem(item);
+  Future<bool> deleteItem(Item item) async {
+    final canDelete = await canDeleteItem(item);
+    if (!canDelete) return false;
+    await ref.read(itemRepositoryProvider).deleteItem(item);
+    return true;
+  }
+
+  Future<bool> canDeleteItem(Item item) async {
+    final orders = await ref
+        .read(orderRepositoryProvider)
+        .getOrdersByItem(item.name);
+    return orders.isEmpty;
   }
 
   @override

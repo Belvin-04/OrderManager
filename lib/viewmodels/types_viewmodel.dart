@@ -22,8 +22,18 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
     await updateOrderPricesAndNames(oldType, type);
   }
 
-  Future<void> deleteType(Type1 type) async {
+  Future<bool> deleteType(Type1 type) async {
+    final canDelete = await canDeleteType(type);
+    if (!canDelete) return false;
     await ref.read(typeRepositoryProvider).deleteType(type);
+    return true;
+  }
+
+  Future<bool> canDeleteType(Type1 type) async {
+    final orders = await ref
+        .read(orderRepositoryProvider)
+        .getOrdersByType(type.type);
+    return orders.isEmpty;
   }
 
   Future<void> updateOrderPricesAndNames(Type1 oldType, Type1 type) async {

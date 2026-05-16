@@ -114,8 +114,17 @@ class Types extends ConsumerWidget {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,
           );
-          await ref.read(typesViewModelProvider.notifier).deleteType(type);
-          showSnackBar("Type Deleted Successfully", messenger);
+          final result = await ref
+              .read(typesViewModelProvider.notifier)
+              .deleteType(type);
+          if (result) {
+            showSnackBar("Type Deleted Successfully", messenger);
+          } else {
+            showSnackBar(
+              "Order with this type exists, cannot be deleted",
+              messenger,
+            );
+          }
         },
       ),
     );

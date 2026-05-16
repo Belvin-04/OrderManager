@@ -125,13 +125,18 @@ void main() {
     tester,
   ) async {
     final repo = MockItemsRepository();
+    final orderRepo = MockOrderRepository();
     final item = Item(id: '1', name: 'Burger', price: 100);
     when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
     when(() => repo.deleteItem(any())).thenAnswer((_) async {});
+    when(() => orderRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [itemRepositoryProvider.overrideWithValue(repo)],
+        overrides: [
+          itemRepositoryProvider.overrideWithValue(repo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
         child: const MaterialApp(home: Items()),
       ),
     );
@@ -146,6 +151,40 @@ void main() {
 
     expect(find.text('Item Deleted Successfully'), findsOneWidget);
     verify(() => repo.deleteItem(item)).called(1);
+  });
+
+  testWidgets('delete fails if orders exist', (tester) async {
+    final repo = MockItemsRepository();
+    final orderRepo = MockOrderRepository();
+    final item = Item(id: '1', name: 'Burger', price: 100);
+    when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(
+      () => orderRepo.getOrdersByItem(any()),
+    ).thenAnswer((_) async => [baseOrder(item: item)]);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          itemRepositoryProvider.overrideWithValue(repo),
+          orderRepositoryProvider.overrideWithValue(orderRepo),
+        ],
+        child: const MaterialApp(home: Items()),
+      ),
+    );
+
+    await tester.pump();
+
+    await tester.tap(find.byIcon(Icons.delete));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Order with this item exists, cannot be deleted'),
+      findsOneWidget,
+    );
+    verifyNever(() => repo.deleteItem(any()));
   });
 
   testWidgets('saving item saves item and shows snackbar', (tester) async {

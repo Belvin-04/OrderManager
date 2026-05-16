@@ -110,8 +110,17 @@ class Items extends ConsumerWidget {
           final ScaffoldMessengerState messenger = ScaffoldMessenger.of(
             context,
           );
-          await ref.read(itemsViewModelProvider.notifier).deleteItem(item);
-          showSnackBar("Item Deleted Successfully", messenger);
+          final result = await ref
+              .read(itemsViewModelProvider.notifier)
+              .deleteItem(item);
+          if (result) {
+            showSnackBar("Item Deleted Successfully", messenger);
+          } else {
+            showSnackBar(
+              "Order with this item exists, cannot be deleted",
+              messenger,
+            );
+          }
         },
       ),
     );
