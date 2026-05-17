@@ -155,16 +155,13 @@ void main() {
     'employedBusinessesProvider emits employed businesses from repository',
     () async {
       final mockAppUserRepo = MockAppUserRepository();
-      final mockUser = MockUser();
-      when(() => mockUser.uid).thenReturn('u1');
-      when(() => mockUser.email).thenReturn('test@example.com');
-      when(() => mockUser.displayName).thenReturn('Test User');
+      final fakeUser = FakeUser();
 
       const employee = BusinessEmployee(
         businessId: 'b1',
         businessName: 'Employed Biz',
         businessOwnerId: 'owner1',
-        employeeId: 'u1',
+        employeeId: 'test_uid123',
         employeeName: 'Test User',
         employeeEmail: 'test@example.com',
         employeeRole: 'Staff',
@@ -177,7 +174,7 @@ void main() {
 
       final testContainer = ProviderContainer(
         overrides: [
-          currentUserProvider.overrideWithValue(mockUser),
+          currentUserProvider.overrideWithValue(fakeUser),
           appUserRepositoryProvider.overrideWithValue(mockAppUserRepo),
         ],
       );

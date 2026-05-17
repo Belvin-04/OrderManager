@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,23 +15,22 @@ import 'package:order_manager/views/employees/employees.dart';
 import 'package:order_manager/views/employees/save_employee_dialog.dart';
 import '../../test_helper.dart';
 
-class MockUser extends Mock implements User {
-  @override
-  String get uid => 'uid123';
-}
-
 Future<void> pumpEmployeesScreen(
   WidgetTester tester, {
   AppUserRepository? repo,
   AsyncValue<List<BusinessEmployee>>? employeesState,
 }) async {
-  const business = Business(id: "1", name: "Business 1", ownerId: "uid123");
-  final mockUser = MockUser();
+  const business = Business(
+    id: "1",
+    name: "Business 1",
+    ownerId: "test_uid123",
+  );
+  final fakeUser = FakeUser();
 
   final container = ProviderContainer(
     overrides: [
       if (repo != null) appUserRepositoryProvider.overrideWithValue(repo),
-      currentUserProvider.overrideWithValue(mockUser),
+      currentUserProvider.overrideWithValue(fakeUser),
       if (employeesState != null)
         employeesProvider(business.id).overrideWithValue(employeesState),
     ],
@@ -50,7 +48,7 @@ Future<void> pumpEmployeesScreen(
 
 void main() {
   setUp(() {
-    registerFallbackValue(MockBusinessEmployee());
+    registerFallbackValue(FakeBusinessEmployee());
   });
 
   testWidgets('shows loading indicator initially', (tester) async {

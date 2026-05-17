@@ -54,21 +54,28 @@ class MockFirebaseAuth extends Mock implements FirebaseAuth {}
 
 class MockAuthRepository extends Mock implements FirebaseAuth {}
 
-class MockUser extends Mock implements User {}
+class FakeUser extends Fake implements User {
+  @override
+  String get uid => 'test_uid123';
 
-class MockUserCredential extends Mock implements UserCredential {}
+  @override
+  String get email => 'test@example.com';
+
+  @override
+  String get displayName => 'Test User';
+}
+
+class FakeUserCredential extends Fake implements UserCredential {}
 
 class MockGoogleSignIn extends Mock implements GoogleSignIn {}
 
 class MockGoogleSignInAccount extends Mock implements GoogleSignInAccount {}
 
-class MockBusinessEmployee extends Mock implements BusinessEmployee {}
-
 class FakeOrder extends Fake implements Order {}
 
 class FakeTable1 extends Fake implements Table1 {}
 
-class FakeBusiness extends Mock implements Business {}
+class FakeBusiness extends Fake implements Business {}
 
 class FakeAuthCredential extends Fake implements AuthCredential {}
 

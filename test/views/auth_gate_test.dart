@@ -12,15 +12,11 @@ import '../test_helper.dart';
 
 void main() {
   late MockAppUserRepository mockAppUserRepository;
-  late MockUser mockUser;
+  late FakeUser fakeUser;
 
   setUp(() {
     mockAppUserRepository = MockAppUserRepository();
-    mockUser = MockUser();
-
-    when(() => mockUser.uid).thenReturn('test-uid');
-    when(() => mockUser.email).thenReturn('test@example.com');
-    when(() => mockUser.displayName).thenReturn('Test User');
+    fakeUser = FakeUser();
 
     registerFallbackValue(const AppUser(id: '', email: '', name: ''));
   });
@@ -72,9 +68,9 @@ void main() {
   testWidgets(
     'AuthGate shows BusinessGate when user is logged in and app user exists',
     (tester) async {
-      when(() => mockAppUserRepository.queryById('test-uid')).thenAnswer(
-        (_) async => const AppUser(
-          id: 'test-uid',
+      when(() => mockAppUserRepository.queryById(fakeUser.uid)).thenAnswer(
+        (_) async => AppUser(
+          id: fakeUser.uid,
           email: 'test@example.com',
           name: 'Test User',
         ),
@@ -83,7 +79,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authStateProvider.overrideWithValue(AsyncData(mockUser)),
+            authStateProvider.overrideWithValue(AsyncData(fakeUser)),
             appUserRepositoryProvider.overrideWithValue(mockAppUserRepository),
           ],
           child: const MaterialApp(home: AuthGate()),
@@ -95,7 +91,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(BusinessGate), findsOneWidget);
-      verify(() => mockAppUserRepository.queryById('test-uid')).called(1);
+      verify(() => mockAppUserRepository.queryById(fakeUser.uid)).called(1);
       verifyNever(() => mockAppUserRepository.saveUser(any()));
     },
   );
@@ -104,7 +100,7 @@ void main() {
     'AuthGate saves user and shows BusinessGate when app user does not exist',
     (tester) async {
       when(
-        () => mockAppUserRepository.queryById('test-uid'),
+        () => mockAppUserRepository.queryById(fakeUser.uid),
       ).thenAnswer((_) async => null);
       when(
         () => mockAppUserRepository.saveUser(any()),
@@ -113,7 +109,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authStateProvider.overrideWithValue(AsyncData(mockUser)),
+            authStateProvider.overrideWithValue(AsyncData(fakeUser)),
             appUserRepositoryProvider.overrideWithValue(mockAppUserRepository),
           ],
           child: const MaterialApp(home: AuthGate()),
@@ -123,7 +119,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(BusinessGate), findsOneWidget);
-      verify(() => mockAppUserRepository.queryById('test-uid')).called(1);
+      verify(() => mockAppUserRepository.queryById(fakeUser.uid)).called(1);
       verify(() => mockAppUserRepository.saveUser(any())).called(1);
     },
   );
@@ -131,13 +127,13 @@ void main() {
   testWidgets('AuthGate shows error when app user query fails', (tester) async {
     const errorMessage = 'Database Error';
     when(
-      () => mockAppUserRepository.queryById('test-uid'),
+      () => mockAppUserRepository.queryById(fakeUser.uid),
     ).thenAnswer((_) async => throw errorMessage);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          authStateProvider.overrideWithValue(AsyncData(mockUser)),
+          authStateProvider.overrideWithValue(AsyncData(fakeUser)),
           appUserRepositoryProvider.overrideWithValue(mockAppUserRepository),
         ],
         child: const MaterialApp(home: AuthGate()),

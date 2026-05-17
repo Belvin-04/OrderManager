@@ -5,8 +5,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:order_manager/providers/firebase_providers.dart';
 import '../test_helper.dart';
 
-class MockGoogleSignInAuthentication extends Mock
-    implements GoogleSignInAuthentication {}
+class FakeGoogleSignInAuthentication extends Fake
+    implements GoogleSignInAuthentication {
+  @override
+  String get accessToken => 'access-token';
+
+  @override
+  String get idToken => 'id-token';
+}
 
 void main() {
   setUpAll(() {
@@ -18,14 +24,12 @@ void main() {
     () async {
       final googleSignIn = MockGoogleSignIn();
       final googleUser = MockGoogleSignInAccount();
-      final googleAuth = MockGoogleSignInAuthentication();
+      final googleAuth = FakeGoogleSignInAuthentication();
       final firebaseAuth = MockFirebaseAuth();
-      final userCredential = MockUserCredential();
+      final userCredential = FakeUserCredential();
 
       when(googleSignIn.signIn).thenAnswer((_) async => googleUser);
       when(() => googleUser.authentication).thenAnswer((_) async => googleAuth);
-      when(() => googleAuth.accessToken).thenReturn('access-token');
-      when(() => googleAuth.idToken).thenReturn('id-token');
       when(
         () => firebaseAuth.signInWithCredential(any()),
       ).thenAnswer((_) async => userCredential);
