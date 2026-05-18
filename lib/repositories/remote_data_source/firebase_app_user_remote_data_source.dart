@@ -75,13 +75,9 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
     }
 
     final map = <String, dynamic>{};
-    for (final doc in result.docs) {
-      final data = doc.data();
-      if (data['email'] == email) {
-        map[doc.id] = data;
-      }
-    }
-    return map.isEmpty ? null : map;
+    final firstDoc = result.docs.first;
+    map[firstDoc.id] = firstDoc.data();
+    return map;
   }
 
   @override

@@ -98,58 +98,62 @@ void main() {
     expect(orderSnapshotForSplit.exists, false);
   });
 
-  test('save and getAllOrders returns data', () async {
+  test('save and getOrdersBy returns data', () async {
     final id = await dataSource.generateId(isSplit: false);
     await dataSource.save(id, sampleOrder(1), isSplit: false);
 
-    final result = await dataSource.getAllOrders() as Map?;
+    final result = await dataSource.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [1],
+    ) as Map?;
     expect(result, isNotNull);
     expect(result![id]['table']['tableNo'], 1);
   });
 
-  test('queryOrdersByTable returns correct orders', () async {
-    final id = await dataSource.generateId(isSplit: false);
-    await dataSource.save(id, sampleOrder(5), isSplit: false);
+  test(
+    'getOrdersBy returns correct orders when querying multiple fields',
+    () async {
+      final id = await dataSource.generateId(isSplit: false);
+      await dataSource.save(id, {
+        ...sampleOrder(5),
+        'status': 'pending',
+      }, isSplit: false);
 
-    final result = await dataSource.queryOrdersByTable(5) as Map?;
-    expect(result, isNotNull);
-    expect(result!.values.first['table']['tableNo'], 5);
-  });
+      final result = await dataSource.getOrdersBy(
+        fields: ['table.tableNo', 'status'],
+        values: [5, 'pending'],
+      ) as Map?;
+      expect(result, isNotNull);
+      expect(result!.values.first['table']['tableNo'], 5);
+      expect(result.values.first['status'], 'pending');
+    },
+  );
 
-  test('queryOrdersByTable returns null when no orders exist', () async {
-    final result = await dataSource.queryOrdersByTable(1);
-
-    expect(result, isNull);
-  });
-
-  test('queryOrdersByType returns correct orders', () async {
-    final id = await dataSource.generateId(isSplit: false);
-    await dataSource.save(id, sampleOrder(2), isSplit: false);
-
-    final result = await dataSource.queryOrdersByType('Food') as Map?;
-    expect(result, isNotNull);
-    expect(result!.values.first['type']['type'], 'Food');
-  });
-
-  test('queryOrdersByType returns null when no orders exist', () async {
-    final result = await dataSource.queryOrdersByType('Dine In');
+  test('getOrdersBy returns null when no matching orders exist', () async {
+    final result = await dataSource.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [999],
+    );
 
     expect(result, isNull);
   });
 
-  test('queryOrdersByItem returns correct orders', () async {
-    final id = await dataSource.generateId(isSplit: false);
-    await dataSource.save(id, sampleOrder(3), isSplit: false);
+  test('getOrdersBy limits results to one when limitToOne is true', () async {
+    final id1 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id1, sampleOrder(1), isSplit: false);
 
-    final result = await dataSource.queryOrdersByItem('Pizza') as Map?;
+    final id2 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id2, sampleOrder(1), isSplit: false);
+
+    final result = await dataSource.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [1],
+      limitToOne: true,
+    ) as Map?;
+
     expect(result, isNotNull);
-    expect(result!.values.first['item']['name'], 'Pizza');
-  });
-
-  test('queryOrdersByItem returns null when no orders exist', () async {
-    final result = await dataSource.queryOrdersByItem('Pizza');
-
-    expect(result, isNull);
+    expect(result!.length, 1);
+    expect(result.containsKey(id1) || result.containsKey(id2), isTrue);
   });
 
   test('updateTableNo updates nested field only', () async {
@@ -169,14 +173,22 @@ void main() {
     final id = await dataSource.generateId(isSplit: true);
     await dataSource.save(id, sampleOrder(7), isSplit: true);
 
-    final result = await dataSource.getSplitOrdersByTable(7) as Map?;
+    final result = await dataSource.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [7],
+      isSplit: true,
+    ) as Map?;
 
     expect(result, isNotNull);
     expect(result!.values.first['table']['tableNo'], 7);
   });
 
   test('watchOrders emits data', () async {
-    final stream = dataSource.watchOrders();
+    final stream = dataSource.watchOrders(
+      fields: ['table.tableNo'],
+      values: [4],
+      isEqualTo: [true],
+    );
     final id = await dataSource.generateId(isSplit: false);
 
     await dataSource.save(id, sampleOrder(4), isSplit: false);
@@ -195,8 +207,13 @@ void main() {
     expect(snapshot.exists, false);
   });
 
-  test('watchSplitOrders emits data when split order changes', () async {
-    final stream = dataSource.watchSplitOrders();
+  test('watchOrders emits data when split order changes', () async {
+    final stream = dataSource.watchOrders(
+      fields: ['table.tableNo'],
+      values: [12],
+      isEqualTo: [true],
+      isSplit: true,
+    );
 
     final id = await dataSource.generateId(isSplit: true);
 
@@ -213,30 +230,28 @@ void main() {
     expect(emitted![id]['table']['tableNo'], 12);
   });
 
-  test('watchSplitOrders emits null after delete', () async {
-    final id = await dataSource.generateId(isSplit: true);
-
-    await dataSource.save(id, {
+  test('watchOrders with isEqualTo false filters correctly', () async {
+    final id1 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id1, {
       'businessId': businessId,
-      'item': {'name': 'Juice'},
-      'type': {'type': 'Drink'},
-      'table': {'tableNo': 2},
-    }, isSplit: true);
+      'status': 'canceled',
+    }, isSplit: false);
 
-    final stream = dataSource.watchSplitOrders();
+    final id2 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id2, {
+      'businessId': businessId,
+      'status': 'pending',
+    }, isSplit: false);
 
-    await dataSource.delete(id, isSplit: true);
+    final stream = dataSource.watchOrders(
+      fields: ['status'],
+      values: ['canceled'],
+      isEqualTo: [false],
+    );
 
-    final emitted = await stream.firstWhere((raw) => raw == null);
-    expect(emitted, isNull);
+    final emitted = await stream.firstWhere((raw) => raw != null) as Map?;
+    expect(emitted, isNotNull);
+    expect(emitted!.containsKey(id2), true);
+    expect(emitted.containsKey(id1), false);
   });
-
-  test(
-    'getSplitOrdersByTable returns null when no split orders exist',
-    () async {
-      final result = await dataSource.getSplitOrdersByTable(1);
-
-      expect(result, isNull);
-    },
-  );
 }

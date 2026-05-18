@@ -12,13 +12,6 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
     required this.businessId,
   });
 
-  Future<QuerySnapshot<Map<String, dynamic>>> _getBusinessOrders({
-    required bool isSplit,
-  }) {
-    final ref = isSplit ? splitOrdersRef : ordersRef;
-    return ref.where('businessId', isEqualTo: businessId).get();
-  }
-
   Map<String, dynamic>? _toMap(QuerySnapshot<Map<String, dynamic>> snapshot) {
     if (snapshot.docs.isEmpty) {
       return null;
@@ -32,6 +25,32 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   }
 
   @override
+  Future<Object?> getOrdersBy({
+    required List<String> fields,
+    required List<Object> values,
+    bool limitToOne = false,
+    bool isSplit = false,
+  }) async {
+    final ref = isSplit ? splitOrdersRef : ordersRef;
+    var query = ref.where('businessId', isEqualTo: businessId);
+
+    if (fields.isNotEmpty &&
+        values.isNotEmpty &&
+        fields.length == values.length) {
+      for (int i = 0; i < fields.length; i++) {
+        query = query.where(fields[i], isEqualTo: values[i]);
+      }
+    }
+
+    if (limitToOne) {
+      query = query.limit(1);
+    }
+
+    final snap = await query.get();
+    return _toMap(snap);
+  }
+
+  @override
   Future<void> delete(String id, {required bool isSplit}) async {
     final dbRef = isSplit ? splitOrdersRef : ordersRef;
     await dbRef.doc(id).delete();
@@ -41,85 +60,6 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   Future<String> generateId({required bool isSplit}) async {
     final dbRef = isSplit ? splitOrdersRef : ordersRef;
     return dbRef.doc().id;
-  }
-
-  @override
-  Future<Object?> getAllOrders() async {
-    final query = await _getBusinessOrders(isSplit: false);
-    return _toMap(query);
-  }
-
-  @override
-  Future<Object?> getSplitOrdersByTable(int tableNo) async {
-    final query = await _getBusinessOrders(isSplit: true);
-    final map = _toMap(query);
-    if (map == null) {
-      return null;
-    }
-
-    final filtered = <String, dynamic>{};
-    for (final entry in map.entries) {
-      final table = entry.value['table'];
-      if (table is Map && table['tableNo'] == tableNo) {
-        filtered[entry.key] = entry.value;
-      }
-    }
-
-    return filtered.isEmpty ? null : filtered;
-  }
-
-  @override
-  Future<Object?> queryOrdersByItem(String item) async {
-    final query = await _getBusinessOrders(isSplit: false);
-    final map = _toMap(query);
-    if (map == null) {
-      return null;
-    }
-
-    final filtered = <String, dynamic>{};
-    for (final entry in map.entries) {
-      final itemMap = entry.value['item'];
-      if (itemMap is Map && itemMap['name'] == item) {
-        filtered[entry.key] = entry.value;
-      }
-    }
-    return filtered.isEmpty ? null : filtered;
-  }
-
-  @override
-  Future<Object?> queryOrdersByTable(int tableNo) async {
-    final query = await _getBusinessOrders(isSplit: false);
-    final map = _toMap(query);
-    if (map == null) {
-      return null;
-    }
-
-    final filtered = <String, dynamic>{};
-    for (final entry in map.entries) {
-      final table = entry.value['table'];
-      if (table is Map && table['tableNo'] == tableNo) {
-        filtered[entry.key] = entry.value;
-      }
-    }
-    return filtered.isEmpty ? null : filtered;
-  }
-
-  @override
-  Future<Object?> queryOrdersByType(String type) async {
-    final query = await _getBusinessOrders(isSplit: false);
-    final map = _toMap(query);
-    if (map == null) {
-      return null;
-    }
-
-    final filtered = <String, dynamic>{};
-    for (final entry in map.entries) {
-      final typeMap = entry.value['type'];
-      if (typeMap is Map && typeMap['type'] == type) {
-        filtered[entry.key] = entry.value;
-      }
-    }
-    return filtered.isEmpty ? null : filtered;
   }
 
   @override
@@ -138,18 +78,26 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   }
 
   @override
-  Stream<Object?> watchOrders() {
-    return ordersRef
-        .where('businessId', isEqualTo: businessId)
-        .snapshots()
-        .map(_toMap);
-  }
+  Stream<Object?> watchOrders({
+    required List<String> fields,
+    required List<Object> values,
+    required List<bool> isEqualTo,
+    bool isSplit = false,
+  }) {
+    final ref = isSplit ? splitOrdersRef : ordersRef;
+    var query = ref.where('businessId', isEqualTo: businessId);
 
-  @override
-  Stream<Object?> watchSplitOrders() {
-    return splitOrdersRef
-        .where('businessId', isEqualTo: businessId)
-        .snapshots()
-        .map(_toMap);
+    if (fields.isNotEmpty &&
+        values.isNotEmpty &&
+        fields.length == values.length &&
+        isEqualTo.length == fields.length) {
+      for (int i = 0; i < fields.length; i++) {
+        query = isEqualTo[i] == false
+            ? query.where(fields[i], isNotEqualTo: values[i])
+            : query.where(fields[i], isEqualTo: values[i]);
+      }
+    }
+
+    return query.snapshots().map(_toMap);
   }
 }

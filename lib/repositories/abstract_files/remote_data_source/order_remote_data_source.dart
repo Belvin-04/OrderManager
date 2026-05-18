@@ -1,11 +1,10 @@
 abstract class OrderRemoteDataSource {
-  Stream<Object?> watchOrders();
-  Stream<Object?> watchSplitOrders();
-  Future<Object?> getAllOrders();
-  Future<Object?> queryOrdersByTable(int tableNo);
-  Future<Object?> queryOrdersByType(String type);
-  Future<Object?> queryOrdersByItem(String item);
-  Future<Object?> getSplitOrdersByTable(int tableNo);
+  Stream<Object?> watchOrders({
+    required List<String> fields,
+    required List<Object> values,
+    required List<bool> isEqualTo,
+    bool isSplit = false,
+  });
   Future<String> generateId({required bool isSplit});
   Future<void> save(
     String id,
@@ -14,4 +13,10 @@ abstract class OrderRemoteDataSource {
   });
   Future<void> delete(String id, {required bool isSplit});
   Future<void> updateTableNo(String id, int tableNo);
+  Future<Object?> getOrdersBy({
+    required List<String> fields,
+    required List<Object> values,
+    bool limitToOne = false,
+    bool isSplit = false,
+  });
 }

@@ -8,37 +8,35 @@ class FirebaseOrderRepository extends OrderRepository {
 
   FirebaseOrderRepository(this.remote, {required this.businessId});
 
-  bool _isBusinessMatch(Order order) => order.businessId == businessId;
-
   @override
   Future<bool> hasAnyOrdersForTable(
     String tableKey, {
     bool isSplit = false,
   }) async {
-    final raw = isSplit
-        ? await remote.getSplitOrdersByTable(int.parse(tableKey))
-        : await remote.getAllOrders();
-    if (raw == null) return false;
-
-    final map = raw as Map;
-    return map.values
-        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
-        .any((o) => o.table.tableNo.toString() == tableKey);
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [int.parse(tableKey)],
+      isSplit: isSplit,
+      limitToOne: true,
+    );
+    return raw != null;
   }
 
   @override
   Future<bool> hasPendingOrdersForTable(String tableKey) async {
-    final raw = await remote.queryOrdersByTable(int.parse(tableKey));
-    if (raw == null) return false;
-
-    final map = raw as Map;
-    return map.values.any((o) => o['status'] == 'pending');
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo', 'status'],
+      values: [int.parse(tableKey), 'pending'],
+    );
+    return raw != null;
   }
 
   @override
   Future<void> deleteOrdersForTable(String tableKey) async {
-    final raw = await remote.queryOrdersByTable(int.parse(tableKey));
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [int.parse(tableKey)],
+    );
     if (raw == null) return;
 
     final map = raw as Map;
@@ -51,8 +49,17 @@ class FirebaseOrderRepository extends OrderRepository {
   @override
   Stream<int> getTotalAmountForTable(String tableKey, {String splitNo = "0"}) {
     final source = splitNo == "0"
-        ? remote.watchOrders()
-        : remote.watchSplitOrders();
+        ? remote.watchOrders(
+            fields: ['table.tableNo', 'status'],
+            values: [int.parse(tableKey), 'canceled'],
+            isEqualTo: [true, false],
+          )
+        : remote.watchOrders(
+            fields: ['table.tableNo', 'table.splitNo', 'status'],
+            values: [int.parse(tableKey), int.parse(splitNo), 'canceled'],
+            isEqualTo: [true, true, false],
+            isSplit: true,
+          );
 
     return source.map((raw) {
       if (raw == null) return 0;
@@ -62,12 +69,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
       for (final v in map.values) {
         final order = Order.fromMap(Map<String, dynamic>.from(v));
-        if (order.table.tableNo.toString() == tableKey &&
-            order.table.splitNo.toString() == splitNo &&
-            _isBusinessMatch(order) &&
-            order.status != 'canceled') {
-          total += order.amount;
-        }
+        total += order.amount;
       }
       return total;
     });
@@ -75,27 +77,27 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Future<Set<int>> getOccupiedTableNos() async {
-    final raw = await remote.getAllOrders();
+    final raw = await remote.getOrdersBy(fields: [], values: []);
     if (raw == null) return {};
 
     final map = raw as Map;
     return map.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
         .map((order) => order.table.tableNo)
         .toSet();
   }
 
   @override
   Future<List<Order>> getOrdersForTable(String tableKey) async {
-    final raw = await remote.getAllOrders();
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [int.parse(tableKey)],
+    );
     if (raw == null) return [];
 
     final map = raw as Map;
     return map.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
-        .where((o) => o.table.tableNo.toString() == tableKey)
         .toList();
   }
 
@@ -104,32 +106,29 @@ class FirebaseOrderRepository extends OrderRepository {
     String tableKey,
     String splitNo,
   ) async {
-    final raw = await remote.getSplitOrdersByTable(int.parse(tableKey));
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo', 'table.splitNo'],
+      values: [int.parse(tableKey), int.parse(splitNo)],
+    );
     if (raw == null) return [];
 
     final map = raw as Map;
     return map.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
-        .where(
-          (o) =>
-              o.table.tableNo.toString() == tableKey &&
-              o.table.splitNo.toString() == splitNo,
-        )
         .toList();
   }
 
   @override
   Future<void> moveOrders(String fromTableKey, String toTableKey) async {
-    final raw = await remote.getAllOrders();
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [int.parse(fromTableKey)],
+    );
     if (raw == null) return;
 
     final map = raw as Map;
     for (final entry in map.entries) {
-      final order = Order.fromMap(Map<String, dynamic>.from(entry.value));
-      if (order.table.tableNo.toString() == fromTableKey) {
-        await remote.updateTableNo(entry.key, int.parse(toTableKey));
-      }
+      await remote.updateTableNo(entry.key, int.parse(toTableKey));
     }
   }
 
@@ -145,60 +144,66 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Future<List<Order>> getOrdersByType(String typeName) async {
-    final raw = await remote.queryOrdersByType(typeName);
+    final raw = await remote.getOrdersBy(
+      fields: ['type.type'],
+      values: [typeName],
+    );
     if (raw == null) return [];
 
     final map = raw as Map;
     return map.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
         .toList();
   }
 
   @override
   Future<List<Order>> getOrdersByItem(String itemName) async {
-    final raw = await remote.queryOrdersByItem(itemName);
+    final raw = await remote.getOrdersBy(
+      fields: ['item.name'],
+      values: [itemName],
+    );
     if (raw == null) return [];
 
     final map = raw as Map;
     return map.values
         .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-        .where(_isBusinessMatch)
         .toList();
   }
 
   @override
   Stream<List<Order>> watchOrdersByStatus(String status, String tableNo) {
-    return remote.watchOrders().map((raw) {
-      if (raw == null) return [];
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [int.parse(tableNo), status],
+          isEqualTo: [true, true],
+        )
+        .map((raw) {
+          if (raw == null) return [];
 
-      final map = raw as Map;
-      return map.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-          .where(_isBusinessMatch)
-          .where(
-            (o) => o.status == status && o.table.tableNo.toString() == tableNo,
-          )
-          .toList();
-    });
+          final map = raw as Map;
+          return map.values
+              .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        });
   }
 
   @override
   Stream<List<Order>> getBillOrdersForTable(String tableNo) {
-    return remote.watchOrders().map((raw) {
-      if (raw == null) return [];
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [int.parse(tableNo), 'canceled'],
+          isEqualTo: [true, false],
+        )
+        .map((raw) {
+          if (raw == null) return [];
 
-      final map = raw as Map;
-      return map.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-          .where(_isBusinessMatch)
-          .where(
-            (o) =>
-                o.table.tableNo.toString() == tableNo &&
-                (o.status == 'pending' || o.status == 'completed'),
-          )
-          .toList();
-    });
+          final map = raw as Map;
+          return map.values
+              .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        });
   }
 
   @override
@@ -216,37 +221,49 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Stream<List<Order>> watchSplitOrders(String tableNo) {
-    return remote.watchSplitOrders().map((raw) {
-      if (raw == null) return [];
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'table.splitNo'],
+          values: [int.parse(tableNo), 0],
+          isEqualTo: [true, true],
+          isSplit: true,
+        )
+        .map((raw) {
+          if (raw == null) return [];
 
-      final map = raw as Map;
-      return map.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-          .where(_isBusinessMatch)
-          .where(
-            (o) =>
-                o.table.splitNo == 0 && o.table.tableNo.toString() == tableNo,
-          )
-          .toList();
-    });
+          final map = raw as Map;
+          return map.values
+              .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        });
   }
 
   @override
   Stream<List<Order>> getSplitOrders(String tableNo) {
-    return remote.watchSplitOrders().map((raw) {
-      if (raw == null) return [];
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo'],
+          values: [int.parse(tableNo)],
+          isEqualTo: [true],
+          isSplit: true,
+        )
+        .map((raw) {
+          if (raw == null) return [];
 
-      final map = raw as Map;
-      return map.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-          .where(_isBusinessMatch)
-          .toList();
-    });
+          final map = raw as Map;
+          return map.values
+              .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        });
   }
 
   @override
   Future<bool> removeSplitOrdersForTable(String tableNo) async {
-    final raw = await remote.getSplitOrdersByTable(int.parse(tableNo));
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo'],
+      values: [int.parse(tableNo)],
+      isSplit: true,
+    );
     if (raw == null) return true;
 
     final map = raw as Map;
@@ -268,15 +285,19 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Stream<List<Order>> watchOrdersForTable(String tableKey) {
-    return remote.watchOrders().map((raw) {
-      if (raw == null) return [];
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo'],
+          values: [int.parse(tableKey)],
+          isEqualTo: [true],
+        )
+        .map((raw) {
+          if (raw == null) return [];
 
-      final map = raw as Map;
-      return map.values
-          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
-          .where(_isBusinessMatch)
-          .where((o) => o.table.tableNo.toString() == tableKey)
-          .toList();
-    });
+          final map = raw as Map;
+          return map.values
+              .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        });
   }
 }
