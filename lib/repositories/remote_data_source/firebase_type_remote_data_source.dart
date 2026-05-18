@@ -28,6 +28,7 @@ class FirebaseTypeRemoteDataSource implements TypeRemoteDataSource {
   Future<Object?> queryByType(String type) async {
     final result = await typesRef
         .where('businessId', isEqualTo: businessId)
+        .where('type', isEqualTo: type)
         .get();
 
     if (result.docs.isEmpty) {
@@ -36,10 +37,7 @@ class FirebaseTypeRemoteDataSource implements TypeRemoteDataSource {
 
     final map = <String, dynamic>{};
     for (final doc in result.docs) {
-      final data = doc.data();
-      if (data['type'] == type) {
-        map[doc.id] = data;
-      }
+      map[doc.id] = doc.data();
     }
     return map.isEmpty ? null : map;
   }

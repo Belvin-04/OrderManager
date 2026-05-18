@@ -28,32 +28,17 @@ class FirebaseTableRemoteDataSource implements TableRemoteDataSource {
   Future<Object?> getLastTable() async {
     final query = await tablesRef
         .where('businessId', isEqualTo: businessId)
+        .where('tableNo', isGreaterThanOrEqualTo: 0)
+        .orderBy('tableNo', descending: true)
+        .limit(1)
         .get();
 
     if (query.docs.isEmpty) {
       return null;
     }
 
-    Map<String, dynamic>? lastData;
-    int? lastNo;
-    String? lastId;
-    for (final doc in query.docs) {
-      final data = doc.data();
-      final tableNo = data['tableNo'];
-      if (tableNo is! int) {
-        continue;
-      }
-      if (lastNo == null || tableNo > lastNo) {
-        lastNo = tableNo;
-        lastData = data;
-        lastId = doc.id;
-      }
-    }
-
-    if (lastData == null || lastId == null) {
-      return null;
-    }
-    return {lastId: lastData};
+    final doc = query.docs.first;
+    return {doc.id: doc.data()};
   }
 
   @override

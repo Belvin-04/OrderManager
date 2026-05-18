@@ -28,6 +28,7 @@ class FirebaseItemRemoteDataSource implements ItemRemoteDataSource {
   Future<Object?> queryByName(String name) async {
     final result = await itemsRef
         .where('businessId', isEqualTo: businessId)
+        .where('name', isEqualTo: name)
         .get();
 
     if (result.docs.isEmpty) {
@@ -36,10 +37,7 @@ class FirebaseItemRemoteDataSource implements ItemRemoteDataSource {
 
     final map = <String, dynamic>{};
     for (final doc in result.docs) {
-      final data = doc.data();
-      if (data['name'] == name) {
-        map[doc.id] = data;
-      }
+      map[doc.id] = doc.data();
     }
     return map.isEmpty ? null : map;
   }

@@ -85,4 +85,24 @@ void main() {
 
     verify(() => remote.delete('1')).called(1);
   });
+
+  test('getTypeById returns type when found', () async {
+    when(() => remote.queryById('1')).thenAnswer(
+      (_) async => {
+        '1': {'id': '1', 'type': 'A', 'price': 10},
+      },
+    );
+
+    final result = await repository.getTypeById('1');
+
+    expect(result!.id, '1');
+  });
+
+  test('getTypeById returns null when not found', () async {
+    when(() => remote.queryById('1')).thenAnswer((_) async => null);
+
+    final result = await repository.getTypeById('1');
+
+    expect(result, isNull);
+  });
 }

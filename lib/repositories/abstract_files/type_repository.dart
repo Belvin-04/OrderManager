@@ -5,4 +5,5 @@ abstract class TypeRepository {
   Future<Type1?> getType(String typeName);
   Future<void> saveType(Type1 type);
   Future<void> deleteType(Type1 type);
+  Future<Type1?> getTypeById(String id);
 }

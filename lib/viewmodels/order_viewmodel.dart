@@ -14,7 +14,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
 
     final item = order.item;
     final type = order.type;
-    final int amount = (item.price + (type.price)) * order.quantity;
+    final int amount = (item.price + type.price) * order.quantity;
 
     final updated = order.copyWith(amount: amount);
 

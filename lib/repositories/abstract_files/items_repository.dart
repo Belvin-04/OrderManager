@@ -5,4 +5,5 @@ abstract class ItemsRepository {
   Future<Item?> getItem(String itemName);
   Future<void> saveItem(Item item);
   Future<void> deleteItem(Item item);
+  Future<Item?> getItemById(String id);
 }

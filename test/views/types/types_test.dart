@@ -191,6 +191,7 @@ void main() {
     final orderRepo = MockOrderRepository();
     final type = Type1(id: '1', type: 'Extra', price: 20);
     when(repo.watchTypes).thenAnswer((_) => Stream.value([type]));
+    when(() => repo.getTypeById(any())).thenAnswer((_) async => type);
     when(() => repo.saveType(any())).thenAnswer((_) async {});
     when(() => orderRepo.getOrdersByType(any())).thenAnswer((_) async => []);
     when(() => orderRepo.saveOrder(any())).thenAnswer((_) async {});

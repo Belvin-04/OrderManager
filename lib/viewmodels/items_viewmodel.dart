@@ -8,14 +8,9 @@ import 'package:order_manager/providers/order_providers.dart';
 class ItemsViewmodel extends AsyncNotifier<void> {
   Future<void> saveItem(Item item) async {
     final itemsRepo = ref.read(itemRepositoryProvider);
-    final oldItems = await itemsRepo.watchItems().first;
-    final oldItem = oldItems.firstWhere(
-      (i) => i.id == item.id,
-      orElse: () => item,
-    );
-
+    final oldItem = await itemsRepo.getItemById(item.id);
     await itemsRepo.saveItem(item);
-    if (item.id.isEmpty) return;
+    if (oldItem == null) return;
     await updateOrderPricesAndNames(oldItem, item);
   }
 

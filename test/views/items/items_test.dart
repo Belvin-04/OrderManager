@@ -193,6 +193,7 @@ void main() {
     final item = Item(id: '1', name: 'Burger', price: 100);
 
     when(repo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => repo.getItemById(any())).thenAnswer((_) async => item);
     when(() => repo.saveItem(any())).thenAnswer((_) async {});
     when(() => orderRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
     when(() => orderRepo.saveOrder(any())).thenAnswer((_) async {});

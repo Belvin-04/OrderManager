@@ -87,4 +87,24 @@ void main() {
 
     verify(() => remote.delete('1')).called(1);
   });
+
+  test('getItemById returns item when found', () async {
+    when(() => remote.queryById('1')).thenAnswer(
+      (_) async => {
+        '1': {'id': '1', 'name': 'Item A', 'price': 10},
+      },
+    );
+
+    final result = await repository.getItemById('1');
+
+    expect(result!.id, '1');
+  });
+
+  test('getItemById returns null when not found', () async {
+    when(() => remote.queryById('1')).thenAnswer((_) async => null);
+
+    final result = await repository.getItemById('1');
+
+    expect(result, isNull);
+  });
 }

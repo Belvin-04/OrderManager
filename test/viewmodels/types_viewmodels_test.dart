@@ -30,7 +30,7 @@ void main() {
   test('saving new type does not update orders', () async {
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
-    when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([]));
+    when(() => typeRepo.getTypeById("")).thenAnswer((_) async => null);
     when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
 
     final container = createContainer(
@@ -55,7 +55,7 @@ void main() {
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([oldType]));
+    when(() => typeRepo.getTypeById("t1")).thenAnswer((_) async => oldType);
     when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
 
     final item = Item(id: 'i1', name: 'Burger', price: 100);
@@ -96,7 +96,7 @@ void main() {
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([oldType]));
+    when(() => typeRepo.getTypeById("t1")).thenAnswer((_) async => oldType);
     when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
 
     final item = Item(id: 'i1', name: 'Burger', price: 100);
@@ -142,9 +142,9 @@ void main() {
       final typeRepo = MockTypeRepository();
       final ordersRepo = MockOrderRepository();
 
-      when(typeRepo.watchTypes).thenAnswer(
-        (_) => Stream.value([Type1(id: 'ty1', type: 'Extra', price: 100)]),
-      );
+      when(
+        () => typeRepo.getTypeById("ty1"),
+      ).thenAnswer((_) async => Type1(id: 'ty1', type: 'Extra', price: 100));
       when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
       when(() => ordersRepo.getOrdersByType(any())).thenAnswer((_) async => []);
 
@@ -162,9 +162,9 @@ void main() {
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(typeRepo.watchTypes).thenAnswer(
-      (_) => Stream.value([Type1(id: 't1', type: 'Extra', price: 10)]),
-    );
+    when(
+      () => typeRepo.getTypeById("t1"),
+    ).thenAnswer((_) async => Type1(id: 't1', type: 'Extra', price: 10));
     when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
     when(() => ordersRepo.getOrdersByType(any())).thenAnswer((_) async => []);
 

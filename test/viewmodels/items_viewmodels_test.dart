@@ -31,7 +31,7 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([]));
+    when(() => itemsRepo.getItemById("")).thenAnswer((_) async => null);
     when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
     when(() => itemsRepo.getItem(any())).thenAnswer((_) async => null);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
@@ -58,7 +58,7 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.getItemById("i1")).thenAnswer((_) async => oldItem);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
@@ -99,7 +99,7 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.getItemById("i1")).thenAnswer((_) async => oldItem);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
@@ -146,7 +146,7 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([oldItem]));
+    when(() => itemsRepo.getItemById("i1")).thenAnswer((_) async => oldItem);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final table = Table1(id: 't1', tableNo: 1);
@@ -192,7 +192,7 @@ void main() {
       final itemsRepo = MockItemsRepository();
       final ordersRepo = MockOrderRepository();
 
-      when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
+      when(() => itemsRepo.getItemById("i1")).thenAnswer((_) async => item);
       when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
       when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
 
@@ -213,7 +213,7 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(itemsRepo.watchItems).thenAnswer((_) => Stream.value([item]));
+    when(() => itemsRepo.getItemById("i1")).thenAnswer((_) async => item);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
