@@ -105,4 +105,16 @@ void main() {
 
     expect(result, isNull);
   });
+
+  test('typesExist returns remote hasTypes result', () async {
+    when(() => remote.hasTypes()).thenAnswer((_) async => true);
+    final result = await repository.typesExist();
+    expect(result, true);
+    verify(() => remote.hasTypes()).called(1);
+
+    when(() => remote.hasTypes()).thenAnswer((_) async => false);
+    final result2 = await repository.typesExist();
+    expect(result2, false);
+    verify(() => remote.hasTypes()).called(1);
+  });
 }

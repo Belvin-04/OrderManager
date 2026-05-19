@@ -53,4 +53,9 @@ class FirebaseTypeRepository implements TypeRepository {
     final first = map.values.first;
     return Type1.fromMap(Map<String, dynamic>.from(first));
   }
+
+  @override
+  Future<bool> typesExist() async {
+    return remote.hasTypes();
+  }
 }

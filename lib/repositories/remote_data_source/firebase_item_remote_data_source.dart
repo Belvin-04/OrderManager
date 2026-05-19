@@ -70,4 +70,13 @@ class FirebaseItemRemoteDataSource implements ItemRemoteDataSource {
   Future<void> delete(String id) {
     return itemsRef.doc(id).delete();
   }
+
+  @override
+  Future<bool> hasItems() async {
+    final result = await itemsRef
+        .where('businessId', isEqualTo: businessId)
+        .limit(1)
+        .get();
+    return result.docs.isNotEmpty;
+  }
 }

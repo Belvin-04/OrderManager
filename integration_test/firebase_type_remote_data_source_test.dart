@@ -101,4 +101,22 @@ void main() {
     expect(emitted, isNotNull);
     expect(emitted![id]['type'], 'Appetizer');
   });
+
+  test(
+    'hasTypes returns true when types exist and false when they do not',
+    () async {
+      final initialResult = await dataSource.hasTypes();
+      expect(initialResult, false);
+
+      final id = await dataSource.generateId();
+      await dataSource.save(id, {
+        'businessId': businessId,
+        'type': 'Drinks',
+        'price': 10,
+      });
+
+      final afterSaveResult = await dataSource.hasTypes();
+      expect(afterSaveResult, true);
+    },
+  );
 }

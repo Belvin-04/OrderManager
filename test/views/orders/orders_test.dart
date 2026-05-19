@@ -66,7 +66,7 @@ void main() {
     ).thenAnswer((_) => const Stream.empty());
 
     when(
-      () => orderRepo.getOrdersForTable('1'),
+      () => orderRepo.getNonCanceledOrdersForTable('1'),
     ).thenAnswer((_) async => [baseOrder(), baseOrder()]);
 
     when(
@@ -96,7 +96,9 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(() => orderRepo.getOrdersForTable('1')).thenAnswer((_) async => []);
+    when(
+      () => orderRepo.getNonCanceledOrdersForTable('1'),
+    ).thenAnswer((_) async => []);
 
     await pumpOrdersScreen(tester, orderRepo: orderRepo);
 
@@ -123,7 +125,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(() => orderRepo.getOrdersForTable('1')).thenAnswer(
+    when(() => orderRepo.getCanceledOrdersForTable('1')).thenAnswer(
       (_) async => [
         baseOrder(status: 'canceled'),
         baseOrder(status: 'canceled'),
@@ -159,7 +161,9 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(() => orderRepo.getOrdersForTable('1')).thenAnswer((_) async => []);
+    when(
+      () => orderRepo.getCanceledOrdersForTable('1'),
+    ).thenAnswer((_) async => []);
 
     await pumpOrdersScreen(tester, orderRepo: orderRepo);
 

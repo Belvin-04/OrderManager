@@ -105,6 +105,7 @@ void main() {
     final result = await dataSource.getOrdersBy(
       fields: ['table.tableNo'],
       values: [1],
+      isEqualTo: [true],
     ) as Map?;
     expect(result, isNotNull);
     expect(result![id]['table']['tableNo'], 1);
@@ -122,6 +123,7 @@ void main() {
       final result = await dataSource.getOrdersBy(
         fields: ['table.tableNo', 'status'],
         values: [5, 'pending'],
+        isEqualTo: [true, true],
       ) as Map?;
       expect(result, isNotNull);
       expect(result!.values.first['table']['tableNo'], 5);
@@ -133,6 +135,7 @@ void main() {
     final result = await dataSource.getOrdersBy(
       fields: ['table.tableNo'],
       values: [999],
+      isEqualTo: [true],
     );
 
     expect(result, isNull);
@@ -148,6 +151,7 @@ void main() {
     final result = await dataSource.getOrdersBy(
       fields: ['table.tableNo'],
       values: [1],
+      isEqualTo: [true],
       limitToOne: true,
     ) as Map?;
 
@@ -176,11 +180,36 @@ void main() {
     final result = await dataSource.getOrdersBy(
       fields: ['table.tableNo'],
       values: [7],
+      isEqualTo: [true],
       isSplit: true,
     ) as Map?;
 
     expect(result, isNotNull);
     expect(result!.values.first['table']['tableNo'], 7);
+  });
+
+  test('getOrdersBy with isEqualTo false filters correctly', () async {
+    final id1 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id1, {
+      'businessId': businessId,
+      'status': 'canceled',
+    }, isSplit: false);
+
+    final id2 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id2, {
+      'businessId': businessId,
+      'status': 'pending',
+    }, isSplit: false);
+
+    final result = await dataSource.getOrdersBy(
+      fields: ['status'],
+      values: ['canceled'],
+      isEqualTo: [false],
+    ) as Map?;
+
+    expect(result, isNotNull);
+    expect(result!.containsKey(id2), true);
+    expect(result.containsKey(id1), false);
   });
 
   test('watchOrders emits data', () async {

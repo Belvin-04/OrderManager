@@ -16,6 +16,7 @@ abstract class OrderRemoteDataSource {
   Future<Object?> getOrdersBy({
     required List<String> fields,
     required List<Object> values,
+    required List<bool> isEqualTo,
     bool limitToOne = false,
     bool isSplit = false,
   });

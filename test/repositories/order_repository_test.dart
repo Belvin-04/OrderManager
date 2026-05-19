@@ -51,6 +51,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo'],
         values: [1],
+        isEqualTo: [true],
         limitToOne: true,
       ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
@@ -64,6 +65,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo'],
         values: [3],
+        isEqualTo: [true],
         limitToOne: true,
       ),
     ).thenAnswer((_) async => null);
@@ -79,6 +81,7 @@ void main() {
         () => remote.getOrdersBy(
           fields: ['table.tableNo'],
           values: [1],
+          isEqualTo: [true],
           isSplit: true,
           limitToOne: true,
         ),
@@ -90,6 +93,7 @@ void main() {
         () => remote.getOrdersBy(
           fields: ['table.tableNo'],
           values: [1],
+          isEqualTo: [true],
           isSplit: true,
           limitToOne: true,
         ),
@@ -103,6 +107,8 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo', 'status'],
         values: [1, 'pending'],
+        isEqualTo: [true, true],
+        limitToOne: true,
       ),
     ).thenAnswer(
       (_) async => {
@@ -119,6 +125,8 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo', 'status'],
         values: [1, 'pending'],
+        isEqualTo: [true, true],
+        limitToOne: true,
       ),
     ).thenAnswer((_) async => null);
 
@@ -128,7 +136,11 @@ void main() {
 
   test('getOrdersForTable returns empty list when no orders', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => null);
 
     final result = await repo.getOrdersForTable('1');
@@ -138,7 +150,11 @@ void main() {
 
   test('getOrdersForTable maps results', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
 
     final result = await repo.getOrdersForTable('1');
@@ -146,9 +162,74 @@ void main() {
     expect(result.first.table.tableNo, 1);
   });
 
+  test(
+    'getNonCanceledOrdersForTable returns empty list when no orders',
+    () async {
+      when(
+        () => remote.getOrdersBy(
+          fields: ['table.tableNo', 'status'],
+          values: [1, 'canceled'],
+          isEqualTo: [true, false],
+        ),
+      ).thenAnswer((_) async => null);
+
+      final result = await repo.getNonCanceledOrdersForTable('1');
+
+      expect(result, isEmpty);
+    },
+  );
+
+  test('getNonCanceledOrdersForTable maps results', () async {
+    when(
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'canceled'],
+        isEqualTo: [true, false],
+      ),
+    ).thenAnswer((_) async => {'1': fakeOrderMap()});
+
+    final result = await repo.getNonCanceledOrdersForTable('1');
+    expect(result.length, 1);
+    expect(result.first.status, 'pending');
+    expect(result.first.table.tableNo, 1);
+  });
+
+  test('getCanceledOrdersForTable returns empty list when no orders', () async {
+    when(
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'canceled'],
+        isEqualTo: [true, true],
+      ),
+    ).thenAnswer((_) async => null);
+
+    final result = await repo.getCanceledOrdersForTable('1');
+
+    expect(result, isEmpty);
+  });
+
+  test('getCanceledOrdersForTable maps results', () async {
+    when(
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'canceled'],
+        isEqualTo: [true, true],
+      ),
+    ).thenAnswer((_) async => {'1': fakeOrderMap(status: 'canceled')});
+
+    final result = await repo.getCanceledOrdersForTable('1');
+    expect(result.length, 1);
+    expect(result.first.status, 'canceled');
+    expect(result.first.table.tableNo, 1);
+  });
+
   test('getOrdersByType returns empty list when none found', () async {
     when(
-      () => remote.getOrdersBy(fields: ['type.type'], values: ['None']),
+      () => remote.getOrdersBy(
+        fields: ['type.type'],
+        values: ['None'],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => null);
 
     final result = await repo.getOrdersByType('None');
@@ -158,7 +239,11 @@ void main() {
 
   test('getOrdersByType maps results', () async {
     when(
-      () => remote.getOrdersBy(fields: ['type.type'], values: ['None']),
+      () => remote.getOrdersBy(
+        fields: ['type.type'],
+        values: ['None'],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
 
     final result = await repo.getOrdersByType('None');
@@ -167,7 +252,11 @@ void main() {
 
   test('getOrdersByItem returns empty list when none found', () async {
     when(
-      () => remote.getOrdersBy(fields: ['item.name'], values: ['Item']),
+      () => remote.getOrdersBy(
+        fields: ['item.name'],
+        values: ['Item'],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => null);
 
     final result = await repo.getOrdersByItem('Item');
@@ -177,7 +266,11 @@ void main() {
 
   test('getOrdersByItem maps results', () async {
     when(
-      () => remote.getOrdersBy(fields: ['item.name'], values: ['Item']),
+      () => remote.getOrdersBy(
+        fields: ['item.name'],
+        values: ['Item'],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
 
     final result = await repo.getOrdersByItem('Item');
@@ -186,7 +279,7 @@ void main() {
 
   test('getOccupiedTableNos returns empty set when no orders', () async {
     when(
-      () => remote.getOrdersBy(fields: [], values: []),
+      () => remote.getOrdersBy(fields: [], values: [], isEqualTo: []),
     ).thenAnswer((_) async => null);
 
     final result = await repo.getOccupiedTableNos();
@@ -195,7 +288,9 @@ void main() {
   });
 
   test('getOccupiedTableNos returns unique table numbers', () async {
-    when(() => remote.getOrdersBy(fields: [], values: [])).thenAnswer(
+    when(
+      () => remote.getOrdersBy(fields: [], values: [], isEqualTo: []),
+    ).thenAnswer(
       (_) async => {
         '1': fakeOrderMap(),
         '2': fakeOrderMap(id: '2'),
@@ -209,7 +304,11 @@ void main() {
 
   test('moveOrders does nothing when no orders exist', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => null);
 
     await repo.moveOrders('1', '2');
@@ -219,7 +318,11 @@ void main() {
 
   test('moveOrders updates all matching tables returned', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer(
       (_) async => {'1': fakeOrderMap(), '2': fakeOrderMap(id: '2')},
     );
@@ -294,7 +397,7 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.value(null));
 
-    final result = await repo.getBillOrdersForTable('1').first;
+    final result = await repo.watchNonCanceledOrdersForTable('1').first;
 
     expect(result, isEmpty);
   });
@@ -313,7 +416,7 @@ void main() {
       }),
     );
 
-    final result = await repo.getBillOrdersForTable('1').first;
+    final result = await repo.watchNonCanceledOrdersForTable('1').first;
     expect(result.length, 2);
   });
 
@@ -331,6 +434,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo'],
         values: [1],
+        isEqualTo: [true],
         isSplit: true,
       ),
     ).thenAnswer((_) async => null);
@@ -345,6 +449,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo'],
         values: [1],
+        isEqualTo: [true],
         isSplit: true,
       ),
     ).thenAnswer(
@@ -364,6 +469,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo'],
         values: [1],
+        isEqualTo: [true],
         isSplit: true,
       ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
@@ -377,7 +483,11 @@ void main() {
 
   test('deleteOrdersForTable does nothing when no orders found', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer((_) async => null);
 
     await repo.deleteOrdersForTable('1');
@@ -387,7 +497,11 @@ void main() {
 
   test('deleteOrdersForTable deletes all orders for table', () async {
     when(
-      () => remote.getOrdersBy(fields: ['table.tableNo'], values: [1]),
+      () => remote.getOrdersBy(
+        fields: ['table.tableNo'],
+        values: [1],
+        isEqualTo: [true],
+      ),
     ).thenAnswer(
       (_) async => {'1': fakeOrderMap(), '2': fakeOrderMap(id: '2')},
     );
@@ -466,7 +580,7 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.value(null));
 
-    final result = await repo.watchSplitOrders('1').first;
+    final result = await repo.watchUnassignedSplitOrdersForTable('1').first;
 
     expect(result, isEmpty);
   });
@@ -482,7 +596,7 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.value({'1': fakeOrderMap()}));
 
-    final result = await repo.watchSplitOrders('1').first;
+    final result = await repo.watchUnassignedSplitOrdersForTable('1').first;
 
     expect(result.length, 1);
     expect(result.first.id, '1');
@@ -491,14 +605,14 @@ void main() {
   test('getSplitOrders returns empty list when no data', () async {
     when(
       () => remote.watchOrders(
-        fields: ['table.tableNo'],
-        values: [1],
-        isEqualTo: [true],
+        fields: ['table.tableNo', 'table.splitNo'],
+        values: [1, 1],
+        isEqualTo: [true, true],
         isSplit: true,
       ),
     ).thenAnswer((_) => Stream.value(null));
 
-    final result = await repo.getSplitOrders('1').first;
+    final result = await repo.watchAssignedSplitOrdersForTable('1', '1').first;
 
     expect(result, isEmpty);
   });
@@ -506,19 +620,19 @@ void main() {
   test('getSplitOrders returns all split orders', () async {
     when(
       () => remote.watchOrders(
-        fields: ['table.tableNo'],
-        values: [1],
-        isEqualTo: [true],
+        fields: ['table.tableNo', 'table.splitNo'],
+        values: [1, 1],
+        isEqualTo: [true, true],
         isSplit: true,
       ),
     ).thenAnswer(
       (_) => Stream.value({
-        '1': fakeOrderMap(),
+        '1': fakeOrderMap(splitNo: 1),
         '2': fakeOrderMap(id: '2', splitNo: 1),
       }),
     );
 
-    final result = await repo.getSplitOrders('1').first;
+    final result = await repo.watchAssignedSplitOrdersForTable('1', '1').first;
 
     expect(result.length, 2);
   });
@@ -530,6 +644,7 @@ void main() {
         () => remote.getOrdersBy(
           fields: ['table.tableNo', 'table.splitNo'],
           values: [1, 1],
+          isEqualTo: [true, true],
         ),
       ).thenAnswer((_) async => null);
 
@@ -544,6 +659,7 @@ void main() {
       () => remote.getOrdersBy(
         fields: ['table.tableNo', 'table.splitNo'],
         values: [1, 1],
+        isEqualTo: [true, true],
       ),
     ).thenAnswer(
       (_) async => {

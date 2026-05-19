@@ -70,4 +70,13 @@ class FirebaseTypeRemoteDataSource implements TypeRemoteDataSource {
   Future<void> delete(String id) {
     return typesRef.doc(id).delete();
   }
+
+  @override
+  Future<bool> hasTypes() async {
+    final result = await typesRef
+        .where('businessId', isEqualTo: businessId)
+        .limit(1)
+        .get();
+    return result.docs.isNotEmpty;
+  }
 }

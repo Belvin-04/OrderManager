@@ -103,6 +103,8 @@ void main() {
     when(typeRepo.watchTypes).thenAnswer(
       (_) => Stream.value([Type1(id: 't1', type: 'None', price: 0)]),
     );
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => true);
 
     await pumpPendingOrders(
       tester,
@@ -126,6 +128,8 @@ void main() {
     final typeRepo = MockTypeRepository();
 
     when(itemRepo.watchItems).thenAnswer((_) => Stream.value([]));
+    when(itemRepo.itemsExist).thenAnswer((_) async => false);
+    when(typeRepo.typesExist).thenAnswer((_) async => false);
 
     await pumpPendingOrders(
       tester,
@@ -152,6 +156,9 @@ void main() {
     when(
       () => orderRepo.getOrdersForTable('0'),
     ).thenAnswer((_) async => [baseOrder()]);
+    when(
+      () => orderRepo.hasAnyOrdersForTable('0'),
+    ).thenAnswer((_) async => true);
 
     await pumpPendingOrders(
       tester,
@@ -175,6 +182,9 @@ void main() {
     final typeRepo = MockTypeRepository();
 
     when(() => orderRepo.getOrdersForTable('0')).thenAnswer((_) async => []);
+    when(
+      () => orderRepo.hasAnyOrdersForTable('0'),
+    ).thenAnswer((_) async => false);
 
     await pumpPendingOrders(
       tester,

@@ -103,6 +103,8 @@ void main() {
     when(typeRepo.watchTypes).thenAnswer(
       (_) => Stream.value([Type1(id: 't1', type: 'None', price: 0)]),
     );
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => true);
 
     await pumpQuickOrders(
       tester,
@@ -126,6 +128,8 @@ void main() {
       (_) => Stream.value([Item(id: 'i', name: 'Burger', price: 100)]),
     );
     when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([]));
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => false);
 
     await pumpQuickOrders(
       tester,
@@ -173,6 +177,8 @@ void main() {
     when(typeRepo.watchTypes).thenAnswer(
       (_) => Stream.value([Type1(id: 't1', type: 'None', price: 0)]),
     );
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => true);
     when(
       () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
     ).thenAnswer((_) async => {});

@@ -15,9 +15,14 @@ abstract class OrderRepository {
   Future<void> saveOrder(Order order, {bool isSplit});
   Future<void> deleteOrder(Order order, {required bool isSplit});
   Stream<List<Order>> watchOrdersByStatus(String status, String tableNo);
-  Stream<List<Order>> getBillOrdersForTable(String tableNo);
-  Stream<List<Order>> watchSplitOrders(String tableNo);
-  Stream<List<Order>> getSplitOrders(String tableNo);
+  Stream<List<Order>> watchNonCanceledOrdersForTable(String tableNo);
+  Stream<List<Order>> watchUnassignedSplitOrdersForTable(String tableNo);
+  Stream<List<Order>> watchAssignedSplitOrdersForTable(
+    String tableNo,
+    String splitNo,
+  );
   Future<bool> removeSplitOrdersForTable(String tableNo);
   Map<String, int> getBillTotals(List<Order> orders);
+  Future<List<Order>> getNonCanceledOrdersForTable(String tableNo);
+  Future<List<Order>> getCanceledOrdersForTable(String tableNo);
 }

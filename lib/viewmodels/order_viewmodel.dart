@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:order_manager/models/item.dart';
 import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/table.dart';
-import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/item_providers.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
@@ -35,15 +33,15 @@ class OrdersViewModel extends AsyncNotifier<void> {
 
   Future<bool> repeatAllOrders(Table1 table) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
-    final orders = await ordersRepo.getOrdersForTable(table.tableNo.toString());
+    final orders = await ordersRepo.getNonCanceledOrdersForTable(
+      table.tableNo.toString(),
+    );
     bool repeated = false;
 
     for (final order in orders) {
       try {
-        if (order.status != "canceled") {
-          await repeatOrder(order);
-          repeated = true;
-        }
+        await repeatOrder(order);
+        repeated = true;
       } catch (e) {
         return false;
       }
@@ -54,16 +52,15 @@ class OrdersViewModel extends AsyncNotifier<void> {
 
   Future<bool> restoreAllOrders(Table1 table) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
-    final orders = await ordersRepo.getOrdersForTable(table.tableNo.toString());
-
+    final orders = await ordersRepo.getCanceledOrdersForTable(
+      table.tableNo.toString(),
+    );
     bool restored = false;
 
     for (final order in orders) {
       try {
-        if (order.status == "canceled") {
-          await restoreOrder(order);
-          restored = true;
-        }
+        await restoreOrder(order);
+        restored = true;
       } catch (e) {
         return false;
       }
@@ -75,7 +72,7 @@ class OrdersViewModel extends AsyncNotifier<void> {
   Future<bool> createSplitOrders(String tableNo) async {
     Stream<List<Order>> orderStream = ref
         .read(orderRepositoryProvider)
-        .getBillOrdersForTable(tableNo);
+        .watchNonCanceledOrdersForTable(tableNo);
 
     await for (final List<Order> orderList in orderStream) {
       for (final Order order in orderList) {
@@ -112,17 +109,15 @@ class OrdersViewModel extends AsyncNotifier<void> {
   Future<bool> resetSplitNo(String tableKey, String splitNo) async {
     List<Order> splitOrders = await ref
         .read(orderRepositoryProvider)
-        .getSplitOrders(tableKey)
+        .watchAssignedSplitOrdersForTable(tableKey, splitNo)
         .first;
 
     for (final Order order in splitOrders) {
       try {
-        if (order.table.splitNo.toString() == splitNo) {
-          await saveOrder(
-            order.copyWith(table: order.table.copyWith(splitNo: 0)),
-            isSplit: true,
-          );
-        }
+        await saveOrder(
+          order.copyWith(table: order.table.copyWith(splitNo: 0)),
+          isSplit: true,
+        );
       } catch (e) {
         return false;
       }
@@ -159,29 +154,24 @@ class OrdersViewModel extends AsyncNotifier<void> {
   }
 
   Future<bool> canOpenSaveDialog() async {
-    List<Item> items = await ref
-        .read(itemRepositoryProvider)
-        .watchItems()
-        .first;
-    if (items.isEmpty) {
+    bool hasItems = await ref.read(itemRepositoryProvider).itemsExist();
+
+    if (!hasItems) {
       return false;
     }
-    List<Type1> types = await ref
-        .read(typeRepositoryProvider)
-        .watchTypes()
-        .first;
-    if (types.isEmpty) {
+    bool hasTypes = await ref.read(typeRepositoryProvider).typesExist();
+    if (!hasTypes) {
       return false;
     }
     return true;
   }
 
   Future<bool> canOpenQuickDialog() async {
-    List<Order> orders = await ref
+    bool hasAnyOrdersForTable = await ref
         .read(orderRepositoryProvider)
-        .getOrdersForTable("0");
+        .hasAnyOrdersForTable("0");
 
-    if (orders.isEmpty) {
+    if (!hasAnyOrdersForTable) {
       return false;
     }
     return true;

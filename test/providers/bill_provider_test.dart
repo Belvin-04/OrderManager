@@ -61,7 +61,7 @@ void main() {
   test('billOrdersProvider aggregates orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+    when(() => repo.watchNonCanceledOrdersForTable('1')).thenAnswer(
       (_) => Stream.value([
         baseOrder(amount: 120),
         baseOrder(quantity: 2, amount: 240),
@@ -81,7 +81,7 @@ void main() {
   test('billOrdersProvider separates orders with different types', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getBillOrdersForTable('1')).thenAnswer(
+    when(() => repo.watchNonCanceledOrdersForTable('1')).thenAnswer(
       (_) => Stream.value([
         baseOrder(
           id: '1',

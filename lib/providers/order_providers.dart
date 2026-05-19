@@ -76,5 +76,7 @@ final splitOrdersProvider = StreamProvider.family<List<Order>, String>((
   ref,
   tableNo,
 ) {
-  return ref.watch(orderRepositoryProvider).watchSplitOrders(tableNo);
+  return ref
+      .watch(orderRepositoryProvider)
+      .watchUnassignedSplitOrdersForTable(tableNo);
 });

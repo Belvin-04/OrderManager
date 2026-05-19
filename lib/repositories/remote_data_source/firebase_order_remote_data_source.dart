@@ -28,6 +28,7 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   Future<Object?> getOrdersBy({
     required List<String> fields,
     required List<Object> values,
+    required List<bool> isEqualTo,
     bool limitToOne = false,
     bool isSplit = false,
   }) async {
@@ -36,9 +37,12 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
 
     if (fields.isNotEmpty &&
         values.isNotEmpty &&
-        fields.length == values.length) {
+        fields.length == values.length &&
+        isEqualTo.length == fields.length) {
       for (int i = 0; i < fields.length; i++) {
-        query = query.where(fields[i], isEqualTo: values[i]);
+        query = isEqualTo[i]
+            ? query.where(fields[i], isEqualTo: values[i])
+            : query.where(fields[i], isNotEqualTo: values[i]);
       }
     }
 
@@ -92,9 +96,9 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
         fields.length == values.length &&
         isEqualTo.length == fields.length) {
       for (int i = 0; i < fields.length; i++) {
-        query = isEqualTo[i] == false
-            ? query.where(fields[i], isNotEqualTo: values[i])
-            : query.where(fields[i], isEqualTo: values[i]);
+        query = isEqualTo[i]
+            ? query.where(fields[i], isEqualTo: values[i])
+            : query.where(fields[i], isNotEqualTo: values[i]);
       }
     }
 

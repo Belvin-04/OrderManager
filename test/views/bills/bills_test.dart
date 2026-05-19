@@ -149,7 +149,7 @@ void main() {
     ).thenAnswer((_) async => {});
 
     when(
-      () => orderRepo.getBillOrdersForTable(any()),
+      () => orderRepo.watchNonCanceledOrdersForTable(any()),
     ).thenAnswer((_) => Stream.value([baseOrder()]));
 
     when(
@@ -192,7 +192,7 @@ void main() {
       ).thenAnswer((_) async => {});
 
       when(
-        () => orderRepo.getBillOrdersForTable(any()),
+        () => orderRepo.watchNonCanceledOrdersForTable(any()),
       ).thenAnswer((_) => Stream.value([baseOrder()]));
 
       when(

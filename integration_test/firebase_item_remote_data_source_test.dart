@@ -114,4 +114,22 @@ void main() {
     expect(emitted, isNotNull);
     expect(emitted![id]['name'], 'Tablet');
   });
+
+  test(
+    'hasItems returns true when items exist and false when they do not',
+    () async {
+      final initialResult = await dataSource.hasItems();
+      expect(initialResult, false);
+
+      final id = await dataSource.generateId();
+      await dataSource.save(id, {
+        'businessId': businessId,
+        'name': 'Tablet',
+        'price': 800,
+      });
+
+      final afterSaveResult = await dataSource.hasItems();
+      expect(afterSaveResult, true);
+    },
+  );
 }

@@ -7,7 +7,7 @@ final billOrdersProvider = StreamProvider.family<List<Order>, String>((
   tableNo,
 ) {
   final orderRepo = ref.watch(orderRepositoryProvider);
-  return orderRepo.getBillOrdersForTable(tableNo).map((orderList) {
+  return orderRepo.watchNonCanceledOrdersForTable(tableNo).map((orderList) {
     Map<String, Order> orderMap = {};
     for (final Order order in orderList) {
       final key = '${order.item.name} ${order.type.getType(1)}';

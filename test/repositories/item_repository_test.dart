@@ -107,4 +107,16 @@ void main() {
 
     expect(result, isNull);
   });
+
+  test('itemsExist returns remote hasItems result', () async {
+    when(() => remote.hasItems()).thenAnswer((_) async => true);
+    final result = await repository.itemsExist();
+    expect(result, true);
+    verify(() => remote.hasItems()).called(1);
+
+    when(() => remote.hasItems()).thenAnswer((_) async => false);
+    final result2 = await repository.itemsExist();
+    expect(result2, false);
+    verify(() => remote.hasItems()).called(1);
+  });
 }

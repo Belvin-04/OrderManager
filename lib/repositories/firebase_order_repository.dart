@@ -16,6 +16,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],
       values: [int.parse(tableKey)],
+      isEqualTo: [true],
       isSplit: isSplit,
       limitToOne: true,
     );
@@ -27,6 +28,8 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo', 'status'],
       values: [int.parse(tableKey), 'pending'],
+      isEqualTo: [true, true],
+      limitToOne: true,
     );
     return raw != null;
   }
@@ -36,6 +39,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],
       values: [int.parse(tableKey)],
+      isEqualTo: [true],
     );
     if (raw == null) return;
 
@@ -77,7 +81,7 @@ class FirebaseOrderRepository extends OrderRepository {
 
   @override
   Future<Set<int>> getOccupiedTableNos() async {
-    final raw = await remote.getOrdersBy(fields: [], values: []);
+    final raw = await remote.getOrdersBy(fields: [], values: [], isEqualTo: []);
     if (raw == null) return {};
 
     final map = raw as Map;
@@ -92,6 +96,37 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],
       values: [int.parse(tableKey)],
+      isEqualTo: [true],
+    );
+    if (raw == null) return [];
+
+    final map = raw as Map;
+    return map.values
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  @override
+  Future<List<Order>> getNonCanceledOrdersForTable(String tableKey) async {
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo', 'status'],
+      values: [int.parse(tableKey), 'canceled'],
+      isEqualTo: [true, false],
+    );
+    if (raw == null) return [];
+
+    final map = raw as Map;
+    return map.values
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
+  @override
+  Future<List<Order>> getCanceledOrdersForTable(String tableKey) async {
+    final raw = await remote.getOrdersBy(
+      fields: ['table.tableNo', 'status'],
+      values: [int.parse(tableKey), 'canceled'],
+      isEqualTo: [true, true],
     );
     if (raw == null) return [];
 
@@ -109,6 +144,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo', 'table.splitNo'],
       values: [int.parse(tableKey), int.parse(splitNo)],
+      isEqualTo: [true, true],
     );
     if (raw == null) return [];
 
@@ -123,6 +159,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],
       values: [int.parse(fromTableKey)],
+      isEqualTo: [true],
     );
     if (raw == null) return;
 
@@ -147,6 +184,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['type.type'],
       values: [typeName],
+      isEqualTo: [true],
     );
     if (raw == null) return [];
 
@@ -161,6 +199,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['item.name'],
       values: [itemName],
+      isEqualTo: [true],
     );
     if (raw == null) return [];
 
@@ -189,7 +228,7 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
-  Stream<List<Order>> getBillOrdersForTable(String tableNo) {
+  Stream<List<Order>> watchNonCanceledOrdersForTable(String tableNo) {
     return remote
         .watchOrders(
           fields: ['table.tableNo', 'status'],
@@ -220,7 +259,7 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
-  Stream<List<Order>> watchSplitOrders(String tableNo) {
+  Stream<List<Order>> watchUnassignedSplitOrdersForTable(String tableNo) {
     return remote
         .watchOrders(
           fields: ['table.tableNo', 'table.splitNo'],
@@ -239,12 +278,15 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
-  Stream<List<Order>> getSplitOrders(String tableNo) {
+  Stream<List<Order>> watchAssignedSplitOrdersForTable(
+    String tableNo,
+    String splitNo,
+  ) {
     return remote
         .watchOrders(
-          fields: ['table.tableNo'],
-          values: [int.parse(tableNo)],
-          isEqualTo: [true],
+          fields: ['table.tableNo', 'table.splitNo'],
+          values: [int.parse(tableNo), int.parse(splitNo)],
+          isEqualTo: [true, true],
           isSplit: true,
         )
         .map((raw) {
@@ -262,6 +304,7 @@ class FirebaseOrderRepository extends OrderRepository {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],
       values: [int.parse(tableNo)],
+      isEqualTo: [true],
       isSplit: true,
     );
     if (raw == null) return true;

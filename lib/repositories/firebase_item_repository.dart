@@ -52,4 +52,9 @@ class FirebaseItemRepository implements ItemsRepository {
     final first = map.values.first;
     return Item.fromMap(Map<String, dynamic>.from(first));
   }
+
+  @override
+  Future<bool> itemsExist() async {
+    return remote.hasItems();
+  }
 }

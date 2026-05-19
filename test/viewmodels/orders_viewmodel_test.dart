@@ -164,8 +164,8 @@ void main() {
   test('restoreAllOrders restores only canceled orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getOrdersForTable('1')).thenAnswer(
-      (_) async => [baseOrder(id: '1', status: 'canceled'), baseOrder(id: '2')],
+    when(() => repo.getCanceledOrdersForTable('1')).thenAnswer(
+      (_) async => [baseOrder(id: '1', status: 'canceled')],
     );
 
     when(
@@ -183,8 +183,8 @@ void main() {
   test('repeatAllOrders repeats only non-canceled orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getOrdersForTable('1')).thenAnswer(
-      (_) async => [baseOrder(id: '1'), baseOrder(id: '2', status: 'canceled')],
+    when(() => repo.getNonCanceledOrdersForTable('1')).thenAnswer(
+      (_) async => [baseOrder(id: '1')],
     );
 
     when(
@@ -205,8 +205,8 @@ void main() {
       final repo = MockOrderRepository();
 
       when(
-        () => repo.getOrdersForTable('1'),
-      ).thenAnswer((_) async => [baseOrder(id: '1', status: 'canceled')]);
+        () => repo.getNonCanceledOrdersForTable('1'),
+      ).thenAnswer((_) async => []);
 
       when(
         () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
@@ -227,8 +227,8 @@ void main() {
       final repo = MockOrderRepository();
 
       when(
-        () => repo.getOrdersForTable('1'),
-      ).thenAnswer((_) async => [baseOrder(id: '1')]);
+        () => repo.getCanceledOrdersForTable('1'),
+      ).thenAnswer((_) async => []);
 
       when(
         () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
@@ -249,7 +249,7 @@ void main() {
       final repo = MockOrderRepository();
 
       when(
-        () => repo.getBillOrdersForTable('1'),
+        () => repo.watchNonCanceledOrdersForTable('1'),
       ).thenAnswer((_) => Stream.value([baseOrder()]));
 
       when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
@@ -267,7 +267,7 @@ void main() {
     final repo = MockOrderRepository();
 
     when(
-      () => repo.getBillOrdersForTable('1'),
+      () => repo.watchNonCanceledOrdersForTable('1'),
     ).thenAnswer((_) => Stream.value([baseOrder(quantity: 3)]));
 
     when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
@@ -301,8 +301,8 @@ void main() {
   test('resetSplitNo resets only matching split orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getSplitOrders('1')).thenAnswer(
-      (_) => Stream.value([baseOrder(splitNo: 1), baseOrder(splitNo: 2)]),
+    when(() => repo.watchAssignedSplitOrdersForTable('1', '1')).thenAnswer(
+      (_) => Stream.value([baseOrder(splitNo: 1)]),
     );
 
     when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
@@ -386,7 +386,7 @@ void main() {
     final vm = container.read(ordersViewModelProvider.notifier);
 
     when(
-      () => repo.getOrdersForTable(any()),
+      () => repo.getNonCanceledOrdersForTable(any()),
     ).thenAnswer((_) async => [baseOrder()]);
 
     when(
@@ -404,7 +404,7 @@ void main() {
     final vm = container.read(ordersViewModelProvider.notifier);
 
     when(
-      () => repo.getOrdersForTable(any()),
+      () => repo.getCanceledOrdersForTable(any()),
     ).thenAnswer((_) async => [baseOrder(status: "canceled")]);
 
     when(
@@ -422,7 +422,7 @@ void main() {
     final vm = container.read(ordersViewModelProvider.notifier);
 
     when(
-      () => repo.getBillOrdersForTable(any()),
+      () => repo.watchNonCanceledOrdersForTable(any()),
     ).thenAnswer((_) => Stream.value([baseOrder(quantity: 2)]));
 
     when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
@@ -450,7 +450,7 @@ void main() {
     final vm = container.read(ordersViewModelProvider.notifier);
 
     when(
-      () => repo.getSplitOrders(any()),
+      () => repo.watchAssignedSplitOrdersForTable(any(), any()),
     ).thenAnswer((_) => Stream.value([baseOrder()]));
 
     when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
@@ -493,12 +493,8 @@ void main() {
     final itemRepo = MockItemsRepository();
     final typeRepo = MockTypeRepository();
 
-    when(itemRepo.watchItems).thenAnswer(
-      (_) => Stream.value([Item(id: 'i', name: 'Burger', price: 100)]),
-    );
-    when(
-      typeRepo.watchTypes,
-    ).thenAnswer((_) => Stream.value([Type1(id: 't', type: 'None', price: 0)]));
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => true);
 
     final container = createFullContainer(orderRepo, itemRepo, typeRepo);
     final vm = container.read(ordersViewModelProvider.notifier);
@@ -512,7 +508,7 @@ void main() {
     final itemRepo = MockItemsRepository();
     final typeRepo = MockTypeRepository();
 
-    when(itemRepo.watchItems).thenAnswer((_) => Stream.value([]));
+    when(itemRepo.itemsExist).thenAnswer((_) async => false);
 
     final container = createFullContainer(orderRepo, itemRepo, typeRepo);
     final vm = container.read(ordersViewModelProvider.notifier);
@@ -526,10 +522,8 @@ void main() {
     final itemRepo = MockItemsRepository();
     final typeRepo = MockTypeRepository();
 
-    when(itemRepo.watchItems).thenAnswer(
-      (_) => Stream.value([Item(id: 'i', name: 'Burger', price: 100)]),
-    );
-    when(typeRepo.watchTypes).thenAnswer((_) => Stream.value([]));
+    when(itemRepo.itemsExist).thenAnswer((_) async => true);
+    when(typeRepo.typesExist).thenAnswer((_) async => false);
 
     final container = createFullContainer(orderRepo, itemRepo, typeRepo);
     final vm = container.read(ordersViewModelProvider.notifier);
@@ -544,8 +538,8 @@ void main() {
       final repo = MockOrderRepository();
 
       when(
-        () => repo.getOrdersForTable('0'),
-      ).thenAnswer((_) async => [baseOrder()]);
+        () => repo.hasAnyOrdersForTable('0'),
+      ).thenAnswer((_) async => true);
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
@@ -557,7 +551,7 @@ void main() {
   test('canOpenQuickDialog returns false when no orders for table 0', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getOrdersForTable('0')).thenAnswer((_) async => []);
+    when(() => repo.hasAnyOrdersForTable('0')).thenAnswer((_) async => false);
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
