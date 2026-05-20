@@ -33,14 +33,10 @@ class AppUserViewModel extends Notifier<void> {
     String employeeEmail,
     String businessId,
   ) async {
-    final employees = await ref
+    final employee = await ref
         .read(appUserRepositoryProvider)
-        .watchBusinessEmployees(businessId)
-        .first;
-    if (employees.isEmpty) {
-      return false;
-    }
-    return employees.any((employee) => employee.employeeEmail == employeeEmail);
+        .getBusinessEmployeeByEmail(employeeEmail, businessId);
+    return employee != null;
   }
 
   Future<AppUser?> queryAppUserByEmail(String email) async {
@@ -51,19 +47,8 @@ class AppUserViewModel extends Notifier<void> {
     String employeeEmail,
     String businessId,
   ) async {
-    final employees = await ref
+    return ref
         .read(appUserRepositoryProvider)
-        .watchBusinessEmployees(businessId)
-        .first;
-    if (employees.isEmpty) {
-      return null;
-    }
-    final filtered = employees.where(
-      (employee) => employee.employeeEmail == employeeEmail,
-    );
-    if (filtered.isEmpty) {
-      return null;
-    }
-    return filtered.first;
+        .getBusinessEmployeeByEmail(employeeEmail, businessId);
   }
 }

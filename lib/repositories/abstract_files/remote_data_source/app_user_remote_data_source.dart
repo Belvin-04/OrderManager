@@ -10,4 +10,5 @@ abstract class AppUserRemoteDataSource {
   );
   Future<void> removeBusinessEmployee(String relationId);
   Stream<Object?> watchEmployedBusinesses(String userId);
+  Future<Object?> getBusinessEmployeeByEmail(String email, String businessId);
 }

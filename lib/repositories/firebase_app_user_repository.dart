@@ -74,4 +74,18 @@ class FirebaseAppUserRepository implements AppUserRepository {
   Future<void> removeBusinessEmployee(BusinessEmployee businessEmployee) {
     return remote.removeBusinessEmployee(businessEmployee.relationId);
   }
+
+  @override
+  Future<BusinessEmployee?> getBusinessEmployeeByEmail(
+    String email,
+    String businessId,
+  ) async {
+    final raw = await remote.getBusinessEmployeeByEmail(email, businessId);
+    if (raw == null) {
+      return null;
+    }
+    final map = raw as Map<String, dynamic>;
+    final first = map.values.first;
+    return BusinessEmployee.fromMap(Map<String, dynamic>.from(first));
+  }
 }

@@ -72,6 +72,17 @@ void main() {
           .where('email', isEqualTo: email);
       await verifyQuery('app_users.where(email == email)', query);
     });
+
+    test('getBusinessEmployeeByEmail', () async {
+      final query = firestore
+          .collection('business_employees')
+          .where('employeeEmail', isEqualTo: email)
+          .where('businessId', isEqualTo: businessId);
+      await verifyQuery(
+        '''business_employees.where(employeeEmail == email).where(businessId == businessId)''',
+        query,
+      );
+    });
   });
 
   group('FirebaseBusinessRemoteDataSource Query Indexes', () {

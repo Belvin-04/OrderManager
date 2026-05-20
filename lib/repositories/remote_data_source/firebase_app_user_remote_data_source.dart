@@ -92,4 +92,21 @@ class FirebaseAppUserRemoteDataSource implements AppUserRemoteDataSource {
   Future<void> removeBusinessEmployee(String relationId) async {
     return businessUsersRef.doc(relationId).delete();
   }
+
+  @override
+  Future<Object?> getBusinessEmployeeByEmail(
+    String email,
+    String businessId,
+  ) async {
+    final snapshot = await businessUsersRef
+        .where('employeeEmail', isEqualTo: email)
+        .where('businessId', isEqualTo: businessId)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return null;
+    }
+
+    return {snapshot.docs.first.id: snapshot.docs.first.data()};
+  }
 }

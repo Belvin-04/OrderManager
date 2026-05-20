@@ -293,4 +293,45 @@ void main() {
       expect(emitted[data['relationId']]['businessName'], 'Employed Business');
     },
   );
+
+  test(
+    'getBusinessEmployeeByEmail returns correct map when employee is found',
+    () async {
+      final businessId = 'app_user_test_get_$userId';
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await TestHelper.createBusiness(businessId, uid);
+
+      final data = sampleBusinessUserData(userId, businessId);
+      await dataSource.addBusinessEmployee(data['relationId'], data);
+
+      final result =
+          await dataSource.getBusinessEmployeeByEmail(
+                data['employeeEmail'] as String,
+                businessId,
+              )
+              as Map?;
+
+      expect(result, isNotNull);
+      expect(result!.containsKey(data['relationId']), isTrue);
+      expect(
+        result[data['relationId']]['employeeEmail'],
+        data['employeeEmail'],
+      );
+    },
+  );
+
+  test(
+    'getBusinessEmployeeByEmail returns null when employee is not found',
+    () async {
+      final businessId = 'app_user_test_get_not_found_$userId';
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+      await TestHelper.createBusiness(businessId, uid);
+
+      final result = await dataSource.getBusinessEmployeeByEmail(
+        'not_exists@example.com',
+        businessId,
+      );
+      expect(result, isNull);
+    },
+  );
 }

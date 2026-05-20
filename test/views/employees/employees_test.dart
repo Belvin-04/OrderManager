@@ -237,6 +237,9 @@ void main() {
       () => repo.watchBusinessEmployees(any()),
     ).thenAnswer((_) => Stream.value([employee]));
     when(() => repo.addBusinessEmployee(any())).thenAnswer((_) async {});
+    when(
+      () => repo.getBusinessEmployeeByEmail(any(), any()),
+    ).thenAnswer((_) async => null);
     when(() => repo.queryByEmail(any())).thenAnswer(
       (_) async => const AppUser(id: '1', name: '1', email: '1@email.com'),
     );
@@ -253,7 +256,7 @@ void main() {
     expect(find.byType(SaveEmployeeDialog), findsOneWidget);
     await tester.tap(find.text('Save Employee'));
     await tester.pumpAndSettle();
-    verify(() => repo.watchBusinessEmployees(any())).called(2);
+    verify(() => repo.watchBusinessEmployees(any())).called(1);
     verify(() => repo.addBusinessEmployee(any())).called(1);
     verify(() => repo.queryByEmail(any())).called(1);
     expect(find.text('Employee Saved Successfully...'), findsOneWidget);

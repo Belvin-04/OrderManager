@@ -301,4 +301,57 @@ void main() {
       expect(result.first.employeeRole, 'Staff');
     });
   });
+
+  group('getBusinessEmployeeByEmail', () {
+    test('returns null when remote returns null', () async {
+      when(
+        () => remote.getBusinessEmployeeByEmail(any(), any()),
+      ).thenAnswer((_) async => null);
+
+      final result = await repository.getBusinessEmployeeByEmail(
+        'missing@example.com',
+        'biz1',
+      );
+
+      expect(result, isNull);
+    });
+
+    test('returns BusinessEmployee when remote returns valid data', () async {
+      when(() => remote.getBusinessEmployeeByEmail(any(), any())).thenAnswer(
+        (_) async => {
+          'r1': {
+            'relationId': 'r1',
+            'businessId': 'b1',
+            'businessName': 'b1',
+            'businessOwnerId': 'o1',
+            'employeeId': 'e1',
+            'employeeName': 'e1',
+            'employeeEmail': 'test@example.com',
+            'employeeRole': 'e1',
+          },
+        },
+      );
+
+      final result = await repository.getBusinessEmployeeByEmail(
+        'test@example.com',
+        'b1',
+      );
+
+      expect(result, isNotNull);
+      expect(result!.employeeEmail, 'test@example.com');
+      expect(result.businessName, 'b1');
+    });
+
+    test('calls remote with the correct email and businessId', () async {
+      when(
+        () => remote.getBusinessEmployeeByEmail(any(), any()),
+      ).thenAnswer((_) async => null);
+
+      await repository.getBusinessEmployeeByEmail('hello@example.com', 'b99');
+
+      verify(
+        () => remote.getBusinessEmployeeByEmail('hello@example.com', 'b99'),
+      ).called(1);
+    });
+  });
 }

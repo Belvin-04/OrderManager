@@ -11,4 +11,8 @@ abstract class AppUserRepository {
   Future<void> addBusinessEmployee(BusinessEmployee businessEmployee);
   Future<void> removeBusinessEmployee(BusinessEmployee businessEmployee);
   Stream<List<BusinessEmployee>> watchEmployedBusinesses(AppUser user);
+  Future<BusinessEmployee?> getBusinessEmployeeByEmail(
+    String email,
+    String businessId,
+  );
 }

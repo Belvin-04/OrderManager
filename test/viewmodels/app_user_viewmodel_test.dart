@@ -111,19 +111,19 @@ void main() {
     test('doesEmployeeExists returns true when employee is found', () async {
       const email = 'test@email.com';
       const businessId = 'b1';
-      when(() => repository.watchBusinessEmployees(businessId)).thenAnswer(
-        (_) => Stream.value([
-          const BusinessEmployee(
-            relationId: 'r1',
-            businessId: businessId,
-            businessName: 'b1',
-            businessOwnerId: 'o1',
-            employeeId: 'e1',
-            employeeName: 'e1',
-            employeeEmail: email,
-            employeeRole: 'e1',
-          ),
-        ]),
+      when(
+        () => repository.getBusinessEmployeeByEmail(email, businessId),
+      ).thenAnswer(
+        (_) async => const BusinessEmployee(
+          relationId: 'r1',
+          businessId: businessId,
+          businessName: 'b1',
+          businessOwnerId: 'o1',
+          employeeId: 'e1',
+          employeeName: 'e1',
+          employeeEmail: email,
+          employeeRole: 'e1',
+        ),
       );
 
       final result = await container
@@ -134,41 +134,13 @@ void main() {
     });
 
     test(
-      '''doesEmployeeExists returns false when employee is not found but other employees exist''',
-      () async {
-        const email = 'test@email.com';
-        const businessId = 'b1';
-        when(() => repository.watchBusinessEmployees(businessId)).thenAnswer(
-          (_) => Stream.value([
-            const BusinessEmployee(
-              relationId: 'r1',
-              businessId: businessId,
-              businessName: 'b1',
-              businessOwnerId: 'o1',
-              employeeId: 'e1',
-              employeeName: 'e1',
-              employeeEmail: 'other@email.com',
-              employeeRole: 'e1',
-            ),
-          ]),
-        );
-
-        final result = await container
-            .read(employeeViewModelProvider.notifier)
-            .doesEmployeeExists(email, businessId);
-
-        expect(result, isFalse);
-      },
-    );
-
-    test(
       'doesEmployeeExists returns false when employee is not found',
       () async {
         const email = 'test@email.com';
         const businessId = 'b1';
         when(
-          () => repository.watchBusinessEmployees(businessId),
-        ).thenAnswer((_) => Stream.value([]));
+          () => repository.getBusinessEmployeeByEmail(email, businessId),
+        ).thenAnswer((_) async => null);
 
         final result = await container
             .read(employeeViewModelProvider.notifier)
@@ -192,8 +164,8 @@ void main() {
         employeeRole: 'e1',
       );
       when(
-        () => repository.watchBusinessEmployees(businessId),
-      ).thenAnswer((_) => Stream.value([employee]));
+        () => repository.getBusinessEmployeeByEmail(email, businessId),
+      ).thenAnswer((_) async => employee);
 
       final result = await container
           .read(employeeViewModelProvider.notifier)
@@ -202,39 +174,12 @@ void main() {
       expect(result, employee);
     });
 
-    test(
-      '''queryBusinessEmployeeByEmail returns null when not found but other employees exist''',
-      () async {
-        const email = 'test@email.com';
-        const businessId = 'b1';
-        const employee = BusinessEmployee(
-          relationId: 'r1',
-          businessId: businessId,
-          businessName: 'b1',
-          businessOwnerId: 'o1',
-          employeeId: 'e1',
-          employeeName: 'e1',
-          employeeEmail: 'other@email.com',
-          employeeRole: 'e1',
-        );
-        when(
-          () => repository.watchBusinessEmployees(businessId),
-        ).thenAnswer((_) => Stream.value([employee]));
-
-        final result = await container
-            .read(employeeViewModelProvider.notifier)
-            .queryBusinessEmployeeByEmail(email, businessId);
-
-        expect(result, isNull);
-      },
-    );
-
     test('queryBusinessEmployeeByEmail returns null when not found', () async {
       const email = 'test@email.com';
       const businessId = 'b1';
       when(
-        () => repository.watchBusinessEmployees(businessId),
-      ).thenAnswer((_) => Stream.value([]));
+        () => repository.getBusinessEmployeeByEmail(email, businessId),
+      ).thenAnswer((_) async => null);
 
       final result = await container
           .read(employeeViewModelProvider.notifier)

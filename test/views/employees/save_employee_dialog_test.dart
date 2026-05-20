@@ -103,8 +103,8 @@ void main() {
           const AppUser(id: 'u1', name: 'User 1', email: 'user1@email.com'),
     );
     when(
-      () => repo.watchBusinessEmployees(any()),
-    ).thenAnswer((_) => Stream<List<BusinessEmployee>>.value([]));
+      () => repo.getBusinessEmployeeByEmail(any(), any()),
+    ).thenAnswer((_) async => null);
 
     BusinessEmployee? savedEmployee;
 
@@ -149,8 +149,8 @@ void main() {
           const AppUser(id: 'u1', name: 'User 1', email: 'user1@email.com'),
     );
     when(
-      () => repo.watchBusinessEmployees(any()),
-    ).thenAnswer((_) => Stream<List<BusinessEmployee>>.value([]));
+      () => repo.getBusinessEmployeeByEmail(any(), any()),
+    ).thenAnswer((_) async => null);
     const initial = BusinessEmployee(
       relationId: 't1',
       businessId: 't1',
@@ -209,19 +209,17 @@ void main() {
       (_) async =>
           const AppUser(id: '1', name: '1', email: 'existing@email.com'),
     );
-    when(() => repo.watchBusinessEmployees(any())).thenAnswer(
-      (_) => Stream.value([
-        const BusinessEmployee(
-          relationId: 'r1',
-          businessId: 't1',
-          businessName: 't1',
-          businessOwnerId: 't1',
-          employeeId: 'e1',
-          employeeName: 'e1',
-          employeeEmail: 'existing@email.com',
-          employeeRole: '1',
-        ),
-      ]),
+    when(() => repo.getBusinessEmployeeByEmail(any(), any())).thenAnswer(
+      (_) async => const BusinessEmployee(
+        relationId: 'r1',
+        businessId: 't1',
+        businessName: 't1',
+        businessOwnerId: 't1',
+        employeeId: 'e1',
+        employeeName: 'e1',
+        employeeEmail: 'existing@email.com',
+        employeeRole: '1',
+      ),
     );
 
     const initial = BusinessEmployee(
@@ -255,19 +253,17 @@ void main() {
     when(() => repo.queryByEmail(any())).thenAnswer(
       (_) async => const AppUser(id: '1', name: '1', email: 'other@email.com'),
     );
-    when(() => repo.watchBusinessEmployees(any())).thenAnswer(
-      (_) => Stream.value([
-        const BusinessEmployee(
-          relationId: 'r_existing',
-          businessId: 't1',
-          businessName: 't1',
-          businessOwnerId: 't1',
-          employeeId: 'e_existing',
-          employeeName: 'Existing',
-          employeeEmail: 'other@email.com',
-          employeeRole: '1',
-        ),
-      ]),
+    when(() => repo.getBusinessEmployeeByEmail(any(), any())).thenAnswer(
+      (_) async => const BusinessEmployee(
+        relationId: 'r_existing',
+        businessId: 't1',
+        businessName: 't1',
+        businessOwnerId: 't1',
+        employeeId: 'e_existing',
+        employeeName: 'Existing',
+        employeeEmail: 'other@email.com',
+        employeeRole: '1',
+      ),
     );
 
     const initial = BusinessEmployee(
@@ -301,19 +297,17 @@ void main() {
       (_) async =>
           const AppUser(id: '1', name: '1', email: 'current@email.com'),
     );
-    when(() => repo.watchBusinessEmployees(any())).thenAnswer(
-      (_) => Stream.value([
-        const BusinessEmployee(
-          relationId: 'r_current',
-          businessId: 't1',
-          businessName: 't1',
-          businessOwnerId: 't1',
-          employeeId: 'e_current',
-          employeeName: 'Current',
-          employeeEmail: 'current@email.com',
-          employeeRole: '1',
-        ),
-      ]),
+    when(() => repo.getBusinessEmployeeByEmail(any(), any())).thenAnswer(
+      (_) async => const BusinessEmployee(
+        relationId: 'r_current',
+        businessId: 't1',
+        businessName: 't1',
+        businessOwnerId: 't1',
+        employeeId: 'e_current',
+        employeeName: 'Current',
+        employeeEmail: 'current@email.com',
+        employeeRole: '1',
+      ),
     );
 
     bool onSaveCalled = false;
@@ -351,8 +345,8 @@ void main() {
           const AppUser(id: 'u1', name: 'User 1', email: 'user1@email.com'),
     );
     when(
-      () => repo.watchBusinessEmployees(any()),
-    ).thenAnswer((_) => Stream<List<BusinessEmployee>>.value([]));
+      () => repo.getBusinessEmployeeByEmail(any(), any()),
+    ).thenAnswer((_) async => null);
 
     BusinessEmployee? savedEmployee;
 
