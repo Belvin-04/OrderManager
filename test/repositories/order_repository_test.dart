@@ -645,6 +645,7 @@ void main() {
           fields: ['table.tableNo', 'table.splitNo'],
           values: [1, 1],
           isEqualTo: [true, true],
+          isSplit: true,
         ),
       ).thenAnswer((_) async => null);
 
@@ -660,6 +661,7 @@ void main() {
         fields: ['table.tableNo', 'table.splitNo'],
         values: [1, 1],
         isEqualTo: [true, true],
+        isSplit: true,
       ),
     ).thenAnswer(
       (_) async => {

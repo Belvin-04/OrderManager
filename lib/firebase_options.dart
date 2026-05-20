@@ -4,6 +4,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/services.dart' show appFlavor;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -22,7 +23,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        return appFlavor == 'dev' ? androidDev : androidProd;
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
@@ -49,15 +50,24 @@ class DefaultFirebaseOptions {
     authDomain: 'order-manager-1f6bf.firebaseapp.com',
     databaseURL: 'https://order-manager-1f6bf-default-rtdb.firebaseio.com',
     storageBucket: 'order-manager-1f6bf.firebasestorage.app',
+    measurementId: 'G-129DJZJS06',
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
+  static const FirebaseOptions androidProd = FirebaseOptions(
     apiKey: 'AIzaSyDCjLst3l5nZEsj7rmAvicpgypP3Gs-258',
     appId: '1:33997041371:android:4b91c70665abf461b5a6fe',
     messagingSenderId: '33997041371',
     projectId: 'order-manager-1f6bf',
     databaseURL: 'https://order-manager-1f6bf-default-rtdb.firebaseio.com',
     storageBucket: 'order-manager-1f6bf.firebasestorage.app',
+  );
+
+  static const FirebaseOptions androidDev = FirebaseOptions(
+    apiKey: 'AIzaSyBKQaBNGEwvpGanqCqq40BZd_k4jGf65bA',
+    appId: '1:946144097369:android:6b5caa31102ed0bc01ed48',
+    messagingSenderId: '946144097369',
+    projectId: 'order-manager-test-8ddd5',
+    storageBucket: 'order-manager-test-8ddd5.firebasestorage.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -96,5 +106,6 @@ class DefaultFirebaseOptions {
     authDomain: 'order-manager-1f6bf.firebaseapp.com',
     databaseURL: 'https://order-manager-1f6bf-default-rtdb.firebaseio.com',
     storageBucket: 'order-manager-1f6bf.firebasestorage.app',
+    measurementId: 'G-E36EGL1QXT',
   );
 }

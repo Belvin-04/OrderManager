@@ -102,11 +102,13 @@ void main() {
     final id = await dataSource.generateId(isSplit: false);
     await dataSource.save(id, sampleOrder(1), isSplit: false);
 
-    final result = await dataSource.getOrdersBy(
-      fields: ['table.tableNo'],
-      values: [1],
-      isEqualTo: [true],
-    ) as Map?;
+    final result =
+        await dataSource.getOrdersBy(
+              fields: ['table.tableNo'],
+              values: [1],
+              isEqualTo: [true],
+            )
+            as Map?;
     expect(result, isNotNull);
     expect(result![id]['table']['tableNo'], 1);
   });
@@ -120,11 +122,13 @@ void main() {
         'status': 'pending',
       }, isSplit: false);
 
-      final result = await dataSource.getOrdersBy(
-        fields: ['table.tableNo', 'status'],
-        values: [5, 'pending'],
-        isEqualTo: [true, true],
-      ) as Map?;
+      final result =
+          await dataSource.getOrdersBy(
+                fields: ['table.tableNo', 'status'],
+                values: [5, 'pending'],
+                isEqualTo: [true, true],
+              )
+              as Map?;
       expect(result, isNotNull);
       expect(result!.values.first['table']['tableNo'], 5);
       expect(result.values.first['status'], 'pending');
@@ -148,12 +152,14 @@ void main() {
     final id2 = await dataSource.generateId(isSplit: false);
     await dataSource.save(id2, sampleOrder(1), isSplit: false);
 
-    final result = await dataSource.getOrdersBy(
-      fields: ['table.tableNo'],
-      values: [1],
-      isEqualTo: [true],
-      limitToOne: true,
-    ) as Map?;
+    final result =
+        await dataSource.getOrdersBy(
+              fields: ['table.tableNo'],
+              values: [1],
+              isEqualTo: [true],
+              limitToOne: true,
+            )
+            as Map?;
 
     expect(result, isNotNull);
     expect(result!.length, 1);
@@ -177,12 +183,14 @@ void main() {
     final id = await dataSource.generateId(isSplit: true);
     await dataSource.save(id, sampleOrder(7), isSplit: true);
 
-    final result = await dataSource.getOrdersBy(
-      fields: ['table.tableNo'],
-      values: [7],
-      isEqualTo: [true],
-      isSplit: true,
-    ) as Map?;
+    final result =
+        await dataSource.getOrdersBy(
+              fields: ['table.tableNo'],
+              values: [7],
+              isEqualTo: [true],
+              isSplit: true,
+            )
+            as Map?;
 
     expect(result, isNotNull);
     expect(result!.values.first['table']['tableNo'], 7);
@@ -201,11 +209,13 @@ void main() {
       'status': 'pending',
     }, isSplit: false);
 
-    final result = await dataSource.getOrdersBy(
-      fields: ['status'],
-      values: ['canceled'],
-      isEqualTo: [false],
-    ) as Map?;
+    final result =
+        await dataSource.getOrdersBy(
+              fields: ['status'],
+              values: ['canceled'],
+              isEqualTo: [false],
+            )
+            as Map?;
 
     expect(result, isNotNull);
     expect(result!.containsKey(id2), true);

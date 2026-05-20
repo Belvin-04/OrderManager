@@ -15,17 +15,24 @@ class TestHelper {
 
       final firestore = FirebaseFirestore.instance;
 
-      final host = const String.fromEnvironment('EMULATOR_HOST').isNotEmpty
-          ? const String.fromEnvironment('EMULATOR_HOST')
-          : (defaultTargetPlatform == TargetPlatform.android
-                ? '10.0.2.2'
-                : 'localhost');
+      const useEmulator = bool.fromEnvironment(
+        'USE_FIREBASE_EMULATOR',
+        defaultValue: true,
+      );
 
-      try {
-        await FirebaseAuth.instance.useAuthEmulator(host, 9099);
-        firestore.useFirestoreEmulator(host, 8080);
-      } catch (e) {
-        throw Exception('Failed to set up Firebase: $e');
+      if (useEmulator) {
+        final host = const String.fromEnvironment('EMULATOR_HOST').isNotEmpty
+            ? const String.fromEnvironment('EMULATOR_HOST')
+            : (defaultTargetPlatform == TargetPlatform.android
+                  ? '10.0.2.2'
+                  : 'localhost');
+
+        try {
+          await FirebaseAuth.instance.useAuthEmulator(host, 9099);
+          firestore.useFirestoreEmulator(host, 8080);
+        } catch (e) {
+          throw Exception('Failed to set up Firebase emulator: $e');
+        }
       }
       _initialized = true;
     }

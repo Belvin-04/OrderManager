@@ -145,6 +145,7 @@ class FirebaseOrderRepository extends OrderRepository {
       fields: ['table.tableNo', 'table.splitNo'],
       values: [int.parse(tableKey), int.parse(splitNo)],
       isEqualTo: [true, true],
+      isSplit: true,
     );
     if (raw == null) return [];
 

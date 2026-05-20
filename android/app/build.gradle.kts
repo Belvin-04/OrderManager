@@ -9,6 +9,15 @@ plugins {
 }
 
 android {
+    flavorDimensions.add("env")
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+        }
+        create("prod") {
+            dimension = "env"
+        }
+    }
     namespace = "com.belvinraja.order_manager"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion

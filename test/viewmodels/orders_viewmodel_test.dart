@@ -164,9 +164,9 @@ void main() {
   test('restoreAllOrders restores only canceled orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getCanceledOrdersForTable('1')).thenAnswer(
-      (_) async => [baseOrder(id: '1', status: 'canceled')],
-    );
+    when(
+      () => repo.getCanceledOrdersForTable('1'),
+    ).thenAnswer((_) async => [baseOrder(id: '1', status: 'canceled')]);
 
     when(
       () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
@@ -183,9 +183,9 @@ void main() {
   test('repeatAllOrders repeats only non-canceled orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.getNonCanceledOrdersForTable('1')).thenAnswer(
-      (_) async => [baseOrder(id: '1')],
-    );
+    when(
+      () => repo.getNonCanceledOrdersForTable('1'),
+    ).thenAnswer((_) async => [baseOrder(id: '1')]);
 
     when(
       () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
@@ -301,9 +301,9 @@ void main() {
   test('resetSplitNo resets only matching split orders', () async {
     final repo = MockOrderRepository();
 
-    when(() => repo.watchAssignedSplitOrdersForTable('1', '1')).thenAnswer(
-      (_) => Stream.value([baseOrder(splitNo: 1)]),
-    );
+    when(
+      () => repo.watchAssignedSplitOrdersForTable('1', '1'),
+    ).thenAnswer((_) => Stream.value([baseOrder(splitNo: 1)]));
 
     when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
 
@@ -537,9 +537,7 @@ void main() {
     () async {
       final repo = MockOrderRepository();
 
-      when(
-        () => repo.hasAnyOrdersForTable('0'),
-      ).thenAnswer((_) async => true);
+      when(() => repo.hasAnyOrdersForTable('0')).thenAnswer((_) async => true);
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 

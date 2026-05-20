@@ -145,9 +145,9 @@ void main() {
   testWidgets('clear split calls resetSplitNo', (tester) async {
     final orderRepo = MockOrderRepository();
 
-    when(() => orderRepo.watchAssignedSplitOrdersForTable('1', '1')).thenAnswer(
-      (_) => Stream.value([baseOrder(splitNo: 1)]),
-    );
+    when(
+      () => orderRepo.watchAssignedSplitOrdersForTable('1', '1'),
+    ).thenAnswer((_) => Stream.value([baseOrder(splitNo: 1)]));
 
     when(
       () => orderRepo.saveOrder(any(), isSplit: true),
