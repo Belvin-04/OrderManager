@@ -36,26 +36,6 @@ void main() {
     expect(result.first.type, 'A');
   });
 
-  test('getType returns null when no data found', () async {
-    when(() => remote.queryByType('X')).thenAnswer((_) async => null);
-
-    final result = await repository.getType('X');
-
-    expect(result, isNull);
-  });
-
-  test('getType returns first matching Type1', () async {
-    when(() => remote.queryByType('A')).thenAnswer(
-      (_) async => {
-        'k1': {'id': '1', 'type': 'A', 'price': 10},
-      },
-    );
-
-    final result = await repository.getType('A');
-
-    expect(result!.id, '1');
-  });
-
   test('saveType generates id when id is empty', () async {
     when(() => remote.generateId()).thenAnswer((_) async => 'newId');
     when(() => remote.save(any(), any())).thenAnswer((_) async {});

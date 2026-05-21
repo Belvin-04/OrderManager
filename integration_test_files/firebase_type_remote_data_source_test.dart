@@ -40,24 +40,6 @@ void main() {
     expect(id, isNotEmpty);
   });
 
-  test('save and queryByType returns correct type', () async {
-    final id = await dataSource.generateId();
-
-    final typeData = {'businessId': businessId, 'type': 'Drinks'};
-
-    await dataSource.save(id, typeData);
-
-    final result = await dataSource.queryByType('Drinks') as Map?;
-
-    expect(result, isNotNull);
-    expect(result!.values.first['type'], 'Drinks');
-  });
-
-  test('queryByType returns null when no match', () async {
-    final result = await dataSource.queryByType('DoesNotExist');
-    expect(result, isNull);
-  });
-
   test('save and queryById returns correct type', () async {
     final id = await dataSource.generateId();
 
@@ -65,9 +47,7 @@ void main() {
 
     await dataSource.save(id, typeData);
 
-    final result = await dataSource.queryByType('Food') as Map?;
-    final idResult =
-        await dataSource.queryById(result!.values.first["id"]) as Map?;
+    final idResult = await dataSource.queryById(id) as Map?;
 
     expect(idResult, isNotNull);
     expect(idResult!.values.first['type'], 'Food');

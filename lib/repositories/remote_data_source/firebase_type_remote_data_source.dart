@@ -25,24 +25,6 @@ class FirebaseTypeRemoteDataSource implements TypeRemoteDataSource {
   }
 
   @override
-  Future<Object?> queryByType(String type) async {
-    final result = await typesRef
-        .where('businessId', isEqualTo: businessId)
-        .where('type', isEqualTo: type)
-        .get();
-
-    if (result.docs.isEmpty) {
-      return null;
-    }
-
-    final map = <String, dynamic>{};
-    for (final doc in result.docs) {
-      map[doc.id] = doc.data();
-    }
-    return map.isEmpty ? null : map;
-  }
-
-  @override
   Future<Object?> queryById(String id) async {
     final result = await typesRef.doc(id).get();
     if (!result.exists) {

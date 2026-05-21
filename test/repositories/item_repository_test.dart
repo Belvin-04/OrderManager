@@ -37,26 +37,6 @@ void main() {
     expect(result.first.name, 'Item A');
   });
 
-  test('getItem returns null when not found', () async {
-    when(() => remote.queryByName('X')).thenAnswer((_) async => null);
-
-    final result = await repository.getItem('X');
-
-    expect(result, isNull);
-  });
-
-  test('getItem returns first matching item', () async {
-    when(() => remote.queryByName('Item A')).thenAnswer(
-      (_) async => {
-        'k1': {'id': '1', 'name': 'Item A', 'price': 10},
-      },
-    );
-
-    final result = await repository.getItem('Item A');
-
-    expect(result!.id, '1');
-  });
-
   test('saveItem reuses existing id when id already exists remotely', () async {
     when(() => remote.save(any(), any())).thenAnswer((_) async {});
 

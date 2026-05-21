@@ -35,16 +35,6 @@ class FirebaseTypeRepository implements TypeRepository {
   }
 
   @override
-  Future<Type1?> getType(String typeName) async {
-    final raw = await remote.queryByType(typeName);
-    if (raw == null) return null;
-
-    final map = raw as Map;
-    final first = map.values.first;
-    return Type1.fromMap(Map<String, dynamic>.from(first));
-  }
-
-  @override
   Future<Type1?> getTypeById(String id) async {
     final raw = await remote.queryById(id);
     if (raw == null) return null;

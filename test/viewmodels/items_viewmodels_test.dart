@@ -33,7 +33,6 @@ void main() {
 
     when(() => itemsRepo.getItemById("")).thenAnswer((_) async => null);
     when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
-    when(() => itemsRepo.getItem(any())).thenAnswer((_) async => null);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final container = createContainer(

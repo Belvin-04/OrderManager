@@ -25,24 +25,6 @@ class FirebaseItemRemoteDataSource implements ItemRemoteDataSource {
   }
 
   @override
-  Future<Object?> queryByName(String name) async {
-    final result = await itemsRef
-        .where('businessId', isEqualTo: businessId)
-        .where('name', isEqualTo: name)
-        .get();
-
-    if (result.docs.isEmpty) {
-      return null;
-    }
-
-    final map = <String, dynamic>{};
-    for (final doc in result.docs) {
-      map[doc.id] = doc.data();
-    }
-    return map.isEmpty ? null : map;
-  }
-
-  @override
   Future<Object?> queryById(String id) async {
     final result = await itemsRef.doc(id).get();
     if (!result.exists) {

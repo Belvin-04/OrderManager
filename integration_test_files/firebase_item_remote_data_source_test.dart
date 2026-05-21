@@ -40,24 +40,6 @@ void main() {
     expect(id, isNotEmpty);
   });
 
-  test('save and queryByName returns correct item', () async {
-    final id = await dataSource.generateId();
-
-    final item = {'businessId': businessId, 'name': 'Laptop', 'price': 1200};
-
-    await dataSource.save(id, item);
-
-    final result = await dataSource.queryByName('Laptop') as Map?;
-
-    expect(result, isNotNull);
-    expect(result!.values.first['price'], 1200);
-  });
-
-  test('queryByName returns null when no match', () async {
-    final result = await dataSource.queryByName('DoesNotExist');
-    expect(result, isNull);
-  });
-
   test('save and queryById returns correct item', () async {
     final id = await dataSource.generateId();
 
@@ -70,9 +52,7 @@ void main() {
 
     await dataSource.save(id, item);
 
-    final result = await dataSource.queryByName('Laptop') as Map?;
-    final idResult =
-        await dataSource.queryById(result!.values.first["id"]) as Map?;
+    final idResult = await dataSource.queryById(id) as Map?;
 
     expect(idResult, isNotNull);
     expect(idResult!.values.first['price'], 1200);

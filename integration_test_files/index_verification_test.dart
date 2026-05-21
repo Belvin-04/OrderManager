@@ -119,16 +119,6 @@ void main() {
       await verifyQuery('items.where(businessId == businessId)', query);
     });
 
-    test('queryByName', () async {
-      final query = firestore
-          .collection('items')
-          .where('businessId', isEqualTo: businessId)
-          .where('name', isEqualTo: name);
-      await verifyQuery(
-        'items.where(businessId == businessId).where(name == name)',
-        query,
-      );
-    });
 
     test('hasItems', () async {
       final query = firestore
@@ -172,16 +162,6 @@ void main() {
       await verifyQuery('types.where(businessId == businessId)', query);
     });
 
-    test('queryByType', () async {
-      final query = firestore
-          .collection('types')
-          .where('businessId', isEqualTo: businessId)
-          .where('type', isEqualTo: typeName);
-      await verifyQuery(
-        'types.where(businessId == businessId).where(type == type)',
-        query,
-      );
-    });
 
     test('hasTypes', () async {
       final query = firestore
