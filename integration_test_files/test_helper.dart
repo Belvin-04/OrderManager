@@ -37,7 +37,13 @@ class TestHelper {
       _initialized = true;
     }
 
-    if (FirebaseAuth.instance.currentUser == null) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      if (!currentUser.isAnonymous) {
+        await FirebaseAuth.instance.signOut();
+        await FirebaseAuth.instance.signInAnonymously();
+      }
+    } else {
       await FirebaseAuth.instance.signInAnonymously();
     }
     await FirebaseAuth.instance.authStateChanges().first;
