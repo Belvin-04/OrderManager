@@ -35,6 +35,42 @@ class FirebaseOrderRepository extends OrderRepository {
   }
 
   @override
+  Stream<bool> watchPendingOrdersExist(String tableKey) {
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [int.parse(tableKey), 'pending'],
+          isEqualTo: [true, true],
+          limitToOne: true,
+        )
+        .map((raw) => raw != null);
+  }
+
+  @override
+  Stream<bool> watchCompletedOrdersExist(String tableKey) {
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [int.parse(tableKey), 'completed'],
+          isEqualTo: [true, true],
+          limitToOne: true,
+        )
+        .map((raw) => raw != null);
+  }
+
+  @override
+  Stream<bool> watchCanceledOrdersExist(String tableKey) {
+    return remote
+        .watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [int.parse(tableKey), 'canceled'],
+          isEqualTo: [true, true],
+          limitToOne: true,
+        )
+        .map((raw) => raw != null);
+  }
+
+  @override
   Future<void> deleteOrdersForTable(String tableKey) async {
     final raw = await remote.getOrdersBy(
       fields: ['table.tableNo'],

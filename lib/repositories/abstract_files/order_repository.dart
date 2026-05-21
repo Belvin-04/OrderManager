@@ -25,4 +25,7 @@ abstract class OrderRepository {
   Map<String, int> getBillTotals(List<Order> orders);
   Future<List<Order>> getNonCanceledOrdersForTable(String tableNo);
   Future<List<Order>> getCanceledOrdersForTable(String tableNo);
+  Stream<bool> watchPendingOrdersExist(String tableKey);
+  Stream<bool> watchCompletedOrdersExist(String tableKey);
+  Stream<bool> watchCanceledOrdersExist(String tableKey);
 }

@@ -86,6 +86,7 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
     required List<String> fields,
     required List<Object> values,
     required List<bool> isEqualTo,
+    bool limitToOne = false,
     bool isSplit = false,
   }) {
     final ref = isSplit ? splitOrdersRef : ordersRef;
@@ -100,6 +101,10 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
             ? query.where(fields[i], isEqualTo: values[i])
             : query.where(fields[i], isNotEqualTo: values[i]);
       }
+    }
+
+    if (limitToOne) {
+      query = query.limit(1);
     }
 
     return query.snapshots().map(_toMap);

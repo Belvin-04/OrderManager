@@ -34,24 +34,57 @@ final tablesViewmodelProvider = AsyncNotifierProvider<TablesViewmodel, void>(
   TablesViewmodel.new,
 );
 
-final tableOrderStatus = StreamProvider.family<TableOrderStatus, String>((
+final pendingOrdersExistProvider = StreamProvider.family<bool, String>((
   ref,
-  tableNo,
+  tableKey,
 ) {
   final orderRepo = ref.watch(orderRepositoryProvider);
-  return orderRepo.watchOrdersForTable(tableNo).map((orders) {
-    if (orders.isNotEmpty) {
-      final hasPending = orders.any((o) => o.status == "pending");
-      if (hasPending) return TableOrderStatus.pending;
+  return orderRepo.watchPendingOrdersExist(tableKey);
+});
 
-      final hasCompleted = orders.any((o) => o.status == "completed");
-      if (hasCompleted) return TableOrderStatus.completed;
+final completedOrdersExistProvider = StreamProvider.family<bool, String>((
+  ref,
+  tableKey,
+) {
+  final orderRepo = ref.watch(orderRepositoryProvider);
+  return orderRepo.watchCompletedOrdersExist(tableKey);
+});
 
-      final hasCanceled = orders.any((o) => o.status == "canceled");
-      if (hasCanceled) return TableOrderStatus.canceled;
-    }
-    return TableOrderStatus.empty;
-  });
+final canceledOrdersExistProvider = StreamProvider.family<bool, String>((
+  ref,
+  tableKey,
+) {
+  final orderRepo = ref.watch(orderRepositoryProvider);
+  return orderRepo.watchCanceledOrdersExist(tableKey);
+});
+
+final tableOrderStatus = Provider.family<AsyncValue<TableOrderStatus>, String>((
+  ref,
+  tableKey,
+) {
+  final pending = ref.watch(pendingOrdersExistProvider(tableKey));
+
+  final completed = ref.watch(completedOrdersExistProvider(tableKey));
+
+  final canceled = ref.watch(canceledOrdersExistProvider(tableKey));
+
+  if (pending.isLoading || completed.isLoading || canceled.isLoading) {
+    return const AsyncLoading();
+  }
+
+  if (pending.value == true) {
+    return const AsyncData(TableOrderStatus.pending);
+  }
+
+  if (completed.value == true) {
+    return const AsyncData(TableOrderStatus.completed);
+  }
+
+  if (canceled.value == true) {
+    return const AsyncData(TableOrderStatus.canceled);
+  }
+
+  return const AsyncData(TableOrderStatus.empty);
 });
 
 final tablePopupProvider = NotifierProvider<PopupNotifier, int>(() {

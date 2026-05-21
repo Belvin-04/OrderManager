@@ -119,7 +119,6 @@ void main() {
       await verifyQuery('items.where(businessId == businessId)', query);
     });
 
-
     test('hasItems', () async {
       final query = firestore
           .collection('items')
@@ -161,7 +160,6 @@ void main() {
           .where('businessId', isEqualTo: businessId);
       await verifyQuery('types.where(businessId == businessId)', query);
     });
-
 
     test('hasTypes', () async {
       final query = firestore

@@ -293,4 +293,27 @@ void main() {
     expect(emitted!.containsKey(id2), true);
     expect(emitted.containsKey(id1), false);
   });
+
+  test('watchOrders limits results to one when limitToOne is true', () async {
+    final id1 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id1, sampleOrder(15), isSplit: false);
+
+    final id2 = await dataSource.generateId(isSplit: false);
+    await dataSource.save(id2, sampleOrder(15), isSplit: false);
+
+    final stream = dataSource.watchOrders(
+      fields: ['table.tableNo'],
+      values: [15],
+      isEqualTo: [true],
+      limitToOne: true,
+    );
+
+    final emitted =
+        await stream.firstWhere((raw) => raw != null && (raw as Map).isNotEmpty)
+            as Map?;
+
+    expect(emitted, isNotNull);
+    expect(emitted!.length, 1);
+    expect(emitted.containsKey(id1) || emitted.containsKey(id2), isTrue);
+  });
 }

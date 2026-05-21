@@ -118,3 +118,17 @@ void registerCommonFallbacks() {
   registerFallbackValue(FakeOrder());
   registerFallbackValue(FakeTable1());
 }
+
+void stubOrderRepoStatus(
+  MockOrderRepository orderRepo, {
+  bool pending = false,
+  bool completed = false,
+  bool canceled = false,
+}) {
+  when(() => orderRepo.watchPendingOrdersExist(any()))
+      .thenAnswer((_) => Stream.value(pending));
+  when(() => orderRepo.watchCompletedOrdersExist(any()))
+      .thenAnswer((_) => Stream.value(completed));
+  when(() => orderRepo.watchCanceledOrdersExist(any()))
+      .thenAnswer((_) => Stream.value(canceled));
+}

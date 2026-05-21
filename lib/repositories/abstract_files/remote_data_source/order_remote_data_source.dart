@@ -4,6 +4,7 @@ abstract class OrderRemoteDataSource {
     required List<Object> values,
     required List<bool> isEqualTo,
     bool isSplit = false,
+    bool limitToOne = false,
   });
   Future<String> generateId({required bool isSplit});
   Future<void> save(

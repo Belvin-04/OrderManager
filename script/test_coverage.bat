@@ -17,7 +17,7 @@ move coverage\lcov.info coverage\integration_lcov.info
 
 echo Merging coverage reports...
 
-call dart run tool/merge_coverage.dart
+call dart run script/merge_coverage.dart
 
 echo.
 echo Combined coverage generated:

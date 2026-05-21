@@ -18,7 +18,7 @@ Future<void> pumpTableWidget(WidgetTester tester, Table1 table) async {
       overrides: [
         tableOrderStatus(
           table.tableNo.toString(),
-        ).overrideWith((ref) => Stream.value(TableOrderStatus.pending)),
+        ).overrideWith((ref) => const AsyncData(TableOrderStatus.pending)),
       ],
       child: MaterialApp(
         home: Scaffold(body: TableWidget(table: table)),
@@ -162,7 +162,7 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => Stream.value(TableOrderStatus.empty)),
+          ).overrideWith((ref) => const AsyncData(TableOrderStatus.empty)),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),
@@ -187,7 +187,7 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => Stream.value(TableOrderStatus.pending)),
+          ).overrideWith((ref) => const AsyncData(TableOrderStatus.pending)),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),
@@ -212,7 +212,7 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => Stream.value(TableOrderStatus.completed)),
+          ).overrideWith((ref) => const AsyncData(TableOrderStatus.completed)),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),
@@ -237,7 +237,7 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => Stream.value(TableOrderStatus.canceled)),
+          ).overrideWith((ref) => const AsyncData(TableOrderStatus.canceled)),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),
@@ -264,7 +264,7 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => const Stream.empty()),
+          ).overrideWith((ref) => const AsyncLoading()),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),
@@ -285,7 +285,9 @@ void main() {
         overrides: [
           tableOrderStatus(
             table.tableNo.toString(),
-          ).overrideWith((ref) => Stream.error(Exception('failed'))),
+          ).overrideWith(
+            (ref) => AsyncError(Exception('failed'), StackTrace.empty),
+          ),
         ],
         child: MaterialApp(
           home: Scaffold(body: TableWidget(table: table)),

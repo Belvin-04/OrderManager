@@ -32,9 +32,7 @@ Future<void> pumpTableLayoutScreen(
   required MockTableRepository tableRepo,
   required MockOrderRepository orderRepo,
 }) async {
-  when(
-    () => orderRepo.watchOrdersForTable(any()),
-  ).thenAnswer((_) => Stream.value([]));
+  stubOrderRepoStatus(orderRepo);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [

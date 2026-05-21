@@ -705,4 +705,91 @@ void main() {
 
     expect(result.length, 2);
   });
+
+  test('watchPendingOrdersExist returns true when match exists', () async {
+    when(
+      () => remote.watchOrders(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'pending'],
+        isEqualTo: [true, true],
+        limitToOne: true,
+      ),
+    ).thenAnswer((_) => Stream.value({'1': fakeOrderMap()}));
+
+    final result = await repo.watchPendingOrdersExist('1').first;
+    expect(result, true);
+  });
+
+  test('watchPendingOrdersExist returns false when no match exists', () async {
+    when(
+      () => remote.watchOrders(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'pending'],
+        isEqualTo: [true, true],
+        limitToOne: true,
+      ),
+    ).thenAnswer((_) => Stream.value(null));
+
+    final result = await repo.watchPendingOrdersExist('1').first;
+    expect(result, false);
+  });
+
+  test('watchCompletedOrdersExist returns true when match exists', () async {
+    when(
+      () => remote.watchOrders(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'completed'],
+        isEqualTo: [true, true],
+        limitToOne: true,
+      ),
+    ).thenAnswer((_) => Stream.value({'1': fakeOrderMap(status: 'completed')}));
+
+    final result = await repo.watchCompletedOrdersExist('1').first;
+    expect(result, true);
+  });
+
+  test(
+    'watchCompletedOrdersExist returns false when no match exists',
+    () async {
+      when(
+        () => remote.watchOrders(
+          fields: ['table.tableNo', 'status'],
+          values: [1, 'completed'],
+          isEqualTo: [true, true],
+          limitToOne: true,
+        ),
+      ).thenAnswer((_) => Stream.value(null));
+
+      final result = await repo.watchCompletedOrdersExist('1').first;
+      expect(result, false);
+    },
+  );
+
+  test('watchCanceledOrdersExist returns true when match exists', () async {
+    when(
+      () => remote.watchOrders(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'canceled'],
+        isEqualTo: [true, true],
+        limitToOne: true,
+      ),
+    ).thenAnswer((_) => Stream.value({'1': fakeOrderMap(status: 'canceled')}));
+
+    final result = await repo.watchCanceledOrdersExist('1').first;
+    expect(result, true);
+  });
+
+  test('watchCanceledOrdersExist returns false when no match exists', () async {
+    when(
+      () => remote.watchOrders(
+        fields: ['table.tableNo', 'status'],
+        values: [1, 'canceled'],
+        isEqualTo: [true, true],
+        limitToOne: true,
+      ),
+    ).thenAnswer((_) => Stream.value(null));
+
+    final result = await repo.watchCanceledOrdersExist('1').first;
+    expect(result, false);
+  });
 }

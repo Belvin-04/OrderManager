@@ -22,9 +22,7 @@ Future<void> pumpTableLayoutScreen(
   required MockTableRepository tableRepo,
   required MockOrderRepository orderRepo,
 }) async {
-  when(
-    () => orderRepo.watchOrdersForTable(any()),
-  ).thenAnswer((_) => Stream.value([]));
+  stubOrderRepoStatus(orderRepo);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -46,9 +44,7 @@ Future<void> pumpLayoutWidget(
 ) async {
   final orderRepo = MockOrderRepository();
   final tableRepo = MockTableRepository();
-  when(
-    () => orderRepo.watchOrdersForTable(any()),
-  ).thenAnswer((_) => Stream.value([]));
+  stubOrderRepoStatus(orderRepo);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -76,10 +72,7 @@ void main() {
   testWidgets('shows loading indicator', (tester) async {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
-
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -365,16 +358,7 @@ void main() {
       Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
     ];
 
-    when(
-      () => orderRepo.getTotalAmountForTable(
-        any(),
-        splitNo: any(named: 'splitNo'),
-      ),
-    ).thenAnswer((_) => const Stream.empty());
-
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -413,16 +397,7 @@ void main() {
       Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
     ];
 
-    when(
-      () => orderRepo.getTotalAmountForTable(
-        any(),
-        splitNo: any(named: 'splitNo'),
-      ),
-    ).thenAnswer((_) => const Stream.empty());
-
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -456,16 +431,7 @@ void main() {
         Table1(id: 't1', tableNo: 1, position: const Offset(50, 100)),
       ];
 
-      when(
-        () => orderRepo.getTotalAmountForTable(
-          any(),
-          splitNo: any(named: 'splitNo'),
-        ),
-      ).thenAnswer((_) => const Stream.empty());
-
-      when(
-        () => orderRepo.watchOrdersForTable(any()),
-      ).thenAnswer((_) => Stream.value([]));
+      stubOrderRepoStatus(orderRepo);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -508,9 +474,7 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -541,15 +505,13 @@ void main() {
     final tableRepo = MockTableRepository();
     final orderRepo = MockOrderRepository();
 
+    stubOrderRepoStatus(orderRepo);
     when(
       () => orderRepo.getTotalAmountForTable(
         any(),
         splitNo: any(named: 'splitNo'),
       ),
     ).thenAnswer((_) => const Stream.empty());
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
 
     final container = ProviderContainer(
       overrides: [

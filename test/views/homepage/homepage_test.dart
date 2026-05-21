@@ -133,9 +133,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -166,9 +164,7 @@ void main() {
       ),
     ).thenAnswer((_) => Stream.value(0));
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -210,9 +206,7 @@ void main() {
         () => orderRepo.deleteOrdersForTable(any()),
       ).thenAnswer((_) async {});
 
-      when(
-        () => orderRepo.watchOrdersForTable(any()),
-      ).thenAnswer((_) => Stream.value([]));
+      stubOrderRepoStatus(orderRepo);
 
       await pumpHomePageScreen(
         tester,
@@ -253,9 +247,7 @@ void main() {
       () => orderRepo.hasAnyOrdersForTable(any()),
     ).thenAnswer((_) async => false);
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -293,9 +285,7 @@ void main() {
       () => orderRepo.hasPendingOrdersForTable(any()),
     ).thenAnswer((_) async => true);
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -350,9 +340,7 @@ void main() {
 
     when(() => orderRepo.moveOrders(any(), any())).thenAnswer((_) async {});
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -409,9 +397,7 @@ void main() {
       ],
     );
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -447,9 +433,7 @@ void main() {
     ).thenAnswer((_) => Stream.value([Table1(id: 't1', tableNo: 1)]));
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {});
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -485,9 +469,7 @@ void main() {
     when(orderRepo.getOccupiedTableNos).thenAnswer((_) async => {1});
     when(() => orderRepo.getOrdersForTable(any())).thenAnswer((_) async => []);
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -636,9 +618,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([baseOrder()]));
+    stubOrderRepoStatus(orderRepo, pending: true);
 
     await pumpHomePageScreen(
       tester,
@@ -670,9 +650,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([baseOrder(status: "completed")]));
+    stubOrderRepoStatus(orderRepo, completed: true);
 
     await pumpHomePageScreen(
       tester,
@@ -704,9 +682,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([baseOrder(status: "canceled")]));
+    stubOrderRepoStatus(orderRepo, canceled: true);
 
     await pumpHomePageScreen(
       tester,
@@ -738,9 +714,7 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => Stream.value([]));
+    stubOrderRepoStatus(orderRepo);
 
     await pumpHomePageScreen(
       tester,
@@ -772,9 +746,12 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(
-      () => orderRepo.watchOrdersForTable(any()),
-    ).thenAnswer((_) => const Stream.empty());
+    when(() => orderRepo.watchPendingOrdersExist(any()))
+        .thenAnswer((_) => const Stream.empty());
+    when(() => orderRepo.watchCompletedOrdersExist(any()))
+        .thenAnswer((_) => const Stream.empty());
+    when(() => orderRepo.watchCanceledOrdersExist(any()))
+        .thenAnswer((_) => const Stream.empty());
 
     await pumpHomePageScreen(
       tester,

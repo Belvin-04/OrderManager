@@ -128,22 +128,4 @@ class TablesViewmodel extends AsyncNotifier<void> {
     _orderRepo = ref.read(orderRepositoryProvider);
     await _tableRepo.updateTablePosition(id, newPos);
   }
-
-  Stream<TableOrderStatus> getTableOrderStatus(String tableKey) {
-    _tableRepo = ref.read(tableRepositoryProvider);
-    _orderRepo = ref.read(orderRepositoryProvider);
-    return _orderRepo.watchOrdersForTable(tableKey).map((orders) {
-      if (orders.isNotEmpty) {
-        final hasPending = orders.any((o) => o.status == "pending");
-        if (hasPending) return TableOrderStatus.pending;
-
-        final hasCompleted = orders.any((o) => o.status == "completed");
-        if (hasCompleted) return TableOrderStatus.completed;
-
-        final hasCanceled = orders.any((o) => o.status == "canceled");
-        if (hasCanceled) return TableOrderStatus.canceled;
-      }
-      return TableOrderStatus.empty;
-    });
-  }
 }
