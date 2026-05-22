@@ -77,7 +77,7 @@ void main() {
     when(
       () => ordersRepo.getOrdersByItem(any()),
     ).thenAnswer((_) async => [order]);
-    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.saveOrders(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -88,7 +88,7 @@ void main() {
 
     await vm.saveItem(newItem);
 
-    verify(() => ordersRepo.saveOrder(any())).called(1);
+    verify(() => ordersRepo.saveOrders(any())).called(1);
   });
 
   test('order amount is recalculated correctly', () async {
@@ -118,7 +118,7 @@ void main() {
     when(
       () => ordersRepo.getOrdersByItem(any()),
     ).thenAnswer((_) async => [order]);
-    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.saveOrders(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -130,8 +130,8 @@ void main() {
     await vm.saveItem(newItem);
 
     final captured =
-        verify(() => ordersRepo.saveOrder(captureAny())).captured.single
-            as Order;
+        (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
+            as List<Order>).first;
 
     final expected = (newItem.price + type.price) * order.quantity;
 
@@ -165,7 +165,7 @@ void main() {
     when(
       () => ordersRepo.getOrdersByItem(any()),
     ).thenAnswer((_) async => [order]);
-    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.saveOrders(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       itemsRepo: itemsRepo,
@@ -177,8 +177,8 @@ void main() {
     await vm.saveItem(newItem);
 
     final captured =
-        verify(() => ordersRepo.saveOrder(captureAny())).captured.single
-            as Order;
+        (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
+            as List<Order>).first;
     expect(captured.item, newItem);
   });
 

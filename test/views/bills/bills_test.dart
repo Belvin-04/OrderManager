@@ -145,7 +145,7 @@ void main() {
     ).thenAnswer((_) => const Stream<int>.empty());
 
     when(
-      () => orderRepo.saveOrder(any(), isSplit: true),
+      () => orderRepo.saveOrders(any(), isSplit: true),
     ).thenAnswer((_) async => {});
 
     when(
@@ -169,7 +169,7 @@ void main() {
     await tester.tap(find.text('Split'));
     await tester.pumpAndSettle();
 
-    verify(() => orderRepo.saveOrder(any(), isSplit: true)).called(1);
+    verify(() => orderRepo.saveOrders(any(), isSplit: true)).called(1);
     verify(() => orderRepo.hasAnyOrdersForTable("1", isSplit: true)).called(1);
     expect(find.byType(SplitBillDialog), findsNothing);
     expect(find.byType(BillsSplit), findsOneWidget);
@@ -188,7 +188,7 @@ void main() {
       ).thenAnswer((_) => const Stream<int>.empty());
 
       when(
-        () => orderRepo.saveOrder(any(), isSplit: true),
+        () => orderRepo.saveOrders(any(), isSplit: true),
       ).thenAnswer((_) async => {});
 
       when(
@@ -212,7 +212,7 @@ void main() {
       await tester.tap(find.text('Split'));
       await tester.pumpAndSettle();
 
-      verifyNever(() => orderRepo.saveOrder(any(), isSplit: true));
+      verifyNever(() => orderRepo.saveOrders(any(), isSplit: true));
       verify(
         () => orderRepo.hasAnyOrdersForTable("1", isSplit: true),
       ).called(1);

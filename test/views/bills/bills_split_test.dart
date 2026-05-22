@@ -150,7 +150,7 @@ void main() {
     ).thenAnswer((_) => Stream.value([baseOrder(splitNo: 1)]));
 
     when(
-      () => orderRepo.saveOrder(any(), isSplit: true),
+      () => orderRepo.saveOrders(any(), isSplit: true),
     ).thenAnswer((_) async => {});
 
     await pumpBillsSplitScreen(
@@ -162,7 +162,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.cancel_outlined).first);
     await tester.pump();
 
-    verify(() => orderRepo.saveOrder(any(), isSplit: true)).called(1);
+    verify(() => orderRepo.saveOrders(any(), isSplit: true)).called(1);
   });
 
   testWidgets('back removes split orders', (tester) async {

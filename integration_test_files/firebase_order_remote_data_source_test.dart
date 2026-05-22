@@ -166,19 +166,6 @@ void main() {
     expect(result.containsKey(id1) || result.containsKey(id2), isTrue);
   });
 
-  test('updateTableNo updates nested field only', () async {
-    final id = await dataSource.generateId(isSplit: false);
-    await dataSource.save(id, sampleOrder(1), isSplit: false);
-
-    await dataSource.updateTableNo(id, 10);
-
-    final snapshot = await orderRef.doc(id).get();
-    final data = snapshot.data()!;
-
-    expect(data['table']['tableNo'], 10);
-    expect(data['item']['name'], 'Pizza');
-  });
-
   test('split orders are saved and queried separately', () async {
     final id = await dataSource.generateId(isSplit: true);
     await dataSource.save(id, sampleOrder(7), isSplit: true);
@@ -315,5 +302,200 @@ void main() {
     expect(emitted, isNotNull);
     expect(emitted!.length, 1);
     expect(emitted.containsKey(id1) || emitted.containsKey(id2), isTrue);
+  });
+
+  group('updateAllTableNo', () {
+    test('does nothing when list of ids is empty', () async {
+      await expectLater(dataSource.updateAllTableNo([], 10), completes);
+    });
+
+    test('updates tableNo for multiple orders', () async {
+      final id1 = await dataSource.generateId(isSplit: false);
+      final id2 = await dataSource.generateId(isSplit: false);
+
+      await dataSource.save(id1, sampleOrder(1), isSplit: false);
+      await dataSource.save(id2, sampleOrder(1), isSplit: false);
+
+      await dataSource.updateAllTableNo([id1, id2], 5);
+
+      final doc1 = await orderRef.doc(id1).get();
+      final doc2 = await orderRef.doc(id2).get();
+
+      expect(doc1.data()?['table']?['tableNo'], 5);
+      expect(doc2.data()?['table']?['tableNo'], 5);
+    });
+
+    test(
+      'chunks and updates orders when list is larger than batch size (450)',
+      () async {
+        final ids = <String>[];
+        final batch = orderRef.firestore.batch();
+        for (int i = 0; i < 452; i++) {
+          final docRef = orderRef.doc();
+          ids.add(docRef.id);
+          batch.set(docRef, sampleOrder(1));
+        }
+        await batch.commit();
+
+        await dataSource.updateAllTableNo(ids, 8);
+
+        final docFirst = await orderRef.doc(ids.first).get();
+        final docLast = await orderRef.doc(ids.last).get();
+        final docMiddle = await orderRef.doc(ids[449]).get();
+        final docNext = await orderRef.doc(ids[450]).get();
+
+        expect(docFirst.data()?['table']?['tableNo'], 8);
+        expect(docLast.data()?['table']?['tableNo'], 8);
+        expect(docMiddle.data()?['table']?['tableNo'], 8);
+        expect(docNext.data()?['table']?['tableNo'], 8);
+      },
+    );
+  });
+
+  group('saveAll', () {
+    test('does nothing when map is empty', () async {
+      await expectLater(dataSource.saveAll({}, isSplit: false), completes);
+    });
+
+    test('saves multiple orders to correct collection (non-split)', () async {
+      final id1 = await dataSource.generateId(isSplit: false);
+      final id2 = await dataSource.generateId(isSplit: false);
+
+      final data = {id1: sampleOrder(2), id2: sampleOrder(3)};
+
+      await dataSource.saveAll(data, isSplit: false);
+
+      final doc1 = await orderRef.doc(id1).get();
+      final doc2 = await orderRef.doc(id2).get();
+
+      expect(doc1.exists, true);
+      expect(doc2.exists, true);
+      expect(doc1.data()?['table']?['tableNo'], 2);
+      expect(doc2.data()?['table']?['tableNo'], 3);
+    });
+
+    test('saves multiple orders to correct collection (split)', () async {
+      final id1 = await dataSource.generateId(isSplit: true);
+      final id2 = await dataSource.generateId(isSplit: true);
+
+      final data = {id1: sampleOrder(4), id2: sampleOrder(5)};
+
+      await dataSource.saveAll(data, isSplit: true);
+
+      final doc1 = await splitOrderRef.doc(id1).get();
+      final doc2 = await splitOrderRef.doc(id2).get();
+
+      expect(doc1.exists, true);
+      expect(doc2.exists, true);
+      expect(doc1.data()?['table']?['tableNo'], 4);
+      expect(doc2.data()?['table']?['tableNo'], 5);
+    });
+
+    test(
+      'chunks and saves orders when map is larger than batch size (450)',
+      () async {
+        final data = <String, Map<String, dynamic>>{};
+        final ids = <String>[];
+        for (int i = 0; i < 452; i++) {
+          final id = orderRef.doc().id;
+          ids.add(id);
+          data[id] = sampleOrder(i);
+        }
+
+        await dataSource.saveAll(data, isSplit: false);
+
+        final docFirst = await orderRef.doc(ids.first).get();
+        final docLast = await orderRef.doc(ids.last).get();
+        final docNext = await orderRef.doc(ids[450]).get();
+
+        expect(docFirst.exists, true);
+        expect(docLast.exists, true);
+        expect(docNext.exists, true);
+
+        expect(docFirst.data()?['table']?['tableNo'], 0);
+        expect(docLast.data()?['table']?['tableNo'], 451);
+        expect(docNext.data()?['table']?['tableNo'], 450);
+      },
+    );
+  });
+
+  group('deleteAll', () {
+    test('does nothing when list of ids is empty', () async {
+      await expectLater(dataSource.deleteAll([], isSplit: false), completes);
+    });
+
+    test(
+      'deletes multiple orders from correct collection (non-split)',
+      () async {
+        final id1 = await dataSource.generateId(isSplit: false);
+        final id2 = await dataSource.generateId(isSplit: false);
+
+        await dataSource.save(id1, sampleOrder(1), isSplit: false);
+        await dataSource.save(id2, sampleOrder(1), isSplit: false);
+
+        final doc1Before = await orderRef.doc(id1).get();
+        final doc2Before = await orderRef.doc(id2).get();
+
+        expect(doc1Before.exists, true);
+        expect(doc2Before.exists, true);
+
+        await dataSource.deleteAll([id1, id2], isSplit: false);
+
+        final doc1 = await orderRef.doc(id1).get();
+        final doc2 = await orderRef.doc(id2).get();
+
+        expect(doc1.exists, false);
+        expect(doc2.exists, false);
+      },
+    );
+
+    test('deletes multiple orders from correct collection (split)', () async {
+      final id1 = await dataSource.generateId(isSplit: true);
+      final id2 = await dataSource.generateId(isSplit: true);
+
+      await dataSource.save(id1, sampleOrder(1), isSplit: true);
+      await dataSource.save(id2, sampleOrder(1), isSplit: true);
+
+      final doc1Before = await splitOrderRef.doc(id1).get();
+      final doc2Before = await splitOrderRef.doc(id2).get();
+
+      expect(doc1Before.exists, true);
+      expect(doc2Before.exists, true);
+
+      await dataSource.deleteAll([id1, id2], isSplit: true);
+
+      final doc1 = await splitOrderRef.doc(id1).get();
+      final doc2 = await splitOrderRef.doc(id2).get();
+
+      expect(doc1.exists, false);
+      expect(doc2.exists, false);
+    });
+
+    test(
+      'chunks and deletes orders when list is larger than batch size (450)',
+      () async {
+        final ids = <String>[];
+        final batch = orderRef.firestore.batch();
+        for (int i = 0; i < 452; i++) {
+          final docRef = orderRef.doc();
+          ids.add(docRef.id);
+          batch.set(docRef, sampleOrder(1));
+        }
+        await batch.commit();
+
+        final docFirstBefore = await orderRef.doc(ids.first).get();
+        expect(docFirstBefore.exists, true);
+
+        await dataSource.deleteAll(ids, isSplit: false);
+
+        final docFirstAfter = await orderRef.doc(ids.first).get();
+        final docLastAfter = await orderRef.doc(ids.last).get();
+        final docNextAfter = await orderRef.doc(ids[450]).get();
+
+        expect(docFirstAfter.exists, false);
+        expect(docLastAfter.exists, false);
+        expect(docNextAfter.exists, false);
+      },
+    );
   });
 }

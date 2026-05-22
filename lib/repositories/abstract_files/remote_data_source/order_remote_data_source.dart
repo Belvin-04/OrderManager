@@ -13,7 +13,7 @@ abstract class OrderRemoteDataSource {
     required bool isSplit,
   });
   Future<void> delete(String id, {required bool isSplit});
-  Future<void> updateTableNo(String id, int tableNo);
+  Future<void> updateAllTableNo(List<String> ids, int tableNo);
   Future<Object?> getOrdersBy({
     required List<String> fields,
     required List<Object> values,
@@ -21,4 +21,9 @@ abstract class OrderRemoteDataSource {
     bool limitToOne = false,
     bool isSplit = false,
   });
+  Future<void> saveAll(
+    Map<String, Map<String, dynamic>> idToData, {
+    required bool isSplit,
+  });
+  Future<void> deleteAll(List<String> ids, {required bool isSplit});
 }

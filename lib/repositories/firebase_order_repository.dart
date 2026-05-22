@@ -80,10 +80,10 @@ class FirebaseOrderRepository extends OrderRepository {
     if (raw == null) return;
 
     final map = raw as Map;
-    for (final entry in map.values) {
-      final Order order = Order.fromMap(Map<String, dynamic>.from(entry));
-      await deleteOrder(order, isSplit: false);
-    }
+    final List<Order> orders = map.values
+        .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    await deleteOrders(orders, isSplit: false);
   }
 
   @override
@@ -201,9 +201,8 @@ class FirebaseOrderRepository extends OrderRepository {
     if (raw == null) return;
 
     final map = raw as Map;
-    for (final entry in map.entries) {
-      await remote.updateTableNo(entry.key, int.parse(toTableKey));
-    }
+    final List<String> ids = map.keys.map((k) => k.toString()).toList();
+    await remote.updateAllTableNo(ids, int.parse(toTableKey));
   }
 
   @override
@@ -348,10 +347,10 @@ class FirebaseOrderRepository extends OrderRepository {
 
     final map = raw as Map;
     try {
-      for (final v in map.values) {
-        final order = Order.fromMap(Map<String, dynamic>.from(v));
-        await deleteOrder(order, isSplit: true);
-      }
+      final List<Order> orders = map.values
+          .map((e) => Order.fromMap(Map<String, dynamic>.from(e as Map)))
+          .toList();
+      await deleteOrders(orders, isSplit: true);
     } catch (_) {
       return false;
     }
@@ -361,6 +360,27 @@ class FirebaseOrderRepository extends OrderRepository {
   @override
   Future<void> deleteOrder(Order order, {required bool isSplit}) {
     return remote.delete(order.id, isSplit: isSplit);
+  }
+
+  @override
+  Future<void> saveOrders(List<Order> orders, {bool isSplit = false}) async {
+    if (orders.isEmpty) return;
+    final Map<String, Map<String, dynamic>> idToData = {};
+    for (final order in orders) {
+      final id = order.id.isEmpty
+          ? await remote.generateId(isSplit: isSplit)
+          : order.id;
+      final updated = order.copyWith(id: id, businessId: businessId);
+      idToData[id] = updated.toMap();
+    }
+    await remote.saveAll(idToData, isSplit: isSplit);
+  }
+
+  @override
+  Future<void> deleteOrders(List<Order> orders, {required bool isSplit}) async {
+    if (orders.isEmpty) return;
+    final List<String> ids = orders.map((o) => o.id).toList();
+    await remote.deleteAll(ids, isSplit: isSplit);
   }
 
   @override

@@ -19,6 +19,18 @@ class OrdersViewModel extends AsyncNotifier<void> {
     await ordersRepo.saveOrder(updated, isSplit: isSplit);
   }
 
+  Future<void> saveOrders(List<Order> orders, {bool isSplit = false}) async {
+    final ordersRepo = ref.read(orderRepositoryProvider);
+    final List<Order> updated = [];
+    for (final order in orders) {
+      final item = order.item;
+      final type = order.type;
+      final int amount = (item.price + type.price) * order.quantity;
+      updated.add(order.copyWith(amount: amount));
+    }
+    await ordersRepo.saveOrders(updated, isSplit: isSplit);
+  }
+
   Future<void> completeOrder(Order order) async =>
       saveOrder(order.copyWith(status: "completed"));
 
@@ -36,18 +48,17 @@ class OrdersViewModel extends AsyncNotifier<void> {
     final orders = await ordersRepo.getNonCanceledOrdersForTable(
       table.tableNo.toString(),
     );
-    bool repeated = false;
+    if (orders.isEmpty) return false;
 
-    for (final order in orders) {
-      try {
-        await repeatOrder(order);
-        repeated = true;
-      } catch (e) {
-        return false;
-      }
+    final repeated = orders
+        .map((o) => o.copyWith(id: "", status: "pending"))
+        .toList();
+    try {
+      await saveOrders(repeated);
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    return repeated;
   }
 
   Future<bool> restoreAllOrders(Table1 table) async {
@@ -55,43 +66,41 @@ class OrdersViewModel extends AsyncNotifier<void> {
     final orders = await ordersRepo.getCanceledOrdersForTable(
       table.tableNo.toString(),
     );
-    bool restored = false;
+    if (orders.isEmpty) return false;
 
-    for (final order in orders) {
-      try {
-        await restoreOrder(order);
-        restored = true;
-      } catch (e) {
-        return false;
-      }
+    final restored = orders.map((o) => o.copyWith(status: "pending")).toList();
+    try {
+      await saveOrders(restored);
+      return true;
+    } catch (e) {
+      return false;
     }
-
-    return restored;
   }
 
   Future<bool> createSplitOrders(String tableNo) async {
-    Stream<List<Order>> orderStream = ref
-        .read(orderRepositoryProvider)
-        .watchNonCanceledOrdersForTable(tableNo);
+    final ordersRepo = ref.read(orderRepositoryProvider);
+    final List<Order> orderList = await ordersRepo
+        .watchNonCanceledOrdersForTable(tableNo)
+        .first;
 
-    await for (final List<Order> orderList in orderStream) {
-      for (final Order order in orderList) {
-        if (order.quantity == 1) {
-          await saveOrder(order.copyWith(id: ""), isSplit: true);
-        } else if (order.quantity > 1) {
-          try {
-            for (int i = 0; i < order.quantity; i++) {
-              Order newOrder = order.copyWith(quantity: 1, id: '');
-              await saveOrder(newOrder, isSplit: true);
-            }
-          } catch (e) {
-            return false;
-          }
+    final List<Order> splitOrders = [];
+    for (final Order order in orderList) {
+      if (order.quantity == 1) {
+        splitOrders.add(order.copyWith(id: ""));
+      } else if (order.quantity > 1) {
+        for (int i = 0; i < order.quantity; i++) {
+          splitOrders.add(order.copyWith(quantity: 1, id: ''));
         }
       }
-      return true;
     }
-    return false;
+    if (splitOrders.isEmpty) return true;
+
+    try {
+      await saveOrders(splitOrders, isSplit: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<bool> changeOrderSplitNo(Order order, int splitNo) async {
@@ -111,18 +120,18 @@ class OrdersViewModel extends AsyncNotifier<void> {
         .read(orderRepositoryProvider)
         .watchAssignedSplitOrdersForTable(tableKey, splitNo)
         .first;
+    if (splitOrders.isEmpty) return true;
 
-    for (final Order order in splitOrders) {
-      try {
-        await saveOrder(
-          order.copyWith(table: order.table.copyWith(splitNo: 0)),
-          isSplit: true,
-        );
-      } catch (e) {
-        return false;
-      }
+    final updated = splitOrders
+        .map((o) => o.copyWith(table: o.table.copyWith(splitNo: 0)))
+        .toList();
+
+    try {
+      await saveOrders(updated, isSplit: true);
+      return true;
+    } catch (e) {
+      return false;
     }
-    return true;
   }
 
   Future<bool> removeSplitOrdersForTable(String tableNo) {

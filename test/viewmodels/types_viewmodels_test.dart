@@ -72,7 +72,7 @@ void main() {
       amount: 240,
     );
 
-    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.saveOrders(any())).thenAnswer((_) async {});
     when(
       () => ordersRepo.getOrdersByType(any()),
     ).thenAnswer((_) async => [order]);
@@ -86,7 +86,7 @@ void main() {
 
     await vm.saveType(newType);
 
-    verify(() => ordersRepo.saveOrder(any())).called(1);
+    verify(() => ordersRepo.saveOrders(any())).called(1);
   });
 
   test('order amount is recalculated when type price changes', () async {
@@ -116,7 +116,7 @@ void main() {
     when(
       () => ordersRepo.getOrdersByType(any()),
     ).thenAnswer((_) async => [order]);
-    when(() => ordersRepo.saveOrder(any())).thenAnswer((_) async {});
+    when(() => ordersRepo.saveOrders(any())).thenAnswer((_) async {});
 
     final container = createContainer(
       typeRepo: typeRepo,
@@ -128,8 +128,8 @@ void main() {
     await vm.saveType(newType);
 
     final captured =
-        verify(() => ordersRepo.saveOrder(captureAny())).captured.single
-            as Order;
+        (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
+            as List<Order>).first;
     final expected = (item.price + newType.price) * order.quantity;
 
     expect(captured.amount, expected);

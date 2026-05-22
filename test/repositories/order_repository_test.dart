@@ -313,7 +313,7 @@ void main() {
 
     await repo.moveOrders('1', '2');
 
-    verifyNever(() => remote.updateTableNo(any(), any()));
+    verifyNever(() => remote.updateAllTableNo(any(), any()));
   });
 
   test('moveOrders updates all matching tables returned', () async {
@@ -326,12 +326,11 @@ void main() {
     ).thenAnswer(
       (_) async => {'1': fakeOrderMap(), '2': fakeOrderMap(id: '2')},
     );
-    when(() => remote.updateTableNo(any(), any())).thenAnswer((_) async {});
+    when(() => remote.updateAllTableNo(any(), any())).thenAnswer((_) async {});
 
     await repo.moveOrders('1', '5');
 
-    verify(() => remote.updateTableNo('1', 5)).called(1);
-    verify(() => remote.updateTableNo('2', 5)).called(1);
+    verify(() => remote.updateAllTableNo(['1', '2'], 5)).called(1);
   });
 
   test('saveOrder uses existing id when provided', () async {
@@ -455,13 +454,12 @@ void main() {
     ).thenAnswer(
       (_) async => {'1': fakeOrderMap(), '2': fakeOrderMap(id: '2')},
     );
-    when(() => remote.delete(any(), isSplit: true)).thenAnswer((_) async {});
+    when(() => remote.deleteAll(any(), isSplit: true)).thenAnswer((_) async {});
 
     final result = await repo.removeSplitOrdersForTable('1');
 
     expect(result, true);
-    verify(() => remote.delete('1', isSplit: true)).called(1);
-    verify(() => remote.delete('2', isSplit: true)).called(1);
+    verify(() => remote.deleteAll(['1', '2'], isSplit: true)).called(1);
   });
 
   test('removeSplitOrdersForTable returns false when delete throws', () async {
@@ -474,7 +472,7 @@ void main() {
       ),
     ).thenAnswer((_) async => {'1': fakeOrderMap()});
 
-    when(() => remote.delete(any(), isSplit: true)).thenThrow(Exception());
+    when(() => remote.deleteAll(any(), isSplit: true)).thenThrow(Exception());
 
     final result = await repo.removeSplitOrdersForTable('1');
 
@@ -492,7 +490,7 @@ void main() {
 
     await repo.deleteOrdersForTable('1');
 
-    verifyNever(() => remote.delete(any(), isSplit: false));
+    verifyNever(() => remote.deleteAll(any(), isSplit: false));
   });
 
   test('deleteOrdersForTable deletes all orders for table', () async {
@@ -506,12 +504,13 @@ void main() {
       (_) async => {'1': fakeOrderMap(), '2': fakeOrderMap(id: '2')},
     );
 
-    when(() => remote.delete(any(), isSplit: false)).thenAnswer((_) async {});
+    when(
+      () => remote.deleteAll(any(), isSplit: false),
+    ).thenAnswer((_) async {});
 
     await repo.deleteOrdersForTable('1');
 
-    verify(() => remote.delete('1', isSplit: false)).called(1);
-    verify(() => remote.delete('2', isSplit: false)).called(1);
+    verify(() => remote.deleteAll(['1', '2'], isSplit: false)).called(1);
   });
 
   test('getTotalAmountForTable sums main orders', () async {
@@ -791,5 +790,63 @@ void main() {
 
     final result = await repo.watchCanceledOrdersExist('1').first;
     expect(result, false);
+  });
+
+  group('saveOrders', () {
+    test('does nothing when empty', () async {
+      await repo.saveOrders([]);
+      verifyNever(() => remote.saveAll(any(), isSplit: any(named: 'isSplit')));
+    });
+
+    test('saves orders and generates ids if empty', () async {
+      when(
+        () => remote.generateId(isSplit: false),
+      ).thenAnswer((_) async => 'gen-1');
+      when(
+        () => remote.saveAll(any(), isSplit: false),
+      ).thenAnswer((_) async {});
+
+      final orders = [fakeOrder(), fakeOrder(id: 'existing-id')];
+
+      await repo.saveOrders(orders);
+
+      verify(() => remote.generateId(isSplit: false)).called(1);
+      verify(() => remote.saveAll(any(), isSplit: false)).called(1);
+    });
+  });
+
+  group('deleteOrders', () {
+    test('does nothing when empty', () async {
+      await repo.deleteOrders([], isSplit: false);
+      verifyNever(
+        () => remote.deleteAll(any(), isSplit: any(named: 'isSplit')),
+      );
+    });
+
+    test('deletes all orders', () async {
+      when(
+        () => remote.deleteAll(any(), isSplit: true),
+      ).thenAnswer((_) async {});
+
+      final orders = [fakeOrder(id: 'id-1'), fakeOrder(id: 'id-2')];
+
+      await repo.deleteOrders(orders, isSplit: true);
+
+      verify(() => remote.deleteAll(['id-1', 'id-2'], isSplit: true)).called(1);
+    });
+  });
+
+  group('deleteOrder', () {
+    test('calls remote delete with correct id and isSplit', () async {
+      when(
+        () => remote.delete(any(), isSplit: any(named: 'isSplit')),
+      ).thenAnswer((_) async {});
+
+      final order = fakeOrder(id: 'order-to-delete');
+
+      await repo.deleteOrder(order, isSplit: true);
+
+      verify(() => remote.delete('order-to-delete', isSplit: true)).called(1);
+    });
   });
 }

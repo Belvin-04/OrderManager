@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:order_manager/models/order.dart';
 import 'package:order_manager/models/type.dart';
 import 'package:order_manager/providers/order_providers.dart';
 import 'package:order_manager/providers/type_providers.dart';
@@ -34,13 +35,14 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
   Future<void> updateOrderPricesAndNames(Type1 oldType, Type1 type) async {
     final ordersRepo = ref.read(orderRepositoryProvider);
     final orders = await ordersRepo.getOrdersByType(oldType.type);
+    if (orders.isEmpty) return;
+
+    final List<Order> updated = [];
     for (final order in orders) {
       final item = order.item;
       final newAmount = (item.price + type.price) * order.quantity;
-
-      final updated = order.copyWith(amount: newAmount, type: type);
-
-      await ordersRepo.saveOrder(updated);
+      updated.add(order.copyWith(amount: newAmount, type: type));
     }
+    await ordersRepo.saveOrders(updated);
   }
 }

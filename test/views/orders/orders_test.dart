@@ -70,7 +70,7 @@ void main() {
     ).thenAnswer((_) async => [baseOrder(), baseOrder()]);
 
     when(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenAnswer((_) async => {});
 
     await pumpOrdersScreen(tester, orderRepo: orderRepo);
@@ -82,8 +82,8 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
-    ).called(2);
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
+    ).called(1);
     expect(find.text('All orders repeated successfully...!'), findsOneWidget);
   });
 
@@ -109,7 +109,7 @@ void main() {
     await tester.pumpAndSettle();
 
     verifyNever(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     );
 
     expect(find.text('There are no orders to repeat...!'), findsOneWidget);
@@ -133,7 +133,7 @@ void main() {
     );
 
     when(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenAnswer((_) async => {});
 
     await pumpOrdersScreen(tester, orderRepo: orderRepo);
@@ -145,8 +145,8 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
-    ).called(2);
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
+    ).called(1);
     expect(find.text('All orders restored successfully...!'), findsOneWidget);
   });
 
@@ -174,7 +174,7 @@ void main() {
     await tester.pumpAndSettle();
 
     verifyNever(
-      () => orderRepo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => orderRepo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     );
 
     expect(find.text('There are no canceled orders...!'), findsOneWidget);

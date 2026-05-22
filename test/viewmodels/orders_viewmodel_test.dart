@@ -169,7 +169,7 @@ void main() {
     ).thenAnswer((_) async => [baseOrder(id: '1', status: 'canceled')]);
 
     when(
-      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
@@ -177,7 +177,7 @@ void main() {
     final result = await vm.restoreAllOrders(testTable);
 
     expect(result, true);
-    verify(() => repo.saveOrder(any(), isSplit: false)).called(1);
+    verify(() => repo.saveOrders(any(), isSplit: false)).called(1);
   });
 
   test('repeatAllOrders repeats only non-canceled orders', () async {
@@ -188,7 +188,7 @@ void main() {
     ).thenAnswer((_) async => [baseOrder(id: '1')]);
 
     when(
-      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
@@ -196,7 +196,7 @@ void main() {
     final result = await vm.repeatAllOrders(testTable);
 
     expect(result, true);
-    verify(() => repo.saveOrder(any(), isSplit: false)).called(1);
+    verify(() => repo.saveOrders(any(), isSplit: false)).called(1);
   });
 
   test(
@@ -209,7 +209,7 @@ void main() {
       ).thenAnswer((_) async => []);
 
       when(
-        () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+        () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
       ).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
@@ -217,7 +217,7 @@ void main() {
       final result = await vm.repeatAllOrders(testTable);
 
       expect(result, false);
-      verifyNever(() => repo.saveOrder(any(), isSplit: false));
+      verifyNever(() => repo.saveOrders(any(), isSplit: false));
     },
   );
 
@@ -231,7 +231,7 @@ void main() {
       ).thenAnswer((_) async => []);
 
       when(
-        () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+        () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
       ).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
@@ -239,7 +239,7 @@ void main() {
       final result = await vm.restoreAllOrders(testTable);
 
       expect(result, false);
-      verifyNever(() => repo.saveOrder(any(), isSplit: false));
+      verifyNever(() => repo.saveOrders(any(), isSplit: false));
     },
   );
 
@@ -252,14 +252,16 @@ void main() {
         () => repo.watchNonCanceledOrdersForTable('1'),
       ).thenAnswer((_) => Stream.value([baseOrder()]));
 
-      when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
+      when(
+        () => repo.saveOrders(any(), isSplit: true),
+      ).thenAnswer((_) async {});
 
       final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
       final result = await vm.createSplitOrders('1');
 
       expect(result, true);
-      verify(() => repo.saveOrder(any(), isSplit: true)).called(1);
+      verify(() => repo.saveOrders(any(), isSplit: true)).called(1);
     },
   );
 
@@ -270,14 +272,14 @@ void main() {
       () => repo.watchNonCanceledOrdersForTable('1'),
     ).thenAnswer((_) => Stream.value([baseOrder(quantity: 3)]));
 
-    when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
+    when(() => repo.saveOrders(any(), isSplit: true)).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final result = await vm.createSplitOrders('1');
 
     expect(result, true);
-    verify(() => repo.saveOrder(any(), isSplit: true)).called(3);
+    verify(() => repo.saveOrders(any(), isSplit: true)).called(1);
   });
 
   test('changeOrderSplitNo updates split number correctly', () async {
@@ -305,14 +307,14 @@ void main() {
       () => repo.watchAssignedSplitOrdersForTable('1', '1'),
     ).thenAnswer((_) => Stream.value([baseOrder(splitNo: 1)]));
 
-    when(() => repo.saveOrder(any(), isSplit: true)).thenAnswer((_) async {});
+    when(() => repo.saveOrders(any(), isSplit: true)).thenAnswer((_) async {});
 
     final vm = createContainer(repo).read(ordersViewModelProvider.notifier);
 
     final result = await vm.resetSplitNo('1', '1');
 
     expect(result, true);
-    verify(() => repo.saveOrder(any(), isSplit: true)).called(1);
+    verify(() => repo.saveOrders(any(), isSplit: true)).called(1);
   });
 
   test('removeSplitOrdersForTable removes orders for given table', () async {
@@ -390,7 +392,7 @@ void main() {
     ).thenAnswer((_) async => [baseOrder()]);
 
     when(
-      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenThrow(Exception('save failed'));
 
     final result = await vm.repeatAllOrders(Table1(tableNo: 1, id: 't1'));
@@ -408,7 +410,7 @@ void main() {
     ).thenAnswer((_) async => [baseOrder(status: "canceled")]);
 
     when(
-      () => repo.saveOrder(any(), isSplit: any(named: 'isSplit')),
+      () => repo.saveOrders(any(), isSplit: any(named: 'isSplit')),
     ).thenThrow(Exception());
 
     final result = await vm.restoreAllOrders(Table1(tableNo: 1, id: 't1'));
@@ -425,7 +427,7 @@ void main() {
       () => repo.watchNonCanceledOrdersForTable(any()),
     ).thenAnswer((_) => Stream.value([baseOrder(quantity: 2)]));
 
-    when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
+    when(() => repo.saveOrders(any(), isSplit: true)).thenThrow(Exception());
 
     final result = await vm.createSplitOrders("1");
 
@@ -453,7 +455,7 @@ void main() {
       () => repo.watchAssignedSplitOrdersForTable(any(), any()),
     ).thenAnswer((_) => Stream.value([baseOrder()]));
 
-    when(() => repo.saveOrder(any(), isSplit: true)).thenThrow(Exception());
+    when(() => repo.saveOrders(any(), isSplit: true)).thenThrow(Exception());
 
     final result = await vm.resetSplitNo("1", "0");
 

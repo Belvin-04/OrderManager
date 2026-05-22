@@ -77,8 +77,51 @@ class FirebaseOrderRemoteDataSource implements OrderRemoteDataSource {
   }
 
   @override
-  Future<void> updateTableNo(String id, int tableNo) async {
-    return ordersRef.doc(id).update({'table.tableNo': tableNo});
+  Future<void> updateAllTableNo(List<String> ids, int tableNo) async {
+    if (ids.isEmpty) return;
+    const maxBatchSize = 450;
+    for (var i = 0; i < ids.length; i += maxBatchSize) {
+      final batch = ordersRef.firestore.batch();
+      final chunk = ids.skip(i).take(maxBatchSize);
+      for (final id in chunk) {
+        batch.update(ordersRef.doc(id), {'table.tableNo': tableNo});
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<void> saveAll(
+    Map<String, Map<String, dynamic>> idToData, {
+    required bool isSplit,
+  }) async {
+    if (idToData.isEmpty) return;
+    final dbRef = isSplit ? splitOrdersRef : ordersRef;
+    const maxBatchSize = 450;
+    final entries = idToData.entries.toList();
+    for (var i = 0; i < entries.length; i += maxBatchSize) {
+      final batch = dbRef.firestore.batch();
+      final chunk = entries.skip(i).take(maxBatchSize);
+      for (final entry in chunk) {
+        batch.set(dbRef.doc(entry.key), entry.value);
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<void> deleteAll(List<String> ids, {required bool isSplit}) async {
+    if (ids.isEmpty) return;
+    final dbRef = isSplit ? splitOrdersRef : ordersRef;
+    const maxBatchSize = 450;
+    for (var i = 0; i < ids.length; i += maxBatchSize) {
+      final batch = dbRef.firestore.batch();
+      final chunk = ids.skip(i).take(maxBatchSize);
+      for (final id in chunk) {
+        batch.delete(dbRef.doc(id));
+      }
+      await batch.commit();
+    }
   }
 
   @override

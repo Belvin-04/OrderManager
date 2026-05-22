@@ -28,4 +28,6 @@ abstract class OrderRepository {
   Stream<bool> watchPendingOrdersExist(String tableKey);
   Stream<bool> watchCompletedOrdersExist(String tableKey);
   Stream<bool> watchCanceledOrdersExist(String tableKey);
+  Future<void> saveOrders(List<Order> orders, {bool isSplit});
+  Future<void> deleteOrders(List<Order> orders, {required bool isSplit});
 }
