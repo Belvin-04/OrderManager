@@ -22,6 +22,7 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
   late TextEditingController _itemNameController;
   late TextEditingController _itemPriceController;
   late Item _editedItem;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -108,14 +109,34 @@ class _ItemEditDialogState extends State<ItemEditDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              final NavigatorState navigator = Navigator.of(context);
-              await widget.onSave(_editedItem);
-              navigator.pop();
-            }
-          },
-          child: const Text("Save Item"),
+          onPressed: _isLoading
+              ? null
+              : () async {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      await widget.onSave(_editedItem);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    } finally {
+                      if (context.mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  }
+                },
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text("Save Item"),
         ),
       ],
     );

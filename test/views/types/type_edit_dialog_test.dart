@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:order_manager/models/type.dart';
@@ -99,6 +100,35 @@ void main() {
     );
 
     await tester.tap(find.text('Save Type'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('shows loading indicator and disables save button when saving', (
+    tester,
+  ) async {
+    final completer = Completer<void>();
+    bool called = false;
+
+    await pumpTypeEditDialog(
+      tester,
+      initialType: Type1(id: 't1', type: 'Extra', price: 20),
+      onSave: (_) async {
+        called = true;
+        await completer.future;
+      },
+    );
+
+    await tester.tap(find.text('Save Type'));
+    await tester.pump();
+
+    expect(called, isTrue);
+
+    expect(find.text('Save Type'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    completer.complete();
     await tester.pumpAndSettle();
 
     expect(find.byType(AlertDialog), findsNothing);

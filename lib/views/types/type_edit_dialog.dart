@@ -22,6 +22,7 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
   late TextEditingController _typeNameController;
   late TextEditingController _typePriceController;
   late Type1 _editedType;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -108,15 +109,34 @@ class _TypeEditDialogState extends State<TypeEditDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () async {
-            if (_formKey.currentState!.validate()) {
-              await widget.onSave(_editedType);
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-            }
-          },
-          child: const Text("Save Type"),
+          onPressed: _isLoading
+              ? null
+              : () async {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    try {
+                      await widget.onSave(_editedType);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    } finally {
+                      if (context.mounted) {
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }
+                  }
+                },
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text("Save Type"),
         ),
       ],
     );
