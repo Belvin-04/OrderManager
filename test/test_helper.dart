@@ -125,10 +125,13 @@ void stubOrderRepoStatus(
   bool completed = false,
   bool canceled = false,
 }) {
-  when(() => orderRepo.watchPendingOrdersExist(any()))
-      .thenAnswer((_) => Stream.value(pending));
-  when(() => orderRepo.watchCompletedOrdersExist(any()))
-      .thenAnswer((_) => Stream.value(completed));
-  when(() => orderRepo.watchCanceledOrdersExist(any()))
-      .thenAnswer((_) => Stream.value(canceled));
+  when(
+    () => orderRepo.watchPendingOrdersExist(any()),
+  ).thenAnswer((_) => Stream.value(pending));
+  when(
+    () => orderRepo.watchCompletedOrdersExist(any()),
+  ).thenAnswer((_) => Stream.value(completed));
+  when(
+    () => orderRepo.watchCanceledOrdersExist(any()),
+  ).thenAnswer((_) => Stream.value(canceled));
 }

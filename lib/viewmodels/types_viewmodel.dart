@@ -12,7 +12,9 @@ class TypesViewModel extends AsyncNotifier<List<Type1>> {
 
   Future<void> saveType(Type1 type) async {
     final typesRepo = ref.read(typeRepositoryProvider);
-    final oldType = await typesRepo.getTypeById(type.id);
+    final oldType = type.id.isNotEmpty
+        ? await typesRepo.getTypeById(type.id)
+        : null;
     await typesRepo.saveType(type);
     if (oldType == null) return;
     await updateOrderPricesAndNames(oldType, type);

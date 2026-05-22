@@ -746,12 +746,15 @@ void main() {
       ),
     ).thenAnswer((_) => const Stream.empty());
 
-    when(() => orderRepo.watchPendingOrdersExist(any()))
-        .thenAnswer((_) => const Stream.empty());
-    when(() => orderRepo.watchCompletedOrdersExist(any()))
-        .thenAnswer((_) => const Stream.empty());
-    when(() => orderRepo.watchCanceledOrdersExist(any()))
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      () => orderRepo.watchPendingOrdersExist(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => orderRepo.watchCompletedOrdersExist(any()),
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => orderRepo.watchCanceledOrdersExist(any()),
+    ).thenAnswer((_) => const Stream.empty());
 
     await pumpHomePageScreen(
       tester,

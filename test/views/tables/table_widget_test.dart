@@ -283,9 +283,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          tableOrderStatus(
-            table.tableNo.toString(),
-          ).overrideWith(
+          tableOrderStatus(table.tableNo.toString()).overrideWith(
             (ref) => AsyncError(Exception('failed'), StackTrace.empty),
           ),
         ],

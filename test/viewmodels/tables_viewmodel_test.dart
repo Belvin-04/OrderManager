@@ -369,5 +369,4 @@ void main() {
 
     verify(() => tableRepo.updateTablePosition('t1', pos)).called(1);
   });
-
 }

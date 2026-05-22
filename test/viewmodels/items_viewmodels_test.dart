@@ -31,8 +31,6 @@ void main() {
     final itemsRepo = MockItemsRepository();
     final ordersRepo = MockOrderRepository();
 
-    when(() => itemsRepo.getItemById("")).thenAnswer((_) async => null);
-    when(() => ordersRepo.getOrdersByItem(any())).thenAnswer((_) async => []);
     when(() => itemsRepo.saveItem(any())).thenAnswer((_) async {});
 
     final container = createContainer(
@@ -47,7 +45,8 @@ void main() {
     await vm.saveItem(newItem);
 
     verify(() => itemsRepo.saveItem(newItem)).called(1);
-    verifyNever(() => ordersRepo.saveOrder(any()));
+    verifyNever(() => itemsRepo.getItemById(any()));
+    verifyNever(() => ordersRepo.saveOrders(any()));
   });
 
   test('updating existing item updates related orders', () async {
@@ -131,7 +130,8 @@ void main() {
 
     final captured =
         (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
-            as List<Order>).first;
+                as List<Order>)
+            .first;
 
     final expected = (newItem.price + type.price) * order.quantity;
 
@@ -178,7 +178,8 @@ void main() {
 
     final captured =
         (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
-            as List<Order>).first;
+                as List<Order>)
+            .first;
     expect(captured.item, newItem);
   });
 

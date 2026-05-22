@@ -30,7 +30,6 @@ void main() {
   test('saving new type does not update orders', () async {
     final typeRepo = MockTypeRepository();
     final ordersRepo = MockOrderRepository();
-    when(() => typeRepo.getTypeById("")).thenAnswer((_) async => null);
     when(() => typeRepo.saveType(any())).thenAnswer((_) async {});
 
     final container = createContainer(
@@ -45,7 +44,8 @@ void main() {
     await vm.saveType(newType);
 
     verify(() => typeRepo.saveType(newType)).called(1);
-    verifyNever(() => ordersRepo.saveOrder(any()));
+    verifyNever(() => typeRepo.getTypeById(any()));
+    verifyNever(() => ordersRepo.saveOrders(any()));
   });
 
   test('updating existing type updates related orders', () async {
@@ -129,7 +129,8 @@ void main() {
 
     final captured =
         (verify(() => ordersRepo.saveOrders(captureAny())).captured.single
-            as List<Order>).first;
+                as List<Order>)
+            .first;
     final expected = (item.price + newType.price) * order.quantity;
 
     expect(captured.amount, expected);

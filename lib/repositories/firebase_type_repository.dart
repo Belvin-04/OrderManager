@@ -36,6 +36,7 @@ class FirebaseTypeRepository implements TypeRepository {
 
   @override
   Future<Type1?> getTypeById(String id) async {
+    if (id.isEmpty) return null;
     final raw = await remote.queryById(id);
     if (raw == null) return null;
 

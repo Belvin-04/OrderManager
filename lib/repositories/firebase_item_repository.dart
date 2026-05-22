@@ -35,6 +35,7 @@ class FirebaseItemRepository implements ItemsRepository {
 
   @override
   Future<Item?> getItemById(String id) async {
+    if (id.isEmpty) return null;
     final raw = await remote.queryById(id);
     if (raw == null) return null;
 
